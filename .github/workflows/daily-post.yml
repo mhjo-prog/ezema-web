@@ -34,7 +34,7 @@ jobs:
           node-version: "20"
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --prefix scripts
 
       - name: Generate daily post
         run: node scripts/generate-post.js
@@ -60,7 +60,7 @@ jobs:
           node-version: "20"
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --prefix scripts
 
       - name: Publish approved posts
         run: node scripts/publish-approved.js
