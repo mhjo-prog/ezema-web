@@ -1,0 +1,69 @@
+name: Daily Sasang Post
+
+on:
+  schedule:
+    # 매일 한국시간 09:00 (UTC 00:00) - AI 초안 생성
+    - cron: "0 0 * * *"
+    # 매일 한국시간 09:30 (UTC 00:30) - approved → published 전환
+    - cron: "30 0 * * *"
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "실행할 작업"
+        required: true
+        default: "generate"
+        type: choice
+        options:
+          - generate
+          - publish
+
+jobs:
+  generate-post:
+    # 09:00 KST (UTC 00:00) 또는 수동으로 generate 선택 시 실행
+    if: >
+      github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'generate' ||
+      github.event_name == 'schedule' && github.event.schedule == '0 0 * * *'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate daily post
+        run: node scripts/generate-post.js
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
+
+  publish-approved:
+    # 09:30 KST (UTC 00:30) 또는 수동으로 publish 선택 시 실행
+    if: >
+      github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'publish' ||
+      github.event_name == 'schedule' && github.event.schedule == '30 0 * * *'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Publish approved posts
+        run: node scripts/publish-approved.js
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
