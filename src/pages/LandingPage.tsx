@@ -178,7 +178,7 @@ export default function LandingPage({ onStart }: Props) {
         <div style={{ maxWidth: "760px", margin: "0 auto" }}>
           <motion.div
             {...fadeUp}
-            style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "64px", alignItems: "center" }}
+            style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "clamp(32px, 5vw, 64px)", alignItems: "center" }}
           >
             {/* Left: Text */}
             <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -207,14 +207,15 @@ export default function LandingPage({ onStart }: Props) {
             </div>
 
             {/* Right: 카드 1장 */}
-            <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
               <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
                   style={{
-                    width: "260px",
+                    width: "100%",
+                    maxWidth: "300px",
                     background: "#ffffff", borderRadius: "20px", padding: "24px 22px",
                     boxShadow: "0 8px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)",
                     transform: "rotate(2deg)",
