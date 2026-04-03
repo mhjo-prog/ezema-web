@@ -87,7 +87,6 @@ export default function Header({ onQuizStart }: HeaderProps) {
           <nav className="hidden md:flex" style={{ alignItems: "center", gap: "4px" }}>
             {NAV_ITEMS.map((item) => {
               const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + "/");
-              const isPrimary = !!item.isPrimary;
               const accent = logoColor;
               return (
                 <button
@@ -173,7 +172,6 @@ export default function Header({ onQuizStart }: HeaderProps) {
           >
             {NAV_ITEMS.map((item, index) => {
               const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + "/");
-              const isPrimary = !!item.isPrimary;
               return (
                 <button
                   key={item.path}
