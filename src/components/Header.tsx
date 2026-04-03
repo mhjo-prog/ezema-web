@@ -58,7 +58,7 @@ export default function Header({ onQuizStart }: HeaderProps) {
           fontWeight: 700,
           fontSize: "1.05rem",
           letterSpacing: "0.12em",
-          color: "#111111",
+          color: logoColor,
           textTransform: "uppercase",
           userSelect: "none",
           padding: "0 16px",
@@ -80,7 +80,7 @@ export default function Header({ onQuizStart }: HeaderProps) {
               style={{
                 fontSize: "0.8125rem",
                 fontWeight: isPrimary ? 600 : 500,
-                color: isActive ? accent : "#444444",
+                color: isPrimary ? accent : isActive ? accent : "#444444",
                 padding: "7px 12px",
                 border: "none",
                 borderBottom: !isPrimary && isActive ? `2px solid ${accent}` : "2px solid transparent",
@@ -92,7 +92,7 @@ export default function Header({ onQuizStart }: HeaderProps) {
                 e.currentTarget.style.color = accent;
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.color = isActive ? accent : "#444444";
+                e.currentTarget.style.color = isPrimary ? accent : isActive ? accent : "#444444";
               }}
             >
               {item.label}
