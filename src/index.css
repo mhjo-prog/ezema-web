@@ -71,7 +71,7 @@ button {
   border-top: 1.5px solid #e0e0e0;
   margin: 1em 0;
 }
-.rich-editor-content p { margin: 0.2em 0; }
+.rich-editor-content p { margin: 0 0 1em; }
 
 /* 미리보기 모달 마크다운 스타일 */
 .md-preview h1, .md-preview h2, .md-preview h3 {
