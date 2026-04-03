@@ -282,7 +282,7 @@ export default function LandingPage({ onStart }: Props) {
             style={{ marginBottom: "48px" }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
-              <div style={{ width: "4px", height: "18px", background: "#0774C4", borderRadius: "2px" }} />
+              <div style={{ width: "4px", height: "18px", background: "#111111", borderRadius: "2px" }} />
               <span style={{ fontSize: "12px", fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", color: "#111111" }}>
                 Sasang Constitution
               </span>
@@ -370,8 +370,8 @@ export default function LandingPage({ onStart }: Props) {
             style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "20px" }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <div style={{ width: "4px", height: "18px", background: "#0774C4", borderRadius: "2px" }} />
-              <span style={{ fontSize: "12px", fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", color: "#0774C4" }}>
+              <div style={{ width: "4px", height: "18px", background: "#111111", borderRadius: "2px" }} />
+              <span style={{ fontSize: "12px", fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", color: "#111111" }}>
                 KeepSlow
               </span>
             </div>
