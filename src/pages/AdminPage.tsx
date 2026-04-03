@@ -407,7 +407,7 @@ export default function AdminPage() {
   const [approving, setApproving] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
-  const [activeFilter, setActiveFilter] = useState<"draft" | "approved">("draft");
+  const [activeFilter, setActiveFilter] = useState<"draft" | "approved" | "published">("draft");
 
   function showToast(msg: string) {
     setToast(msg);
@@ -420,7 +420,7 @@ export default function AdminPage() {
     const { data, error } = await supabase
       .from("posts")
       .select("*")
-      .in("status", ["draft", "approved"])
+      .in("status", ["draft", "approved", "published"])
       .order("created_at", { ascending: false });
 
     if (!error && data) setPosts(data as Post[]);
@@ -566,7 +566,8 @@ export default function AdminPage() {
   // 관리자 대시보드
   const draftPosts = posts.filter((p) => p.status === "draft");
   const approvedPosts = posts.filter((p) => p.status === "approved");
-  const filteredPosts = activeFilter === "draft" ? draftPosts : approvedPosts;
+  const publishedPosts = posts.filter((p) => p.status === "published");
+  const filteredPosts = activeFilter === "draft" ? draftPosts : activeFilter === "approved" ? approvedPosts : publishedPosts;
 
   return (
     <motion.div
@@ -600,10 +601,11 @@ export default function AdminPage() {
         </div>
 
         {/* 통계 카드 */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px", marginBottom: "32px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px", marginBottom: "32px" }}>
           {[
             { label: "검토 대기 (Draft)", count: draftPosts.length, color: "#888888", filter: "draft" as const },
             { label: "승인됨 (게시 예정)", count: approvedPosts.length, color: "#1E8A4C", filter: "approved" as const },
+            { label: "게시됨 (Published)", count: publishedPosts.length, color: "#0774C4", filter: "published" as const },
           ].map((stat) => {
             const isActive = activeFilter === stat.filter;
             return (
@@ -645,10 +647,14 @@ export default function AdminPage() {
                 <p style={{ fontSize: "1rem" }}>검토할 포스트가 없습니다.</p>
                 <p style={{ fontSize: "0.875rem", marginTop: "6px" }}>매일 09:00에 새 초안이 생성됩니다.</p>
               </>
-            ) : (
+            ) : activeFilter === "approved" ? (
               <>
                 <p style={{ fontSize: "1rem" }}>승인된 게시물이 없습니다.</p>
                 <p style={{ fontSize: "0.875rem", marginTop: "6px" }}>Draft 탭에서 게시물을 승인하면 여기에 표시됩니다.</p>
+              </>
+            ) : (
+              <>
+                <p style={{ fontSize: "1rem" }}>게시된 게시물이 없습니다.</p>
               </>
             )}
           </div>
@@ -657,6 +663,7 @@ export default function AdminPage() {
             {filteredPosts.map((post) => {
               const color = CONSTITUTION_COLORS[post.constitution_type];
               const isDraft = post.status === "draft";
+              const isPublished = post.status === "published";
               return (
                 <div
                   key={post.id}
@@ -709,13 +716,13 @@ export default function AdminPage() {
                         style={{
                           fontSize: "0.6875rem",
                           fontWeight: 600,
-                          color: isDraft ? "#888888" : "#1E8A4C",
-                          background: isDraft ? "#f0f0f0" : "#1E8A4C14",
+                          color: isDraft ? "#888888" : isPublished ? "#0774C4" : "#1E8A4C",
+                          background: isDraft ? "#f0f0f0" : isPublished ? "#0774C414" : "#1E8A4C14",
                           padding: "2px 8px",
                           borderRadius: "20px",
                         }}
                       >
-                        {isDraft ? "Draft" : "승인됨"}
+                        {isDraft ? "Draft" : isPublished ? "게시됨" : "승인됨"}
                       </span>
                     </div>
                     <p
