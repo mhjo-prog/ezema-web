@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import SurveyPage from "./SurveyPage";
@@ -40,11 +40,15 @@ export default function QuizPage() {
     }
   }, []);
 
-  const handleSurveyComplete = (s: Record<string, number>) => {
+  const handleSurveyComplete = useCallback((s: Record<string, number>) => {
     setScores(s);
     setConstitutionType(determineType(s));
     setScreen("loading");
-  };
+  }, []);
+
+  const handleLoadingComplete = useCallback(() => {
+    setScreen("result");
+  }, []);
 
   return (
     <AnimatePresence mode="wait">
@@ -58,7 +62,7 @@ export default function QuizPage() {
       {screen === "loading" && (
         <LoadingPage
           key="loading"
-          onComplete={() => setScreen("result")}
+          onComplete={handleLoadingComplete}
         />
       )}
       {screen === "result" && (

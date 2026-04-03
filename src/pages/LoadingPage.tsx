@@ -15,7 +15,8 @@ export default function LoadingPage({ onComplete }: Props) {
   useEffect(() => {
     const t = setTimeout(onComplete, 3400);
     return () => clearTimeout(t);
-  }, [onComplete]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <motion.div
