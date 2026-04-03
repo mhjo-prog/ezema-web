@@ -420,7 +420,7 @@ export default function LandingPage({ onStart }: Props) {
                 fontSize: "0.9375rem",
                 fontWeight: 600,
                 letterSpacing: "0.02em",
-                boxShadow: "none",
+                boxShadow: "0 4px 16px rgba(107,63,160,0.2)",
               }}
             >
               내 체질 알아보기
