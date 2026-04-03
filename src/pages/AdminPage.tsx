@@ -461,7 +461,15 @@ export default function AdminPage() {
       .eq("event_type", "quiz_complete");
     setStats({ visits: visits ?? 0, quizCompletes: quizCompletes ?? 0 });
 
-    // 최근 7일 일별 데이터
+    // 최근 7일 일별 데이터 (데이터 없어도 항상 7일 틀 생성)
+    const days: Record<string, { visits: number; quizCompletes: number }> = {};
+    for (let i = 0; i < 7; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - (6 - i));
+      const key = `${d.getMonth() + 1}/${d.getDate()}`;
+      days[key] = { visits: 0, quizCompletes: 0 };
+    }
+
     const since = new Date();
     since.setDate(since.getDate() - 6);
     since.setHours(0, 0, 0, 0);
@@ -473,13 +481,6 @@ export default function AdminPage() {
       .order("created_at", { ascending: true });
 
     if (data) {
-      const days: Record<string, { visits: number; quizCompletes: number }> = {};
-      for (let i = 0; i < 7; i++) {
-        const d = new Date();
-        d.setDate(d.getDate() - (6 - i));
-        const key = `${d.getMonth() + 1}/${d.getDate()}`;
-        days[key] = { visits: 0, quizCompletes: 0 };
-      }
       data.forEach((row) => {
         const d = new Date(row.created_at);
         const key = `${d.getMonth() + 1}/${d.getDate()}`;
@@ -488,8 +489,8 @@ export default function AdminPage() {
           else if (row.event_type === "quiz_complete") days[key].quizCompletes++;
         }
       });
-      setChartData(Object.entries(days).map(([date, v]) => ({ date, ...v })));
     }
+    setChartData(Object.entries(days).map(([date, v]) => ({ date, ...v })));
   }
 
   function handleLogin() {
@@ -681,7 +682,7 @@ export default function AdminPage() {
         )}
 
         {/* 일별 그래프 */}
-        {chartData.length > 0 && (
+        {chartData.length === 7 && (
           <div style={{ background: "#ffffff", borderRadius: "12px", border: "1px solid #eeeeee", padding: "24px", marginBottom: "32px" }}>
             <p style={{ fontSize: "0.875rem", fontWeight: 700, color: "#111111", marginBottom: "20px" }}>최근 7일 추이</p>
             <ResponsiveContainer width="100%" height={220}>
