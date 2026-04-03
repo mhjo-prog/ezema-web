@@ -424,7 +424,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState<Post | null>(null);
   const [approving, setApproving] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState<string | null>(null);
+  const [, setDeleting] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<"draft" | "approved" | "published">("draft");
   const [stats, setStats] = useState<{ visits: number; quizCompletes: number } | null>(null);
