@@ -126,17 +126,17 @@ export default function Header({ onQuizStart }: HeaderProps) {
             <motion.span
               animate={menuOpen ? { rotate: 45, y: 7 } : { rotate: 0, y: 0 }}
               transition={{ duration: 0.2 }}
-              style={{ display: "block", width: "20px", height: "1.5px", background: "#333" }}
+              style={{ display: "block", width: "20px", height: "2px", background: "#333", borderRadius: "2px" }}
             />
             <motion.span
               animate={menuOpen ? { opacity: 0 } : { opacity: 1 }}
               transition={{ duration: 0.15 }}
-              style={{ display: "block", width: "20px", height: "1.5px", background: "#333" }}
+              style={{ display: "block", width: "20px", height: "2px", background: "#333", borderRadius: "2px" }}
             />
             <motion.span
               animate={menuOpen ? { rotate: -45, y: -7 } : { rotate: 0, y: 0 }}
               transition={{ duration: 0.2 }}
-              style={{ display: "block", width: "20px", height: "1.5px", background: "#333" }}
+              style={{ display: "block", width: "20px", height: "2px", background: "#333", borderRadius: "2px" }}
             />
           </button>
         </div>
@@ -146,24 +146,27 @@ export default function Header({ onQuizStart }: HeaderProps) {
       <AnimatePresence>
         {menuOpen && (
           <motion.nav
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.18 }}
+            initial={{ opacity: 0, scale: 0.96, y: -4 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: -4 }}
+            transition={{ duration: 0.15 }}
             style={{
               position: "fixed",
-              top: "56px",
-              left: 0,
-              right: 0,
+              top: "64px",
+              right: "16px",
               zIndex: 49,
-              background: "rgba(255,255,255,0.97)",
-              backdropFilter: "blur(12px)",
-              borderBottom: "1px solid #f0f0f0",
+              minWidth: "180px",
+              background: "#ffffff",
+              borderRadius: "12px",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)",
+              border: "1px solid #eeeeee",
+              overflow: "hidden",
               display: "flex",
               flexDirection: "column",
+              transformOrigin: "top right",
             }}
           >
-            {NAV_ITEMS.map((item) => {
+            {NAV_ITEMS.map((item, index) => {
               const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + "/");
               const isPrimary = !!item.isPrimary;
               return (
@@ -171,15 +174,16 @@ export default function Header({ onQuizStart }: HeaderProps) {
                   key={item.path}
                   onClick={() => handleNavClick(item.path)}
                   style={{
-                    padding: "16px 24px",
+                    padding: "14px 20px",
                     textAlign: "left",
                     fontSize: "0.9375rem",
                     fontWeight: isPrimary ? 600 : 500,
                     color: isPrimary ? logoColor : isActive ? logoColor : "#333333",
                     background: "none",
                     border: "none",
-                    borderBottom: "1px solid #f5f5f5",
+                    borderBottom: index < NAV_ITEMS.length - 1 ? "1px solid #f5f5f5" : "none",
                     cursor: "pointer",
+                    whiteSpace: "nowrap",
                   }}
                 >
                   {item.label}
