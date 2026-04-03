@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import { motion } from "framer-motion";
+import { supabase, isSupabaseReady } from "../lib/supabase";
 
 interface Props {
   onStart: () => void;
@@ -43,6 +45,12 @@ const constitutions = [
 ];
 
 export default function LandingPage({ onStart }: Props) {
+  useEffect(() => {
+    if (isSupabaseReady) {
+      supabase.from("analytics").insert({ event_type: "page_visit" });
+    }
+  }, []);
+
   return (
     <motion.div
       className="fixed left-0 right-0 bottom-0 overflow-y-auto"

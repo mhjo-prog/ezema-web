@@ -426,6 +426,7 @@ export default function AdminPage() {
   const [deleting, setDeleting] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<"draft" | "approved" | "published">("draft");
+  const [stats, setStats] = useState<{ visits: number; quizCompletes: number } | null>(null);
 
   function showToast(msg: string) {
     setToast(msg);
@@ -445,6 +446,19 @@ export default function AdminPage() {
     setLoading(false);
   }
 
+  async function fetchStats() {
+    if (!isSupabaseReady) return;
+    const { count: visits } = await supabase
+      .from("analytics")
+      .select("*", { count: "exact", head: true })
+      .eq("event_type", "page_visit");
+    const { count: quizCompletes } = await supabase
+      .from("analytics")
+      .select("*", { count: "exact", head: true })
+      .eq("event_type", "quiz_complete");
+    setStats({ visits: visits ?? 0, quizCompletes: quizCompletes ?? 0 });
+  }
+
   function handleLogin() {
     if (pw === ADMIN_PASSWORD) {
       setAuthed(true);
@@ -455,7 +469,7 @@ export default function AdminPage() {
   }
 
   useEffect(() => {
-    if (authed) fetchPosts();
+    if (authed) { fetchPosts(); fetchStats(); }
   }, [authed]);
 
   async function handleSave(postId: string, fields: { title: string; content: string; card_image_url: string }) {
@@ -603,7 +617,7 @@ export default function AdminPage() {
             <h1 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#111111" }}>콘텐츠 관리</h1>
           </div>
           <button
-            onClick={fetchPosts}
+            onClick={() => { fetchPosts(); fetchStats(); }}
             style={{
               fontSize: "0.8125rem",
               fontWeight: 600,
@@ -617,6 +631,21 @@ export default function AdminPage() {
             새로고침
           </button>
         </div>
+
+        {/* 통계 카드 */}
+        {stats && (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px", marginBottom: "24px" }}>
+            {[
+              { label: "총 방문자 수", value: stats.visits, icon: "👥", color: "#0774C4" },
+              { label: "체질 진단 완료", value: stats.quizCompletes, icon: "✅", color: "#1E8A4C" },
+            ].map((s) => (
+              <div key={s.label} style={{ background: "#ffffff", borderRadius: "12px", padding: "20px", border: "1px solid #eeeeee" }}>
+                <p style={{ fontSize: "0.8125rem", color: "#888888", marginBottom: "8px" }}>{s.icon} {s.label}</p>
+                <p style={{ fontSize: "2rem", fontWeight: 800, color: s.color }}>{s.value.toLocaleString()}</p>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* 통계 카드 */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px", marginBottom: "32px" }}>

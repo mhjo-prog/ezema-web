@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { results } from "../data/results";
+import { supabase, isSupabaseReady } from "../lib/supabase";
 
 declare global {
   interface Window {
@@ -173,6 +174,13 @@ function BarGauge({ scores }: { scores: Record<string, number> }) {
       setWidths(sorted.map(({ pct }) => pct));
     }, 600);
     return () => clearTimeout(id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (isSupabaseReady) {
+      supabase.from("analytics").insert({ event_type: "quiz_complete", constitution_type: constitutionType });
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
