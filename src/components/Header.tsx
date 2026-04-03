@@ -15,7 +15,9 @@ export default function Header({ onQuizStart }: HeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const logoColor = "#111111";
+  const logoColor = ["/sasang", "/wellness"].some((p) =>
+    location.pathname.startsWith(p)
+  ) ? "#000000" : "#0774C4";
 
   const handleNavClick = (path: string) => {
     if (path === "/quiz") {
