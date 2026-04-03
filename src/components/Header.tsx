@@ -58,7 +58,7 @@ export default function Header({ onQuizStart }: HeaderProps) {
           fontWeight: 700,
           fontSize: "1.05rem",
           letterSpacing: "0.12em",
-          color: logoColor,
+          color: "#111111",
           textTransform: "uppercase",
           userSelect: "none",
           padding: "0 16px",

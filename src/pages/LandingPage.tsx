@@ -283,7 +283,7 @@ export default function LandingPage({ onStart }: Props) {
           >
             <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
               <div style={{ width: "4px", height: "18px", background: "#0774C4", borderRadius: "2px" }} />
-              <span style={{ fontSize: "12px", fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", color: "#0774C4" }}>
+              <span style={{ fontSize: "12px", fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", color: "#111111" }}>
                 Sasang Constitution
               </span>
             </div>
@@ -405,12 +405,12 @@ export default function LandingPage({ onStart }: Props) {
                 marginTop: "8px",
                 padding: "15px 40px",
                 borderRadius: "50px",
-                background: "#0774C4",
+                background: "#111111",
                 color: "#ffffff",
                 fontSize: "0.9375rem",
                 fontWeight: 600,
                 letterSpacing: "0.02em",
-                boxShadow: "0 4px 16px rgba(7,116,196,0.25)",
+                boxShadow: "0 4px 16px rgba(0,0,0,0.25)",
               }}
             >
               내 체질 알아보기
