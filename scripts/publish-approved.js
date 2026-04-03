@@ -15,7 +15,7 @@ async function main() {
     .from("posts")
     .update({
       status: "published",
-      scheduled_at: new Date().toISOString(),
+      published_at: new Date().toISOString(),
     })
     .eq("status", "approved")
     .select();
