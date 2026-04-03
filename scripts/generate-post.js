@@ -144,7 +144,7 @@ async function checkAlreadyGenerated(constitutionType) {
 
 // ── Main ─────────────────────────────────────────────────────────────
 async function main() {
-  const constitutionType = getTodayConstitutionType();
+  const constitutionType = process.argv[2] || getTodayConstitutionType();
   console.log(`오늘의 체질 타입: ${constitutionType}\n`);
 
   // 0. 중복 생성 방지

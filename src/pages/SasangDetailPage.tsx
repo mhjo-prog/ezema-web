@@ -180,7 +180,7 @@ export default function SasangDetailPage() {
                 <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "#222222", margin: "1.6em 0 0.5em", lineHeight: 1.4 }}>{children}</h3>
               ),
               p: ({ children }) => (
-                <p style={{ marginBottom: '2em', lineHeight: '1.9', fontSize: '1rem', color: '#333333' }}>{children}</p>
+                <p style={{ marginBottom: '1em', lineHeight: '1.7', fontSize: '1rem', color: '#333333' }}>{children}</p>
               ),
               strong: ({ children }) => (
                 <strong style={{ fontWeight: 700, color: "#111111" }}>{children}</strong>
