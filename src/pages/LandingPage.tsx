@@ -174,7 +174,7 @@ export default function LandingPage({ onStart }: Props) {
       </section>
 
       {/* ── Result Preview Section ── */}
-      <section style={{ padding: "100px 24px", background: "#f7f8fa" }}>
+      <section style={{ padding: "clamp(56px, 8vw, 100px) 24px", background: "#f7f8fa" }}>
         <div style={{ maxWidth: "760px", margin: "0 auto" }}>
           <motion.div
             {...fadeUp}
@@ -281,7 +281,7 @@ export default function LandingPage({ onStart }: Props) {
       </section>
 
       {/* ── Constitution Section ── */}
-      <section style={{ padding: "100px 24px", background: "#ffffff" }}>
+      <section style={{ padding: "clamp(56px, 8vw, 100px) 24px", background: "#ffffff" }}>
         <div style={{ maxWidth: "760px", margin: "0 auto" }}>
 
           {/* Section header */}
@@ -371,7 +371,7 @@ export default function LandingPage({ onStart }: Props) {
       </section>
 
       {/* ── Brand Section ── */}
-      <section style={{ background: "#f7f8fa", padding: "100px 24px" }}>
+      <section style={{ background: "#f7f8fa", padding: "clamp(56px, 8vw, 100px) 24px" }}>
         <div style={{ maxWidth: "760px", margin: "0 auto" }}>
           <motion.div
             {...fadeUp}
@@ -409,6 +409,7 @@ export default function LandingPage({ onStart }: Props) {
               onClick={onStart}
               whileHover={{ scale: 1.025 }}
               whileTap={{ scale: 0.975 }}
+              className="w-full sm:w-auto"
               style={{
                 marginTop: "8px",
                 padding: "15px 40px",
