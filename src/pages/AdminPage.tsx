@@ -64,9 +64,9 @@ function RichEditor({ initialMarkdown, onChange }: { initialMarkdown: string; on
       attributes: {
         style: [
           "font-family:'Pretendard',sans-serif",
-          "font-size:0.9rem",
-          "line-height:1.8",
-          "color:#111111",
+          "font-size:1rem",
+          "line-height:1.7",
+          "color:#333333",
           "padding:16px",
           "min-height:450px",
           "outline:none",
@@ -305,7 +305,7 @@ function PostPreviewModal({
               />
             )}
 
-            <div style={{ fontSize: "0.9rem", lineHeight: 1.8, color: "#444444" }} className="md-preview">
+            <div style={{ fontSize: "1rem", lineHeight: 1.7, color: "#333333" }} className="md-preview">
               <ReactMarkdown>{post.content}</ReactMarkdown>
             </div>
 
