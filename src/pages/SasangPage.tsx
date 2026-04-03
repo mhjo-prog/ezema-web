@@ -131,7 +131,11 @@ export default function SasangPage() {
         .select("*")
         .eq("status", "published")
         .order("created_at", { ascending: false });
-      if (!error && data) setPosts(data as Post[]);
+      if (!error && data && data.length > 0) {
+        setPosts(data as Post[]);
+      } else {
+        setPosts(samplePosts);
+      }
       setLoading(false);
     }
     fetchPosts();
@@ -160,7 +164,7 @@ export default function SasangPage() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: 0.5 }}
       style={{
         minHeight: "calc(100vh - 56px)",
         background: "#ffffff",
@@ -170,12 +174,22 @@ export default function SasangPage() {
       <div style={{ maxWidth: "1080px", margin: "0 auto", padding: "48px 24px 80px" }}>
         {/* 헤더 */}
         <div style={{ marginBottom: "36px" }}>
-          <h1 style={{ fontSize: "2rem", fontWeight: 800, color: "#000000", lineHeight: 1.2 }}>
+          <motion.h1
+            style={{ fontSize: "2rem", fontWeight: 800, color: "#000000", lineHeight: 1.2 }}
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          >
             KEEPSLOW JOURNAL
-          </h1>
-          <p style={{ marginTop: "10px", fontSize: "0.9375rem", color: "#666666", lineHeight: 1.6 }}>
+          </motion.h1>
+          <motion.p
+            style={{ marginTop: "10px", fontSize: "0.9375rem", color: "#666666", lineHeight: 1.6 }}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35, duration: 0.6 }}
+          >
             나의 체질을 이해하면 삶이 달라집니다. 매일 새로운 이야기를 만나보세요.
-          </p>
+          </motion.p>
         </div>
 
         {/* 필터 탭 */}
@@ -321,9 +335,9 @@ export default function SasangPage() {
             {filtered.map((post, i) => (
               <motion.div
                 key={post.id}
-                initial={{ opacity: 0, y: 16 }}
+                initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: i * 0.05 }}
+                transition={{ duration: 0.55, delay: 0.4 + i * 0.08, ease: "easeOut" }}
               >
                 <PostCard post={post} onClick={() => navigate(`/sasang/${post.id}`)} />
               </motion.div>

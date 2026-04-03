@@ -1,6 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { supabase, isSupabaseReady, type Post, type ConstitutionType } from "../lib/supabase";
+import ReactMarkdown from "react-markdown";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Underline from "@tiptap/extension-underline";
+import { marked } from "marked";
+import TurndownService from "turndown";
 
 const CONSTITUTION_COLORS: Record<ConstitutionType, string> = {
   태음인: "#1E8A4C",
@@ -16,8 +22,151 @@ function formatDate(dateStr: string) {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
-function PostPreviewModal({ post, onClose, onApprove }: { post: Post; onClose: () => void; onApprove: () => void }) {
+const turndown = new TurndownService({ headingStyle: "atx", bulletListMarker: "-" });
+// underline → <u> 태그로 저장
+turndown.addRule("underline", {
+  filter: ["u"],
+  replacement: (content) => `<u>${content}</u>`,
+});
+
+type ToolbarCmd =
+  | "toggleBold" | "toggleItalic" | "toggleUnderline"
+  | "toggleHeading" | "toggleBlockquote"
+  | "toggleBulletList" | "toggleOrderedList" | "setHorizontalRule";
+
+const TOOLBAR: { label: string; title: string; cmd: ToolbarCmd; style?: React.CSSProperties }[] = [
+  { label: "B",  title: "볼드",       cmd: "toggleBold",        style: { fontWeight: 800 } },
+  { label: "I",  title: "이탤릭",     cmd: "toggleItalic",      style: { fontStyle: "italic" } },
+  { label: "U",  title: "밑줄",       cmd: "toggleUnderline",   style: { textDecoration: "underline" } },
+  { label: "H2", title: "소제목",     cmd: "toggleHeading" },
+  { label: "❝",  title: "인용구",     cmd: "toggleBlockquote" },
+  { label: "•",  title: "불릿 리스트", cmd: "toggleBulletList" },
+  { label: "1.", title: "번호 리스트", cmd: "toggleOrderedList" },
+  { label: "—",  title: "구분선",     cmd: "setHorizontalRule" },
+];
+
+function RichEditor({ initialMarkdown, onChange }: { initialMarkdown: string; onChange: (md: string) => void }) {
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+
+  const editor = useEditor({
+    extensions: [StarterKit, Underline],
+    content: marked.parse(initialMarkdown, { async: false }) as string,
+    onUpdate({ editor }) {
+      onChangeRef.current(turndown.turndown(editor.getHTML()));
+    },
+    editorProps: {
+      attributes: {
+        style: [
+          "font-family:'Pretendard',sans-serif",
+          "font-size:0.9rem",
+          "line-height:1.8",
+          "color:#111111",
+          "padding:16px",
+          "min-height:450px",
+          "outline:none",
+          "word-break:break-word",
+        ].join(";"),
+        class: "rich-editor-content",
+      },
+    },
+  });
+
+  if (!editor) return null;
+
+  function runCmd(cmd: ToolbarCmd) {
+    const chain = editor!.chain().focus();
+    if (cmd === "toggleBold")         chain.toggleBold().run();
+    else if (cmd === "toggleItalic")  chain.toggleItalic().run();
+    else if (cmd === "toggleUnderline") chain.toggleUnderline().run();
+    else if (cmd === "toggleHeading") chain.toggleHeading({ level: 2 }).run();
+    else if (cmd === "toggleBlockquote") chain.toggleBlockquote().run();
+    else if (cmd === "toggleBulletList") chain.toggleBulletList().run();
+    else if (cmd === "toggleOrderedList") chain.toggleOrderedList().run();
+    else if (cmd === "setHorizontalRule") chain.setHorizontalRule().run();
+  }
+
+  return (
+    <div style={{ border: "1.5px solid #e0e0e0", borderRadius: "8px", overflow: "hidden" }}>
+      {/* 툴바 */}
+      <div style={{ display: "flex", gap: "2px", padding: "6px 10px", borderBottom: "1px solid #e0e0e0", background: "#f7f8fa", flexWrap: "wrap" }}>
+        {TOOLBAR.map((btn, i) => (
+          <button
+            key={i}
+            title={btn.title}
+            onMouseDown={(e) => { e.preventDefault(); runCmd(btn.cmd); }}
+            style={{
+              minWidth: "32px",
+              height: "30px",
+              padding: "0 6px",
+              borderRadius: "5px",
+              fontSize: "0.8125rem",
+              fontWeight: 700,
+              color: "#333",
+              background: "transparent",
+              border: "1px solid transparent",
+              cursor: "pointer",
+              fontFamily: "'Pretendard', sans-serif",
+              ...btn.style,
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "#e0e0e0"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+          >
+            {btn.label}
+          </button>
+        ))}
+      </div>
+      {/* 에디터 본문 */}
+      <EditorContent editor={editor} />
+    </div>
+  );
+}
+
+function PostPreviewModal({
+  post,
+  onClose,
+  onApprove,
+  onDelete,
+  onSave,
+}: {
+  post: Post;
+  onClose: () => void;
+  onApprove: () => void;
+  onDelete: () => void;
+  onSave: (fields: { title: string; content: string; card_image_url: string }) => Promise<void>;
+}) {
   const color = CONSTITUTION_COLORS[post.constitution_type];
+  const [editMode, setEditMode] = useState(false);
+  const [title, setTitle] = useState(post.title);
+  const [content, setContent] = useState(post.content);
+  const [imageUrl, setImageUrl] = useState(post.card_image_url ?? "");
+  const [saving, setSaving] = useState(false);
+
+  const inputStyle = {
+    width: "100%",
+    padding: "10px 12px",
+    border: "1.5px solid #e0e0e0",
+    borderRadius: "8px",
+    fontSize: "0.9rem",
+    color: "#111111",
+    boxSizing: "border-box" as const,
+    outline: "none",
+  };
+
+  async function handleSave() {
+    setSaving(true);
+    await onSave({ title, content, card_image_url: imageUrl });
+    setSaving(false);
+    setEditMode(false);
+  }
+
+  function handleCancelEdit() {
+    setTitle(post.title);
+    setContent(post.content);
+    setImageUrl(post.card_image_url ?? "");
+    setEditMode(false);
+  }
+
   return (
     <div
       onClick={onClose}
@@ -41,7 +190,7 @@ function PostPreviewModal({ post, onClose, onApprove }: { post: Post; onClose: (
           borderRadius: "16px",
           maxWidth: "640px",
           width: "100%",
-          maxHeight: "80vh",
+          maxHeight: "85vh",
           overflowY: "auto",
           padding: "32px",
           display: "flex",
@@ -49,6 +198,7 @@ function PostPreviewModal({ post, onClose, onApprove }: { post: Post; onClose: (
           gap: "16px",
         }}
       >
+        {/* 상단: 체질 태그 + 닫기 */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <span
             style={{
@@ -65,49 +215,178 @@ function PostPreviewModal({ post, onClose, onApprove }: { post: Post; onClose: (
           <button onClick={onClose} style={{ color: "#888888", fontSize: "1.25rem", cursor: "pointer", lineHeight: 1 }}>×</button>
         </div>
 
-        <h2 style={{ fontSize: "1.25rem", fontWeight: 700, color: "#111111", lineHeight: 1.4 }}>{post.title}</h2>
+        {editMode ? (
+          /* 편집 모드 */
+          <>
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#888888" }}>제목</label>
+              <input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                style={inputStyle}
+              />
+            </div>
 
-        {post.card_image_url && (
-          <img
-            src={post.card_image_url}
-            alt={post.title}
-            style={{ width: "100%", aspectRatio: "16/9", objectFit: "cover", borderRadius: "8px" }}
-          />
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#888888" }}>이미지 URL</label>
+              <input
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                placeholder="https://..."
+                style={inputStyle}
+              />
+            </div>
+
+            {imageUrl && (
+              <img
+                src={imageUrl}
+                alt=""
+                style={{ width: "100%", aspectRatio: "16/9", objectFit: "cover", borderRadius: "8px" }}
+              />
+            )}
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#888888" }}>본문</label>
+              <RichEditor
+                key={post.id + "_editor"}
+                initialMarkdown={content}
+                onChange={setContent}
+              />
+            </div>
+
+            <div style={{ display: "flex", gap: "10px", paddingTop: "4px" }}>
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                style={{
+                  flex: 1,
+                  padding: "12px",
+                  background: saving ? "#aaaaaa" : "#111111",
+                  color: "#ffffff",
+                  fontWeight: 700,
+                  fontSize: "0.9375rem",
+                  borderRadius: "10px",
+                  cursor: saving ? "not-allowed" : "pointer",
+                }}
+              >
+                {saving ? "저장 중..." : "저장하기"}
+              </button>
+              <button
+                onClick={handleCancelEdit}
+                style={{
+                  padding: "12px 20px",
+                  background: "#f0f0f0",
+                  color: "#444444",
+                  fontWeight: 600,
+                  fontSize: "0.9375rem",
+                  borderRadius: "10px",
+                  cursor: "pointer",
+                }}
+              >
+                취소
+              </button>
+            </div>
+          </>
+        ) : (
+          /* 미리보기 모드 */
+          <>
+            <h2 style={{ fontSize: "1.25rem", fontWeight: 700, color: "#111111", lineHeight: 1.4 }}>{post.title}</h2>
+
+            {post.card_image_url && (
+              <img
+                src={post.card_image_url}
+                alt={post.title}
+                style={{ width: "100%", aspectRatio: "16/9", objectFit: "cover", borderRadius: "8px" }}
+              />
+            )}
+
+            <div style={{ fontSize: "0.9rem", lineHeight: 1.8, color: "#444444" }} className="md-preview">
+              <ReactMarkdown>{post.content}</ReactMarkdown>
+            </div>
+
+            {/* 승인 상태 표시 */}
+            {post.status === "draft" ? (
+              <button
+                onClick={onApprove}
+                style={{
+                  padding: "12px",
+                  background: "#0774C4",
+                  color: "#ffffff",
+                  fontWeight: 700,
+                  fontSize: "0.9375rem",
+                  borderRadius: "10px",
+                  cursor: "pointer",
+                }}
+              >
+                승인하기
+              </button>
+            ) : (
+              <div
+                style={{
+                  padding: "12px",
+                  background: "#1E8A4C14",
+                  color: "#1E8A4C",
+                  fontWeight: 700,
+                  fontSize: "0.9375rem",
+                  borderRadius: "10px",
+                  textAlign: "center",
+                }}
+              >
+                ✓ 승인됨 — 09:30 자동 게시 예정
+              </div>
+            )}
+
+            {/* 하단 버튼 3개 */}
+            <div style={{ display: "flex", gap: "8px", paddingTop: "4px" }}>
+              <button
+                onClick={() => setEditMode(true)}
+                style={{
+                  flex: 1,
+                  padding: "11px",
+                  background: "#f7f8fa",
+                  color: "#111111",
+                  fontWeight: 600,
+                  fontSize: "0.875rem",
+                  borderRadius: "10px",
+                  border: "1.5px solid #e0e0e0",
+                  cursor: "pointer",
+                }}
+              >
+                수정하기
+              </button>
+              <button
+                onClick={onDelete}
+                style={{
+                  flex: 1,
+                  padding: "11px",
+                  background: "#fff5f3",
+                  color: "#E8460A",
+                  fontWeight: 600,
+                  fontSize: "0.875rem",
+                  borderRadius: "10px",
+                  border: "1.5px solid #E8460A",
+                  cursor: "pointer",
+                }}
+              >
+                삭제하기
+              </button>
+              <button
+                onClick={onClose}
+                style={{
+                  padding: "11px 18px",
+                  background: "#f0f0f0",
+                  color: "#444444",
+                  fontWeight: 600,
+                  fontSize: "0.875rem",
+                  borderRadius: "10px",
+                  cursor: "pointer",
+                }}
+              >
+                닫기
+              </button>
+            </div>
+          </>
         )}
-
-        <p style={{ fontSize: "0.9rem", lineHeight: 1.8, color: "#444444", whiteSpace: "pre-wrap" }}>{post.content}</p>
-
-        <div style={{ display: "flex", gap: "10px", paddingTop: "8px" }}>
-          <button
-            onClick={onApprove}
-            style={{
-              flex: 1,
-              padding: "12px",
-              background: "#0774C4",
-              color: "#ffffff",
-              fontWeight: 700,
-              fontSize: "0.9375rem",
-              borderRadius: "10px",
-              cursor: "pointer",
-            }}
-          >
-            승인하기
-          </button>
-          <button
-            onClick={onClose}
-            style={{
-              padding: "12px 20px",
-              background: "#f0f0f0",
-              color: "#444444",
-              fontWeight: 600,
-              fontSize: "0.9375rem",
-              borderRadius: "10px",
-              cursor: "pointer",
-            }}
-          >
-            닫기
-          </button>
-        </div>
       </motion.div>
     </div>
   );
@@ -121,7 +400,9 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState<Post | null>(null);
   const [approving, setApproving] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState<"draft" | "approved">("draft");
 
   function showToast(msg: string) {
     setToast(msg);
@@ -153,6 +434,33 @@ export default function AdminPage() {
   useEffect(() => {
     if (authed) fetchPosts();
   }, [authed]);
+
+  async function handleSave(postId: string, fields: { title: string; content: string; card_image_url: string }) {
+    if (!isSupabaseReady) return;
+    const { error } = await supabase.from("posts").update(fields).eq("id", postId);
+    if (!error) {
+      setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, ...fields } : p)));
+      setPreview((prev) => (prev ? { ...prev, ...fields } : null));
+      showToast("수정되었습니다.");
+    } else {
+      showToast("수정 중 오류가 발생했습니다.");
+    }
+  }
+
+  async function handleDelete(postId: string) {
+    if (!isSupabaseReady) return;
+    if (!window.confirm("정말 삭제하시겠습니까?")) return;
+    setDeleting(postId);
+    const { error } = await supabase.from("posts").delete().eq("id", postId);
+    if (!error) {
+      setPosts((prev) => prev.filter((p) => p.id !== postId));
+      setPreview(null);
+      showToast("삭제되었습니다.");
+    } else {
+      showToast("삭제 중 오류가 발생했습니다.");
+    }
+    setDeleting(null);
+  }
 
   async function handleApprove(postId: string) {
     if (!isSupabaseReady) return;
@@ -253,6 +561,7 @@ export default function AdminPage() {
   // 관리자 대시보드
   const draftPosts = posts.filter((p) => p.status === "draft");
   const approvedPosts = posts.filter((p) => p.status === "approved");
+  const filteredPosts = activeFilter === "draft" ? draftPosts : approvedPosts;
 
   return (
     <motion.div
@@ -288,28 +597,34 @@ export default function AdminPage() {
         {/* 통계 카드 */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px", marginBottom: "32px" }}>
           {[
-            { label: "검토 대기 (Draft)", count: draftPosts.length, color: "#888888" },
-            { label: "승인됨 (게시 예정)", count: approvedPosts.length, color: "#1E8A4C" },
-          ].map((stat) => (
-            <div
-              key={stat.label}
-              style={{
-                background: "#ffffff",
-                borderRadius: "12px",
-                padding: "20px",
-                border: "1px solid #eeeeee",
-              }}
-            >
-              <p style={{ fontSize: "0.8125rem", color: "#888888", marginBottom: "8px" }}>{stat.label}</p>
-              <p style={{ fontSize: "2rem", fontWeight: 800, color: stat.color }}>{stat.count}</p>
-            </div>
-          ))}
+            { label: "검토 대기 (Draft)", count: draftPosts.length, color: "#888888", filter: "draft" as const },
+            { label: "승인됨 (게시 예정)", count: approvedPosts.length, color: "#1E8A4C", filter: "approved" as const },
+          ].map((stat) => {
+            const isActive = activeFilter === stat.filter;
+            return (
+              <div
+                key={stat.label}
+                onClick={() => setActiveFilter(stat.filter)}
+                style={{
+                  background: "#ffffff",
+                  borderRadius: "12px",
+                  padding: "20px",
+                  border: isActive ? `2px solid ${stat.color}` : "1px solid #eeeeee",
+                  cursor: "pointer",
+                  transition: "border-color 0.15s",
+                }}
+              >
+                <p style={{ fontSize: "0.8125rem", color: "#888888", marginBottom: "8px" }}>{stat.label}</p>
+                <p style={{ fontSize: "2rem", fontWeight: 800, color: stat.color }}>{stat.count}</p>
+              </div>
+            );
+          })}
         </div>
 
-        {/* Draft 목록 */}
+        {/* 게시물 목록 */}
         {loading ? (
           <div style={{ textAlign: "center", padding: "40px", color: "#888888" }}>불러오는 중...</div>
-        ) : posts.length === 0 ? (
+        ) : filteredPosts.length === 0 ? (
           <div
             style={{
               textAlign: "center",
@@ -320,12 +635,21 @@ export default function AdminPage() {
               color: "#aaaaaa",
             }}
           >
-            <p style={{ fontSize: "1rem" }}>검토할 포스트가 없습니다.</p>
-            <p style={{ fontSize: "0.875rem", marginTop: "6px" }}>매일 09:00에 새 초안이 생성됩니다.</p>
+            {activeFilter === "draft" ? (
+              <>
+                <p style={{ fontSize: "1rem" }}>검토할 포스트가 없습니다.</p>
+                <p style={{ fontSize: "0.875rem", marginTop: "6px" }}>매일 09:00에 새 초안이 생성됩니다.</p>
+              </>
+            ) : (
+              <>
+                <p style={{ fontSize: "1rem" }}>승인된 게시물이 없습니다.</p>
+                <p style={{ fontSize: "0.875rem", marginTop: "6px" }}>Draft 탭에서 게시물을 승인하면 여기에 표시됩니다.</p>
+              </>
+            )}
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-            {posts.map((post) => {
+            {filteredPosts.map((post) => {
               const color = CONSTITUTION_COLORS[post.constitution_type];
               const isDraft = post.status === "draft";
               return (
@@ -453,6 +777,8 @@ export default function AdminPage() {
           post={preview}
           onClose={() => setPreview(null)}
           onApprove={() => handleApprove(preview.id)}
+          onDelete={() => handleDelete(preview.id)}
+          onSave={(fields) => handleSave(preview.id, fields)}
         />
       )}
 

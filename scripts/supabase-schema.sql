@@ -26,6 +26,11 @@ create policy "Anon can update post status"
   using (true)
   with check (status in ('draft', 'approved', 'published'));
 
+-- 익명 사용자: 삭제 가능 (관리자 UI 전용, 비밀번호로 보호)
+create policy "Anon can delete posts"
+  on posts for delete
+  using (true);
+
 -- service_role(GitHub Actions)은 INSERT 포함 모든 작업 가능 (RLS 우회)
 
 -- 인덱스

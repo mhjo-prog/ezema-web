@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import ReactMarkdown from "react-markdown";
 import { supabase, isSupabaseReady, type Post, type ConstitutionType } from "../lib/supabase";
 
 const CONSTITUTION_COLORS: Record<ConstitutionType, string> = {
@@ -167,15 +168,45 @@ export default function SasangDetailPage() {
         <div style={{ borderTop: "1px solid #eeeeee", marginBottom: "36px" }} />
 
         {/* 본문 */}
-        <div
-          style={{
-            fontSize: "1rem",
-            lineHeight: 1.9,
-            color: "#333333",
-            whiteSpace: "pre-wrap",
-          }}
-        >
-          {post.content}
+        <div className="post-content">
+          <ReactMarkdown
+            components={{
+              h2: ({ children }) => (
+                <h2 style={{ fontSize: "1.25rem", fontWeight: 700, color: "#111111", margin: "2em 0 0.6em", lineHeight: 1.4 }}>{children}</h2>
+              ),
+              h3: ({ children }) => (
+                <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "#222222", margin: "1.6em 0 0.5em", lineHeight: 1.4 }}>{children}</h3>
+              ),
+              p: ({ children }) => (
+                <p style={{ fontSize: "1rem", lineHeight: 1.8, color: "#333333", margin: "0 0 1.5em" }}>{children}</p>
+              ),
+              strong: ({ children }) => (
+                <strong style={{ fontWeight: 700, color: "#111111" }}>{children}</strong>
+              ),
+              em: ({ children }) => (
+                <em style={{ fontStyle: "italic", color: "#555555" }}>{children}</em>
+              ),
+              blockquote: ({ children }) => (
+                <blockquote style={{ borderLeft: `4px solid ${color}`, margin: "1.6em 0", padding: "12px 20px", background: `${color}0d`, borderRadius: "0 8px 8px 0", color: "#444444", fontStyle: "italic" }}>
+                  {children}
+                </blockquote>
+              ),
+              hr: () => (
+                <hr style={{ border: "none", borderTop: "1px solid #eeeeee", margin: "2em 0" }} />
+              ),
+              ul: ({ children }) => (
+                <ul style={{ paddingLeft: "1.4em", margin: "0 0 1.4em", lineHeight: 1.95, color: "#333333" }}>{children}</ul>
+              ),
+              ol: ({ children }) => (
+                <ol style={{ paddingLeft: "1.4em", margin: "0 0 1.4em", lineHeight: 1.95, color: "#333333" }}>{children}</ol>
+              ),
+              li: ({ children }) => (
+                <li style={{ fontSize: "1rem", lineHeight: 1.8, marginBottom: "0.4em" }}>{children}</li>
+              ),
+            }}
+          >
+            {post.content}
+          </ReactMarkdown>
         </div>
 
         {/* 하단 구분선 + 돌아가기 */}

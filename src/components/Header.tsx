@@ -7,7 +7,7 @@ interface HeaderProps {
 
 const NAV_ITEMS = [
   { label: "사상체질 이야기", path: "/sasang" },
-  { label: "웰니스", path: "/wellness" },
+  { label: "Wellness", path: "/wellness" },
   { label: "체질 진단", path: "/quiz", isPrimary: true },
 ];
 
@@ -81,27 +81,18 @@ export default function Header({ onQuizStart }: HeaderProps) {
                 fontSize: "0.8125rem",
                 fontWeight: isPrimary ? 600 : 500,
                 color: isPrimary ? accent : isActive ? accent : "#444444",
-                padding: isPrimary ? "7px 16px" : "7px 12px",
-                borderRadius: "50px",
-                border: isPrimary ? `1.5px solid ${accent}` : "none",
-                transition: "all 0.18s",
+                padding: "7px 12px",
+                border: "none",
+                borderBottom: !isPrimary && isActive ? `2px solid ${accent}` : "2px solid transparent",
+                borderRadius: 0,
+                transition: "color 0.18s",
                 whiteSpace: "nowrap",
               }}
               onMouseEnter={(e) => {
-                if (isPrimary) {
-                  e.currentTarget.style.background = accent;
-                  e.currentTarget.style.color = "#ffffff";
-                } else {
-                  e.currentTarget.style.color = accent;
-                }
+                e.currentTarget.style.color = accent;
               }}
               onMouseLeave={(e) => {
-                if (isPrimary) {
-                  e.currentTarget.style.background = "transparent";
-                  e.currentTarget.style.color = accent;
-                } else {
-                  e.currentTarget.style.color = isActive ? accent : "#444444";
-                }
+                e.currentTarget.style.color = isPrimary ? accent : isActive ? accent : "#444444";
               }}
             >
               {item.label}

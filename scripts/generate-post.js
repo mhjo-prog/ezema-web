@@ -1,5 +1,6 @@
 // scripts/generate-post.js
 // GitHub Actions에서 실행: 사상체질 카드뉴스 초안 생성 + Supabase 저장
+// 트렌드 키워드를 Supabase trends 테이블에서 읽어 Claude 프롬프트에 반영
 
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@supabase/supabase-js";
@@ -20,7 +21,40 @@ function getTodayConstitutionType() {
   return CONSTITUTION_TYPES[dayOfYear % CONSTITUTION_TYPES.length];
 }
 
-async function generatePostContent(constitutionType) {
+// ── Supabase에서 최근 트렌드 키워드 읽기 ───────────────────────────
+async function fetchRecentTrends() {
+  try {
+    const since = new Date();
+    since.setHours(since.getHours() - 24); // 최근 24시간
+
+    const { data, error } = await supabase
+      .from("trends")
+      .select("keyword, source, score")
+      .gte("collected_at", since.toISOString())
+      .order("score", { ascending: false })
+      .limit(10);
+
+    if (error || !data || data.length === 0) {
+      console.log("트렌드 데이터 없음. 기본 프롬프트 사용.");
+      return [];
+    }
+
+    console.log(`트렌드 키워드 ${data.length}개 로드됨:`);
+    data.forEach((t) => console.log(`  [${t.source}] ${t.keyword} (${t.score}점)`));
+    return data;
+  } catch (err) {
+    console.warn("트렌드 로드 오류 (무시):", err.message);
+    return [];
+  }
+}
+
+// ── Claude로 콘텐츠 생성 ─────────────────────────────────────────────
+async function generatePostContent(constitutionType, trends) {
+  const trendSection =
+    trends.length > 0
+      ? `\n요즘 많이 검색되는 건강 키워드: ${trends.map((t) => t.keyword).join(", ")}\n이 중 ${constitutionType}과 연결할 수 있는 키워드를 자연스럽게 녹여주세요.\n`
+      : "";
+
   const message = await anthropic.messages.create({
     model: "claude-opus-4-6",
     max_tokens: 1024,
@@ -28,7 +62,7 @@ async function generatePostContent(constitutionType) {
       {
         role: "user",
         content: `당신은 사상체질 전문가입니다. 오늘의 ${constitutionType} 이야기를 카드뉴스 형식으로 작성해주세요.
-
+${trendSection}
 다음 JSON 형식으로만 응답하세요 (다른 텍스트 없이):
 {
   "title": "매력적이고 구체적인 제목 (30자 이내)",
@@ -51,6 +85,7 @@ ${constitutionType}의 특성:
   return JSON.parse(jsonMatch[0]);
 }
 
+// ── Unsplash 이미지 가져오기 ─────────────────────────────────────────
 async function fetchUnsplashImage(query) {
   const accessKey = process.env.UNSPLASH_ACCESS_KEY;
   if (!accessKey) {
@@ -60,9 +95,7 @@ async function fetchUnsplashImage(query) {
 
   const res = await fetch(
     `https://api.unsplash.com/photos/random?query=${encodeURIComponent(query)}&orientation=landscape&content_filter=high`,
-    {
-      headers: { Authorization: `Client-ID ${accessKey}` },
-    }
+    { headers: { Authorization: `Client-ID ${accessKey}` } }
   );
 
   if (!res.ok) {
@@ -71,27 +104,34 @@ async function fetchUnsplashImage(query) {
   }
 
   const data = await res.json();
-  // 1280px 폭 이미지 URL 사용
   return data.urls?.regular || data.urls?.full || null;
 }
 
+// ── Main ─────────────────────────────────────────────────────────────
 async function main() {
   const constitutionType = getTodayConstitutionType();
-  console.log(`오늘의 체질 타입: ${constitutionType}`);
+  console.log(`오늘의 체질 타입: ${constitutionType}\n`);
 
-  // 1. Claude로 콘텐츠 생성
-  console.log("Claude API로 콘텐츠 생성 중...");
-  const { title, content, unsplash_query } = await generatePostContent(constitutionType);
+  // 1. 트렌드 키워드 로드 (없어도 계속 진행)
+  console.log("Supabase에서 최근 트렌드 로드 중...");
+  const trends = await fetchRecentTrends();
+
+  // 2. Claude로 콘텐츠 생성
+  console.log("\nClaude API로 콘텐츠 생성 중...");
+  const { title, content, unsplash_query } = await generatePostContent(
+    constitutionType,
+    trends
+  );
   console.log(`제목: ${title}`);
   console.log(`Unsplash 쿼리: ${unsplash_query}`);
 
-  // 2. Unsplash 이미지 가져오기
-  console.log("Unsplash 이미지 검색 중...");
+  // 3. Unsplash 이미지 가져오기
+  console.log("\nUnsplash 이미지 검색 중...");
   const imageUrl = await fetchUnsplashImage(unsplash_query);
   console.log(`이미지 URL: ${imageUrl || "없음 (기본값 사용)"}`);
 
-  // 3. Supabase에 draft로 저장
-  console.log("Supabase에 저장 중...");
+  // 4. Supabase에 draft로 저장
+  console.log("\nSupabase에 저장 중...");
   const { data, error } = await supabase.from("posts").insert({
     title,
     content,

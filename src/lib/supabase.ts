@@ -17,6 +17,7 @@ export const isSupabaseReady = isConfigured;
 
 export type ConstitutionType = "태음인" | "소음인" | "태양인" | "소양인";
 export type PostStatus = "draft" | "approved" | "published";
+export type WellnessCategory = "수면" | "식단" | "운동" | "명상" | "스트레스";
 
 export interface Post {
   id: string;
@@ -24,6 +25,18 @@ export interface Post {
   content: string;
   card_image_url: string;
   constitution_type: ConstitutionType;
+  status: PostStatus;
+  scheduled_at: string | null;
+  created_at: string;
+  category?: string;
+}
+
+export interface WellnessPost {
+  id: string;
+  title: string;
+  content: string;
+  card_image_url: string;
+  wellness_category: WellnessCategory;
   status: PostStatus;
   scheduled_at: string | null;
   created_at: string;

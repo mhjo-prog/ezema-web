@@ -2,9 +2,11 @@ name: Daily Sasang Post
 
 on:
   schedule:
-    # 매일 한국시간 09:00 (UTC 00:00) - AI 초안 생성
-    - cron: "0 0 * * *"
-    # 매일 한국시간 09:30 (UTC 00:30) - approved → published 전환
+    # 08:00 KST (UTC 23:00 전날) - 트렌드 수집
+    - cron: "0 23 * * *"
+    # 08:30 KST (UTC 23:30 전날) - 트렌드 반영 글 생성
+    - cron: "30 23 * * *"
+    # 09:30 KST (UTC 00:30) - approved → published 전환
     - cron: "30 0 * * *"
   workflow_dispatch:
     inputs:
@@ -14,15 +16,42 @@ on:
         default: "generate"
         type: choice
         options:
+          - collect
           - generate
           - publish
 
 jobs:
-  generate-post:
-    # 09:00 KST (UTC 00:00) 또는 수동으로 generate 선택 시 실행
+  # ── 08:00 KST: 트렌드 수집 ──────────────────────────────────────────
+  collect-trends:
     if: >
-      github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'generate' ||
-      github.event_name == 'schedule' && github.event.schedule == '0 0 * * *'
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'collect') ||
+      (github.event_name == 'schedule' && github.event.schedule == '0 23 * * *')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm ci --prefix scripts
+
+      - name: Collect trends
+        run: node scripts/collect-trends.js
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
+          NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
+
+  # ── 08:30 KST: 트렌드 반영 글 생성 ─────────────────────────────────
+  generate-post:
+    if: >
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'generate') ||
+      (github.event_name == 'schedule' && github.event.schedule == '30 23 * * *')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -44,11 +73,11 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
 
+  # ── 09:30 KST: approved → published 전환 ────────────────────────────
   publish-approved:
-    # 09:30 KST (UTC 00:30) 또는 수동으로 publish 선택 시 실행
     if: >
-      github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'publish' ||
-      github.event_name == 'schedule' && github.event.schedule == '30 0 * * *'
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'publish') ||
+      (github.event_name == 'schedule' && github.event.schedule == '30 0 * * *')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
