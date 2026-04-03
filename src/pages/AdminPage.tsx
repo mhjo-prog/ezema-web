@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { supabase, isSupabaseReady, type Post, type ConstitutionType } from "../lib/supabase";
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from "recharts";
 import ReactMarkdown from "react-markdown";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -427,6 +428,7 @@ export default function AdminPage() {
   const [toast, setToast] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<"draft" | "approved" | "published">("draft");
   const [stats, setStats] = useState<{ visits: number; quizCompletes: number } | null>(null);
+  const [chartData, setChartData] = useState<{ date: string; visits: number; quizCompletes: number }[]>([]);
 
   function showToast(msg: string) {
     setToast(msg);
@@ -448,6 +450,7 @@ export default function AdminPage() {
 
   async function fetchStats() {
     if (!isSupabaseReady) return;
+
     const { count: visits } = await supabase
       .from("analytics")
       .select("*", { count: "exact", head: true })
@@ -457,6 +460,36 @@ export default function AdminPage() {
       .select("*", { count: "exact", head: true })
       .eq("event_type", "quiz_complete");
     setStats({ visits: visits ?? 0, quizCompletes: quizCompletes ?? 0 });
+
+    // 최근 7일 일별 데이터
+    const since = new Date();
+    since.setDate(since.getDate() - 6);
+    since.setHours(0, 0, 0, 0);
+
+    const { data } = await supabase
+      .from("analytics")
+      .select("event_type, created_at")
+      .gte("created_at", since.toISOString())
+      .order("created_at", { ascending: true });
+
+    if (data) {
+      const days: Record<string, { visits: number; quizCompletes: number }> = {};
+      for (let i = 0; i < 7; i++) {
+        const d = new Date();
+        d.setDate(d.getDate() - (6 - i));
+        const key = `${d.getMonth() + 1}/${d.getDate()}`;
+        days[key] = { visits: 0, quizCompletes: 0 };
+      }
+      data.forEach((row) => {
+        const d = new Date(row.created_at);
+        const key = `${d.getMonth() + 1}/${d.getDate()}`;
+        if (days[key]) {
+          if (row.event_type === "page_visit") days[key].visits++;
+          else if (row.event_type === "quiz_complete") days[key].quizCompletes++;
+        }
+      });
+      setChartData(Object.entries(days).map(([date, v]) => ({ date, ...v })));
+    }
   }
 
   function handleLogin() {
@@ -644,6 +677,24 @@ export default function AdminPage() {
                 <p style={{ fontSize: "2rem", fontWeight: 800, color: s.color }}>{s.value.toLocaleString()}</p>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* 일별 그래프 */}
+        {chartData.length > 0 && (
+          <div style={{ background: "#ffffff", borderRadius: "12px", border: "1px solid #eeeeee", padding: "24px", marginBottom: "32px" }}>
+            <p style={{ fontSize: "0.875rem", fontWeight: 700, color: "#111111", marginBottom: "20px" }}>최근 7일 추이</p>
+            <ResponsiveContainer width="100%" height={220}>
+              <LineChart data={chartData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis dataKey="date" tick={{ fontSize: 12, fill: "#888888" }} />
+                <YAxis tick={{ fontSize: 12, fill: "#888888" }} allowDecimals={false} />
+                <Tooltip contentStyle={{ fontSize: "0.8125rem", borderRadius: "8px", border: "1px solid #eeeeee" }} />
+                <Legend wrapperStyle={{ fontSize: "0.8125rem" }} />
+                <Line type="monotone" dataKey="visits" name="방문자" stroke="#0774C4" strokeWidth={2} dot={{ r: 3 }} />
+                <Line type="monotone" dataKey="quizCompletes" name="진단완료" stroke="#1E8A4C" strokeWidth={2} dot={{ r: 3 }} />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
         )}
 
