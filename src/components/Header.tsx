@@ -75,7 +75,7 @@ export default function Header({ onQuizStart }: HeaderProps) {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
 
           {/* Desktop nav — hidden on mobile */}
-          <nav className="hidden sm:flex" style={{ alignItems: "center", gap: "4px" }}>
+          <nav className="hidden md:flex" style={{ alignItems: "center", gap: "4px" }}>
             {NAV_ITEMS.map((item) => {
               const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + "/");
               const isPrimary = !!item.isPrimary;
@@ -106,7 +106,7 @@ export default function Header({ onQuizStart }: HeaderProps) {
 
           {/* Mobile hamburger — hidden on desktop */}
           <button
-            className="sm:hidden"
+            className="md:hidden"
             onClick={() => setMenuOpen((o) => !o)}
             aria-label="메뉴"
             style={{
