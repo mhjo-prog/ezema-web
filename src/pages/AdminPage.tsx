@@ -572,7 +572,7 @@ export default function AdminPage() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      style={{ minHeight: "calc(100vh - 56px)", background: "#f7f8fa", paddingTop: "56px" }}
+      style={{ height: "calc(100vh - 56px)", overflowY: "auto", background: "#f7f8fa", paddingTop: "56px" }}
     >
       <div style={{ maxWidth: "900px", margin: "0 auto", padding: "40px 24px 80px" }}>
         {/* 헤더 */}
