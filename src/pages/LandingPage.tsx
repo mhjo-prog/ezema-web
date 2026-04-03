@@ -291,8 +291,8 @@ export default function LandingPage({ onStart }: Props) {
             style={{ marginBottom: "48px" }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
-              <div style={{ width: "4px", height: "18px", background: "#0774C4", borderRadius: "2px" }} />
-              <span style={{ fontSize: "12px", fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", color: "#0774C4" }}>
+              <div style={{ width: "4px", height: "18px", background: "#E8460A", borderRadius: "2px" }} />
+              <span style={{ fontSize: "12px", fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase", color: "#E8460A" }}>
                 Sasang Constitution
               </span>
             </div>
