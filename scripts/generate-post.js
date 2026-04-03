@@ -11,14 +11,12 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY
 );
 
-const CONSTITUTION_TYPES = ["태음인", "소음인", "태양인", "소양인"];
+const CONSTITUTION_TYPES = ["태양인", "태음인", "소양인", "소음인"];
 
-// 오늘 날짜 기준으로 체질 타입 순환 (매일 다른 체질)
+// 오늘 날짜(UTC 기준 epoch 일수)를 4로 나눈 나머지로 체질 순환
 function getTodayConstitutionType() {
-  const dayOfYear = Math.floor(
-    (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000
-  );
-  return CONSTITUTION_TYPES[dayOfYear % CONSTITUTION_TYPES.length];
+  const dayIndex = Math.floor(Date.now() / 86400000) % CONSTITUTION_TYPES.length;
+  return CONSTITUTION_TYPES[dayIndex];
 }
 
 // ── Supabase에서 최근 트렌드 키워드 읽기 ───────────────────────────
