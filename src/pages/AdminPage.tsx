@@ -28,6 +28,11 @@ turndown.addRule("underline", {
   filter: ["u"],
   replacement: (content) => `<u>${content}</u>`,
 });
+// 문단 사이 빈 줄(\n\n) 유지
+turndown.addRule("paragraph", {
+  filter: "p",
+  replacement: (content) => `\n\n${content}\n\n`,
+});
 
 type ToolbarCmd =
   | "toggleBold" | "toggleItalic" | "toggleUnderline"
