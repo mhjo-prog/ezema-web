@@ -74,7 +74,7 @@ button {
 .rich-editor-content p { margin: 0 0 1em; }
 .ProseMirror p { margin: 0 0 1em; }
 .ProseMirror p:empty,
-.ProseMirror p:has(> br:only-child) { margin: 0; line-height: 0.5; }
+.ProseMirror p:has(> br:only-child) { margin: 0; line-height: 0; }
 
 /* 미리보기 모달 마크다운 스타일 */
 .md-preview h1, .md-preview h2, .md-preview h3 {
