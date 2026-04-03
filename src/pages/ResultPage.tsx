@@ -177,13 +177,6 @@ function BarGauge({ scores }: { scores: Record<string, number> }) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    if (isSupabaseReady) {
-      supabase.from("analytics").insert({ event_type: "quiz_complete", constitution_type: constitutionType });
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   return (
     <motion.div
       style={{
@@ -722,6 +715,14 @@ function CoupangBanner({ constitutionType }: { constitutionType: string }) {
 export default function ResultPage({ constitutionType, scores, onRetry, isShared = false }: Props) {
   const result = results[constitutionType];
   const constitution = constitutionInfo[constitutionType];
+
+  useEffect(() => {
+    if (isSupabaseReady && constitutionType) {
+      supabase.from("analytics").insert({ event_type: "quiz_complete", constitution_type: constitutionType });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   if (!result) return null;
 
   const secondType = Object.entries(scores)
