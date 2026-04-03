@@ -86,17 +86,17 @@ export default function Header({ onQuizStart }: HeaderProps) {
                   onClick={() => handleNavClick(item.path)}
                   style={{
                     fontSize: "0.8125rem",
-                    fontWeight: isPrimary ? 600 : 500,
-                    color: isPrimary ? accent : isActive ? accent : "#444444",
+                    fontWeight: 500,
+                    color: isActive ? accent : "#444444",
                     padding: "7px 12px",
                     border: "none",
-                    borderBottom: !isPrimary && isActive ? `2px solid ${accent}` : "2px solid transparent",
+                    borderBottom: isActive ? `2px solid ${accent}` : "2px solid transparent",
                     borderRadius: 0,
                     transition: "color 0.18s",
                     whiteSpace: "nowrap",
                   }}
                   onMouseEnter={(e) => { e.currentTarget.style.color = accent; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.color = isPrimary ? accent : isActive ? accent : "#444444"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = isActive ? accent : "#444444"; }}
                 >
                   {item.label}
                 </button>
