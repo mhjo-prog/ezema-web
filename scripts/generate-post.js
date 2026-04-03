@@ -66,9 +66,17 @@ ${trendSection}
 다음 JSON 형식으로만 응답하세요 (다른 텍스트 없이):
 {
   "title": "매력적이고 구체적인 제목 (30자 이내)",
-  "content": "본문 내용 (300-500자, 해당 체질의 특성/생활습관/건강법/음식 중 하나를 주제로. 독자가 실생활에 바로 적용할 수 있는 실용적인 내용. 단락 구분 포함)",
+  "content": "본문 내용 (아래 마크다운 규칙을 반드시 지킬 것)",
   "unsplash_query": "Unsplash 이미지 검색 키워드 (영어, 2-3단어, 한국 전통의학/자연/건강/음식 관련)"
 }
+
+content 필드 작성 규칙 (반드시 준수, 어기면 틀린 답):
+- ## 소제목을 3개 이상 사용할 것
+- **볼드 텍스트**를 5회 이상 사용할 것
+- > 인용구를 2개 이상 사용할 것
+- 각 문단 사이에 반드시 빈 줄(\\n\\n)을 넣을 것
+- 전체 분량: 500-800자
+- 마크다운 없이 일반 텍스트로만 작성하면 틀린 답으로 간주함
 
 ${constitutionType}의 특성:
 - 태음인: 소화력 강함, 땀을 많이 흘림, 폐 기능 약함, 끈기 있고 보수적, 간 기능 발달
@@ -107,10 +115,38 @@ async function fetchUnsplashImage(query) {
   return data.urls?.regular || data.urls?.full || null;
 }
 
+// ── 오늘 이미 생성된 draft 확인 ──────────────────────────────────────
+async function checkAlreadyGenerated(constitutionType) {
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  const { data, error } = await supabase
+    .from("posts")
+    .select("id")
+    .eq("constitution_type", constitutionType)
+    .eq("status", "draft")
+    .gte("created_at", todayStart.toISOString())
+    .limit(1);
+
+  if (error) {
+    console.warn("중복 확인 오류 (무시):", error.message);
+    return false;
+  }
+  return data && data.length > 0;
+}
+
 // ── Main ─────────────────────────────────────────────────────────────
 async function main() {
   const constitutionType = getTodayConstitutionType();
   console.log(`오늘의 체질 타입: ${constitutionType}\n`);
+
+  // 0. 중복 생성 방지
+  console.log("오늘 이미 생성된 draft 확인 중...");
+  const alreadyGenerated = await checkAlreadyGenerated(constitutionType);
+  if (alreadyGenerated) {
+    console.log(`오늘 이미 생성됨 (${constitutionType}), 스킵`);
+    process.exit(0);
+  }
 
   // 1. 트렌드 키워드 로드 (없어도 계속 진행)
   console.log("Supabase에서 최근 트렌드 로드 중...");
