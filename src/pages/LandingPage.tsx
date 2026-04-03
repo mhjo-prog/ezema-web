@@ -137,12 +137,12 @@ export default function LandingPage({ onStart }: Props) {
             style={{
               padding: "16px 56px",
               borderRadius: "50px",
-              background: "#0774C4",
+              background: "#111111",
               color: "#ffffff",
               fontSize: "1rem",
               fontWeight: 600,
               letterSpacing: "0.02em",
-              boxShadow: "0 4px 20px rgba(7,116,196,0.28)",
+              boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
             }}
           >
             체질 테스트 시작하기
