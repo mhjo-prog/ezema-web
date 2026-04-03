@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -16,10 +16,19 @@ export default function Header({ onQuizStart }: HeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, []);
 
   const logoColor = ["/sasang", "/wellness"].some((p) =>
     location.pathname.startsWith(p)
   ) ? "#000000" : "#0774C4";
+
+  const effectiveLogoColor = isMobile ? "#111111" : logoColor;
 
   const handleNavClick = (path: string) => {
     setMenuOpen(false);
@@ -62,7 +71,7 @@ export default function Header({ onQuizStart }: HeaderProps) {
             fontWeight: 700,
             fontSize: "1.05rem",
             letterSpacing: "0.12em",
-            color: logoColor,
+            color: effectiveLogoColor,
             textTransform: "uppercase",
             userSelect: "none",
             padding: "0 16px",
