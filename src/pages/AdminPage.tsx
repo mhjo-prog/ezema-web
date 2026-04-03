@@ -50,13 +50,23 @@ const TOOLBAR: { label: string; title: string; cmd: ToolbarCmd; style?: React.CS
   { label: "—",  title: "구분선",     cmd: "setHorizontalRule" },
 ];
 
+function contentToHtml(text: string): string {
+  // \n\n 기준으로 단락 분리 → <p> 태그로 변환, 단일 \n은 <br>로
+  const paragraphs = text.split(/\n\n+/).filter((p) => p.trim() !== "");
+  if (paragraphs.length > 1) {
+    return paragraphs.map((p) => `<p>${p.trim().replace(/\n/g, "<br>")}</p>`).join("");
+  }
+  // 마크다운이 포함된 경우 marked로 폴백
+  return marked.parse(text, { async: false }) as string;
+}
+
 function RichEditor({ initialMarkdown, onChange }: { initialMarkdown: string; onChange: (md: string) => void }) {
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
 
   const editor = useEditor({
     extensions: [StarterKit, Underline],
-    content: marked.parse(initialMarkdown, { async: false }) as string,
+    content: contentToHtml(initialMarkdown),
     onUpdate({ editor }) {
       onChangeRef.current(turndown.turndown(editor.getHTML()));
     },
