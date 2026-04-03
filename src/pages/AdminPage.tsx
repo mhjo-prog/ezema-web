@@ -305,8 +305,14 @@ function PostPreviewModal({
               />
             )}
 
-            <div style={{ fontSize: "1rem", lineHeight: 1.7, color: "#333333" }} className="md-preview">
-              <ReactMarkdown>{post.content}</ReactMarkdown>
+            <div className="md-preview">
+              <ReactMarkdown
+                components={{
+                  p: ({ children }) => (
+                    <p style={{ marginBottom: '1em', lineHeight: '1.7', fontSize: '1rem', color: '#333333' }}>{children}</p>
+                  ),
+                }}
+              >{post.content}</ReactMarkdown>
             </div>
 
             {/* 승인 상태 표시 */}
