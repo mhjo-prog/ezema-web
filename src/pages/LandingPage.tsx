@@ -415,12 +415,12 @@ export default function LandingPage({ onStart }: Props) {
                 marginTop: "8px",
                 padding: "15px 40px",
                 borderRadius: "50px",
-                background: "#6B3FA0",
-                color: "#ffffff",
+                background: "#6B3FA014",
+                color: "#6B3FA0",
                 fontSize: "0.9375rem",
                 fontWeight: 600,
                 letterSpacing: "0.02em",
-                boxShadow: "0 4px 16px rgba(107,63,160,0.25)",
+                boxShadow: "none",
               }}
             >
               내 체질 알아보기
