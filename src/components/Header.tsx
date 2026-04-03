@@ -106,7 +106,7 @@ export default function Header({ onQuizStart }: HeaderProps) {
 
           {/* Mobile hamburger — hidden on desktop */}
           <button
-            className="md:hidden"
+            className="md:hidden flex flex-col items-center justify-center"
             onClick={() => setMenuOpen((o) => !o)}
             aria-label="메뉴"
             style={{
@@ -114,11 +114,7 @@ export default function Header({ onQuizStart }: HeaderProps) {
               border: "none",
               cursor: "pointer",
               padding: "4px",
-              display: "flex",
-              flexDirection: "column",
               gap: "5px",
-              alignItems: "center",
-              justifyContent: "center",
               width: "36px",
               height: "36px",
             }}
