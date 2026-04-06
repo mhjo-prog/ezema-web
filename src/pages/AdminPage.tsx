@@ -864,11 +864,11 @@ export default function AdminPage() {
           {stats && (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px", marginBottom: "32px" }}>
               {[
-                { label: "총 방문자 수", value: stats.visits, icon: "👥", color: "#0774C4" },
-                { label: "체질 진단 완료", value: stats.quizCompletes, icon: "✅", color: "#1E8A4C" },
+                { label: "총 방문자 수", value: stats.visits, color: "#0774C4" },
+                { label: "체질 진단 완료", value: stats.quizCompletes, color: "#1E8A4C" },
               ].map((s) => (
                 <div key={s.label} style={{ background: "#ffffff", borderRadius: "12px", padding: "20px", border: "1px solid #eeeeee" }}>
-                  <p style={{ fontSize: "0.8125rem", color: "#888888", marginBottom: "8px" }}>{s.icon} {s.label}</p>
+                  <p style={{ fontSize: "0.8125rem", color: "#888888", marginBottom: "8px" }}>{s.label}</p>
                   <p style={{ fontSize: "2rem", fontWeight: 800, color: s.color }}>{s.value.toLocaleString()}</p>
                 </div>
               ))}
