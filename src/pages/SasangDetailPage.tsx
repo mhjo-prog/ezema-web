@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { supabase, isSupabaseReady, type Post, type ConstitutionType } from "../lib/supabase";
+import { results } from "../data/results";
 
 const COUPANG_IDS: Record<string, number> = {
   태양인: 975890,
@@ -256,8 +257,49 @@ export default function SasangDetailPage() {
           </ReactMarkdown>
         </div>
 
-        {/* 쿠팡 파트너스 RECOMMENDED DRINKS */}
+        {/* RECOMMENDED DRINKS 음료 리스트 + 쿠팡 배너 */}
         <div style={{ marginTop: "56px" }}>
+          <div
+            style={{
+              background: "#ffffff",
+              border: "1px solid #eeeeee",
+              borderRadius: "16px",
+              boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
+              padding: "1.5rem",
+              marginBottom: "0.75rem",
+            }}
+          >
+            {/* 섹션 라벨 */}
+            <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
+              <div style={{ height: "1px", flex: 1, background: "#eeeeee" }} />
+              <span style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.28em", color: "#0774C4", textTransform: "uppercase", flexShrink: 0 }}>
+                Recommended Drinks
+              </span>
+              <div style={{ height: "1px", flex: 1, background: "#eeeeee" }} />
+            </div>
+
+            {/* 체질 추천 라벨 */}
+            <p style={{ fontSize: "0.8rem", fontWeight: 700, color: "#0774C4", marginBottom: "10px", letterSpacing: "0.04em" }}>
+              1위 체질 추천 · {post.constitution_type}
+            </p>
+
+            {/* 음료 리스트 */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              {results[post.constitution_type]?.drinks.map((drink) => (
+                <div
+                  key={drink.name}
+                  style={{ display: "flex", alignItems: "center", gap: "16px", padding: "16px 18px", borderRadius: "12px", background: "#f8f8f8", border: "1px solid #eeeeee" }}
+                >
+                  <span style={{ fontSize: "1.75rem", lineHeight: 1, flexShrink: 0 }}>{drink.emoji}</span>
+                  <div>
+                    <p style={{ fontSize: "0.97rem", fontWeight: 600, color: "#111111", marginBottom: "2px" }}>{drink.name}</p>
+                    <p style={{ fontSize: "0.85rem", color: "#888888", lineHeight: 1.5 }}>{drink.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <CoupangBanner constitutionType={post.constitution_type} />
         </div>
 
