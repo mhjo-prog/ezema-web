@@ -5,6 +5,51 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { supabase, isSupabaseReady, type Post, type ConstitutionType } from "../lib/supabase";
 
+const COUPANG_IDS: Record<string, number> = {
+  태양인: 975890,
+  태음인: 975913,
+  소양인: 975916,
+  소음인: 975919,
+};
+
+function CoupangBanner({ constitutionType }: { constitutionType: string }) {
+  const id = COUPANG_IDS[constitutionType] ?? 975890;
+  return (
+    <div
+      style={{
+        background: "#ffffff",
+        border: "1px solid #eeeeee",
+        borderRadius: "16px",
+        boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
+        overflow: "hidden",
+        marginBottom: "0.75rem",
+      }}
+    >
+      <div style={{ padding: "1.5rem 1.5rem 1rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <div style={{ height: "1px", flex: 1, background: "#eeeeee" }} />
+          <span style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.28em", color: "#0774C4", textTransform: "uppercase", flexShrink: 0 }}>
+            Recommended Drinks
+          </span>
+          <div style={{ height: "1px", flex: 1, background: "#eeeeee" }} />
+        </div>
+      </div>
+      <iframe
+        src={`https://ads-partners.coupang.com/widgets.html?id=${id}&template=carousel&trackingCode=AF8415971&subId=&width=680&height=140&tsource=`}
+        width="100%"
+        height="140"
+        frameBorder="0"
+        scrolling="no"
+        referrerPolicy="unsafe-url"
+        style={{ display: "block" }}
+      />
+      <p style={{ fontSize: "11px", color: "#999", margin: "4px 1.5rem 1rem", textAlign: "center" }}>
+        쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
+      </p>
+    </div>
+  );
+}
+
 const CONSTITUTION_COLORS: Record<ConstitutionType, string> = {
   태음인: "#1E8A4C",
   소음인: "#6B3FA0",
@@ -211,8 +256,13 @@ export default function SasangDetailPage() {
           </ReactMarkdown>
         </div>
 
+        {/* 쿠팡 파트너스 RECOMMENDED DRINKS */}
+        <div style={{ marginTop: "56px" }}>
+          <CoupangBanner constitutionType={post.constitution_type} />
+        </div>
+
         {/* 하단 구분선 + 돌아가기 */}
-        <div style={{ borderTop: "1px solid #eeeeee", marginTop: "56px", paddingTop: "28px" }}>
+        <div style={{ borderTop: "1px solid #eeeeee", marginTop: "32px", paddingTop: "28px" }}>
           <button
             onClick={() => navigate("/sasang")}
             style={{
