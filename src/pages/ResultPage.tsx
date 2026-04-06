@@ -718,7 +718,8 @@ export default function ResultPage({ constitutionType, scores, onRetry, isShared
 
   useEffect(() => {
     if (isSupabaseReady && constitutionType) {
-      supabase.from("analytics").insert({ event_type: "quiz_complete", constitution_type: constitutionType });
+      supabase.from("analytics").insert({ event_type: "quiz_complete", constitution_type: constitutionType })
+        .then(({ error }) => { if (error) console.log("[analytics] insert error:", error); });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
