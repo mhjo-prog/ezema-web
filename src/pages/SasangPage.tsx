@@ -192,7 +192,8 @@ export default function SasangPage() {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}
       style={{
-        minHeight: "calc(100vh - 56px)",
+        height: "calc(100vh - 56px)",
+        overflowY: "auto",
         background: "#ffffff",
         paddingTop: "56px",
       }}
