@@ -13,28 +13,10 @@ const COUPANG_IDS: Record<string, number> = {
   소음인: 975919,
 };
 
-function CoupangBanner({ constitutionType }: { constitutionType: string }) {
+function CoupangBannerInner({ constitutionType }: { constitutionType: string }) {
   const id = COUPANG_IDS[constitutionType] ?? 975890;
   return (
-    <div
-      style={{
-        background: "#ffffff",
-        border: "1px solid #eeeeee",
-        borderRadius: "16px",
-        boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
-        overflow: "hidden",
-        marginBottom: "0.75rem",
-      }}
-    >
-      <div style={{ padding: "1.5rem 1.5rem 1rem" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <div style={{ height: "1px", flex: 1, background: "#eeeeee" }} />
-          <span style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.28em", color: "#0774C4", textTransform: "uppercase", flexShrink: 0 }}>
-            Recommended Drinks
-          </span>
-          <div style={{ height: "1px", flex: 1, background: "#eeeeee" }} />
-        </div>
-      </div>
+    <>
       <iframe
         src={`https://ads-partners.coupang.com/widgets.html?id=${id}&template=carousel&trackingCode=AF8415971&subId=&width=680&height=140&tsource=`}
         width="100%"
@@ -47,7 +29,7 @@ function CoupangBanner({ constitutionType }: { constitutionType: string }) {
       <p style={{ fontSize: "11px", color: "#999", margin: "4px 1.5rem 1rem", textAlign: "center" }}>
         쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
       </p>
-    </div>
+    </>
   );
 }
 
@@ -257,18 +239,19 @@ export default function SasangDetailPage() {
           </ReactMarkdown>
         </div>
 
-        {/* RECOMMENDED DRINKS 음료 리스트 + 쿠팡 배너 */}
-        <div style={{ marginTop: "56px" }}>
-          <div
-            style={{
-              background: "#ffffff",
-              border: "1px solid #eeeeee",
-              borderRadius: "16px",
-              boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
-              padding: "1.5rem",
-              marginBottom: "0.75rem",
-            }}
-          >
+        {/* RECOMMENDED DRINKS 음료 리스트 + 쿠팡 배너 (하나의 카드) */}
+        <div
+          style={{
+            marginTop: "56px",
+            background: "#ffffff",
+            border: "1px solid #eeeeee",
+            borderRadius: "16px",
+            boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
+            overflow: "hidden",
+            marginBottom: "0.75rem",
+          }}
+        >
+          <div style={{ padding: "1.5rem 1.5rem 1rem" }}>
             {/* 섹션 라벨 */}
             <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
               <div style={{ height: "1px", flex: 1, background: "#eeeeee" }} />
@@ -284,7 +267,7 @@ export default function SasangDetailPage() {
             </p>
 
             {/* 음료 리스트 */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "1.5rem" }}>
               {results[post.constitution_type]?.drinks.map((drink) => (
                 <div
                   key={drink.name}
@@ -300,7 +283,7 @@ export default function SasangDetailPage() {
             </div>
           </div>
 
-          <CoupangBanner constitutionType={post.constitution_type} />
+          <CoupangBannerInner constitutionType={post.constitution_type} />
         </div>
 
         {/* 하단 구분선 + 돌아가기 */}
