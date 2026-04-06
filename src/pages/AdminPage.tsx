@@ -501,7 +501,7 @@ export default function AdminPage() {
         const d = new Date();
         d.setDate(1);
         d.setMonth(d.getMonth() - (11 - i));
-        const key = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}`;
+        const key = `${String(d.getFullYear()).slice(2)}/${String(d.getMonth() + 1).padStart(2, "0")}`;
         buckets[key] = { visits: 0, quizCompletes: 0 };
       }
       const since = new Date();
@@ -516,7 +516,7 @@ export default function AdminPage() {
       if (data) {
         data.forEach((row) => {
           const d = new Date(row.created_at);
-          const key = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}`;
+          const key = `${String(d.getFullYear()).slice(2)}/${String(d.getMonth() + 1).padStart(2, "0")}`;
           if (buckets[key]) {
             if (row.event_type === "page_visit") buckets[key].visits++;
             else if (row.event_type === "quiz_complete") buckets[key].quizCompletes++;
