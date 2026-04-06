@@ -280,7 +280,7 @@ export default function SasangDetailPage() {
 
             {/* 체질 추천 라벨 */}
             <p style={{ fontSize: "0.8rem", fontWeight: 700, color: "#0774C4", marginBottom: "10px", letterSpacing: "0.04em" }}>
-              1위 체질 추천 · {post.constitution_type}
+              {post.constitution_type} 추천 음료
             </p>
 
             {/* 음료 리스트 */}
