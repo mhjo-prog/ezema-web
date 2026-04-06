@@ -921,23 +921,22 @@ export default function AdminPage() {
             {/* 탭 버튼 */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
               <p style={{ fontSize: "0.875rem", fontWeight: 700, color: "#111111" }}>
-                {{ "7d": "최근 7일 추이", "30d": "최근 1달 추이", monthly: "월별 추이" }[chartRange]}
+                {{ "7d": "최근 7일", "30d": "최근 1개월", monthly: "월별 추이" }[chartRange]}
               </p>
               <div style={{ display: "flex", gap: "6px" }}>
-                {([["7d", "7일 추이"], ["30d", "1달 추이"], ["monthly", "월별 추이"]] as const).map(([range, label]) => (
+                {([["7d", "최근 7일"], ["30d", "최근 1개월"], ["monthly", "월별 추이"]] as const).map(([range, label]) => (
                   <button
                     key={range}
                     onClick={() => setChartRange(range)}
                     style={{
-                      fontSize: "0.75rem",
+                      fontSize: "0.8125rem",
                       fontWeight: 600,
-                      padding: "5px 12px",
+                      padding: "8px 16px",
                       borderRadius: "50px",
-                      border: `1.5px solid ${chartRange === range ? "#111111" : "#dddddd"}`,
-                      background: chartRange === range ? "#111111" : "#ffffff",
-                      color: chartRange === range ? "#ffffff" : "#888888",
+                      border: `1.5px solid ${chartRange === range ? "#0774C4" : "#0774C4"}`,
+                      background: chartRange === range ? "#0774C4" : "#ffffff",
+                      color: chartRange === range ? "#ffffff" : "#0774C4",
                       cursor: "pointer",
-                      transition: "all 0.15s",
                     }}
                   >
                     {label}
