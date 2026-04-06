@@ -272,14 +272,14 @@ export default function SasangDetailPage() {
             {/* 섹션 라벨 */}
             <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
               <div style={{ height: "1px", flex: 1, background: "#eeeeee" }} />
-              <span style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.28em", color: "#0774C4", textTransform: "uppercase", flexShrink: 0 }}>
+              <span style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.28em", color: "#111111", textTransform: "uppercase", flexShrink: 0 }}>
                 Recommended Drinks
               </span>
               <div style={{ height: "1px", flex: 1, background: "#eeeeee" }} />
             </div>
 
             {/* 체질 추천 라벨 */}
-            <p style={{ fontSize: "0.8rem", fontWeight: 700, color: "#0774C4", marginBottom: "10px", letterSpacing: "0.04em" }}>
+            <p style={{ fontSize: "0.8rem", fontWeight: 700, color: "#111111", marginBottom: "10px", letterSpacing: "0.04em" }}>
               {post.constitution_type} 추천 음료
             </p>
 
