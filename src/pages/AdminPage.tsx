@@ -850,6 +850,9 @@ export default function AdminPage() {
         )}
         </div>
 
+        {/* 세로 구분선 */}
+        <div style={{ width: "1px", background: "#eeeeee", alignSelf: "stretch", flexShrink: 0 }} />
+
         {/* 고객 방문 추이 */}
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}>
