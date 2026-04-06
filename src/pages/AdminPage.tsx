@@ -641,7 +641,8 @@ export default function AdminPage() {
       animate={{ opacity: 1 }}
       style={{ height: "calc(100vh - 56px)", overflowY: "auto", background: "#f7f8fa", paddingTop: "56px" }}
     >
-      <div style={{ maxWidth: "900px", margin: "0 auto", padding: "40px 24px 80px" }}>
+      <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "40px 24px 80px", display: "flex", gap: "32px", alignItems: "stretch" }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
         {/* 헤더 */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}>
           <div>
@@ -665,39 +666,6 @@ export default function AdminPage() {
             새로고침
           </button>
         </div>
-
-        {/* 통계 카드 */}
-        {stats && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px", marginBottom: "24px" }}>
-            {[
-              { label: "총 방문자 수", value: stats.visits, icon: "👥", color: "#0774C4" },
-              { label: "체질 진단 완료", value: stats.quizCompletes, icon: "✅", color: "#1E8A4C" },
-            ].map((s) => (
-              <div key={s.label} style={{ background: "#ffffff", borderRadius: "12px", padding: "20px", border: "1px solid #eeeeee" }}>
-                <p style={{ fontSize: "0.8125rem", color: "#888888", marginBottom: "8px" }}>{s.icon} {s.label}</p>
-                <p style={{ fontSize: "2rem", fontWeight: 800, color: s.color }}>{s.value.toLocaleString()}</p>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* 일별 그래프 */}
-        {chartData.length === 7 && (
-          <div style={{ background: "#ffffff", borderRadius: "12px", border: "1px solid #eeeeee", padding: "24px", marginBottom: "32px" }}>
-            <p style={{ fontSize: "0.875rem", fontWeight: 700, color: "#111111", marginBottom: "20px" }}>최근 7일 추이</p>
-            <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={chartData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="date" tick={{ fontSize: 12, fill: "#888888" }} />
-                <YAxis tick={{ fontSize: 12, fill: "#888888" }} allowDecimals={false} />
-                <Tooltip contentStyle={{ fontSize: "0.8125rem", borderRadius: "8px", border: "1px solid #eeeeee" }} />
-                <Legend wrapperStyle={{ fontSize: "0.8125rem" }} />
-                <Line type="monotone" dataKey="visits" name="방문자" stroke="#0774C4" strokeWidth={2} dot={{ r: 3 }} />
-                <Line type="monotone" dataKey="quizCompletes" name="진단완료" stroke="#1E8A4C" strokeWidth={2} dot={{ r: 3 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        )}
 
         {/* 통계 카드 */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px", marginBottom: "32px" }}>
@@ -880,6 +848,53 @@ export default function AdminPage() {
             })}
           </div>
         )}
+        </div>
+
+        {/* 고객 방문 추이 */}
+        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}>
+            <div>
+              <p style={{ fontSize: "0.75rem", fontWeight: 600, color: "#0774C4", letterSpacing: "0.08em", marginBottom: "4px" }}>
+                ANALYTICS
+              </p>
+              <h2 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#111111" }}>고객 방문 추이</h2>
+            </div>
+          </div>
+          {/* 통계 카드 */}
+          {stats && (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px", marginBottom: "32px" }}>
+              {[
+                { label: "총 방문자 수", value: stats.visits, icon: "👥", color: "#0774C4" },
+                { label: "체질 진단 완료", value: stats.quizCompletes, icon: "✅", color: "#1E8A4C" },
+              ].map((s) => (
+                <div key={s.label} style={{ background: "#ffffff", borderRadius: "12px", padding: "20px", border: "1px solid #eeeeee" }}>
+                  <p style={{ fontSize: "0.8125rem", color: "#888888", marginBottom: "8px" }}>{s.icon} {s.label}</p>
+                  <p style={{ fontSize: "2rem", fontWeight: 800, color: s.color }}>{s.value.toLocaleString()}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* 일별 그래프 */}
+          {chartData.length === 7 && (
+            <div style={{ background: "#ffffff", borderRadius: "12px", border: "1px solid #eeeeee", padding: "24px", height: "350px", display: "flex", flexDirection: "column" }}>
+              <p style={{ fontSize: "0.875rem", fontWeight: 700, color: "#111111", marginBottom: "20px" }}>최근 7일 추이</p>
+              <div style={{ flex: 1, minHeight: 0 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chartData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="date" tick={{ fontSize: 12, fill: "#888888" }} />
+                  <YAxis tick={{ fontSize: 12, fill: "#888888" }} allowDecimals={false} />
+                  <Tooltip contentStyle={{ fontSize: "0.8125rem", borderRadius: "8px", border: "1px solid #eeeeee" }} />
+                  <Legend wrapperStyle={{ fontSize: "0.8125rem" }} />
+                  <Line type="monotone" dataKey="visits" name="방문자" stroke="#0774C4" strokeWidth={2} dot={{ r: 3 }} />
+                  <Line type="monotone" dataKey="quizCompletes" name="진단완료" stroke="#1E8A4C" strokeWidth={2} dot={{ r: 3 }} />
+                </LineChart>
+              </ResponsiveContainer>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* 미리보기 모달 */}

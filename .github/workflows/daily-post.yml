@@ -6,8 +6,6 @@ on:
     - cron: "0 23 * * *"
     # 08:30 KST (UTC 23:30 전날) - 트렌드 반영 글 생성
     - cron: "30 23 * * *"
-    # 09:30 KST (UTC 00:30) - approved → published 전환
-    - cron: "30 0 * * *"
   workflow_dispatch:
     inputs:
       action:
@@ -18,7 +16,6 @@ on:
         options:
           - collect
           - generate
-          - publish
 
 jobs:
   # ── 08:00 KST: 트렌드 수집 ──────────────────────────────────────────
@@ -73,26 +70,3 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
 
-  # ── 09:30 KST: approved → published 전환 ────────────────────────────
-  publish-approved:
-    if: >
-      (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'publish') ||
-      (github.event_name == 'schedule' && github.event.schedule == '30 0 * * *')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      - name: Install dependencies
-        run: npm ci --prefix scripts
-
-      - name: Publish approved posts
-        run: node scripts/publish-approved.js
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
