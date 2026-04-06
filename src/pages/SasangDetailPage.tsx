@@ -296,20 +296,20 @@ export default function SasangDetailPage() {
               gap: "6px",
               fontSize: "0.875rem",
               fontWeight: 600,
-              color: "#0774C4",
-              border: "1.5px solid #0774C4",
+              color: "#111111",
+              border: "1.5px solid #111111",
               padding: "10px 20px",
               borderRadius: "50px",
               cursor: "pointer",
               transition: "all 0.18s",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = "#0774C4";
+              e.currentTarget.style.background = "#111111";
               e.currentTarget.style.color = "#ffffff";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.background = "transparent";
-              e.currentTarget.style.color = "#0774C4";
+              e.currentTarget.style.color = "#111111";
             }}
           >
             목록으로 돌아가기
