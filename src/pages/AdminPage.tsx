@@ -429,6 +429,7 @@ export default function AdminPage() {
   const [activeFilter, setActiveFilter] = useState<"draft" | "approved" | "published">("draft");
   const [stats, setStats] = useState<{ visits: number; quizCompletes: number } | null>(null);
   const [chartData, setChartData] = useState<{ date: string; visits: number; quizCompletes: number }[]>([]);
+  const [chartRange, setChartRange] = useState<"7d" | "30d" | "monthly">("7d");
 
   function showToast(msg: string) {
     setToast(msg);
@@ -460,37 +461,70 @@ export default function AdminPage() {
       .select("*", { count: "exact", head: true })
       .eq("event_type", "quiz_complete");
     setStats({ visits: visits ?? 0, quizCompletes: quizCompletes ?? 0 });
+  }
 
-    // 최근 7일 일별 데이터 (데이터 없어도 항상 7일 틀 생성)
-    const days: Record<string, { visits: number; quizCompletes: number }> = {};
-    for (let i = 0; i < 7; i++) {
-      const d = new Date();
-      d.setDate(d.getDate() - (6 - i));
-      const key = `${d.getMonth() + 1}/${d.getDate()}`;
-      days[key] = { visits: 0, quizCompletes: 0 };
-    }
+  async function fetchChartData(range: "7d" | "30d" | "monthly") {
+    if (!isSupabaseReady) return;
 
-    const since = new Date();
-    since.setDate(since.getDate() - 6);
-    since.setHours(0, 0, 0, 0);
-
-    const { data } = await supabase
-      .from("analytics")
-      .select("event_type, created_at")
-      .gte("created_at", since.toISOString())
-      .order("created_at", { ascending: true });
-
-    if (data) {
-      data.forEach((row) => {
-        const d = new Date(row.created_at);
+    if (range === "7d" || range === "30d") {
+      const days = range === "7d" ? 7 : 30;
+      const buckets: Record<string, { visits: number; quizCompletes: number }> = {};
+      for (let i = 0; i < days; i++) {
+        const d = new Date();
+        d.setDate(d.getDate() - (days - 1 - i));
         const key = `${d.getMonth() + 1}/${d.getDate()}`;
-        if (days[key]) {
-          if (row.event_type === "page_visit") days[key].visits++;
-          else if (row.event_type === "quiz_complete") days[key].quizCompletes++;
-        }
-      });
+        buckets[key] = { visits: 0, quizCompletes: 0 };
+      }
+      const since = new Date();
+      since.setDate(since.getDate() - (days - 1));
+      since.setHours(0, 0, 0, 0);
+      const { data } = await supabase
+        .from("analytics")
+        .select("event_type, created_at")
+        .gte("created_at", since.toISOString())
+        .order("created_at", { ascending: true });
+      if (data) {
+        data.forEach((row) => {
+          const d = new Date(row.created_at);
+          const key = `${d.getMonth() + 1}/${d.getDate()}`;
+          if (buckets[key]) {
+            if (row.event_type === "page_visit") buckets[key].visits++;
+            else if (row.event_type === "quiz_complete") buckets[key].quizCompletes++;
+          }
+        });
+      }
+      setChartData(Object.entries(buckets).map(([date, v]) => ({ date, ...v })));
+    } else {
+      // 월별 추이: 최근 12개월
+      const buckets: Record<string, { visits: number; quizCompletes: number }> = {};
+      for (let i = 0; i < 12; i++) {
+        const d = new Date();
+        d.setDate(1);
+        d.setMonth(d.getMonth() - (11 - i));
+        const key = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}`;
+        buckets[key] = { visits: 0, quizCompletes: 0 };
+      }
+      const since = new Date();
+      since.setDate(1);
+      since.setMonth(since.getMonth() - 11);
+      since.setHours(0, 0, 0, 0);
+      const { data } = await supabase
+        .from("analytics")
+        .select("event_type, created_at")
+        .gte("created_at", since.toISOString())
+        .order("created_at", { ascending: true });
+      if (data) {
+        data.forEach((row) => {
+          const d = new Date(row.created_at);
+          const key = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}`;
+          if (buckets[key]) {
+            if (row.event_type === "page_visit") buckets[key].visits++;
+            else if (row.event_type === "quiz_complete") buckets[key].quizCompletes++;
+          }
+        });
+      }
+      setChartData(Object.entries(buckets).map(([date, v]) => ({ date, ...v })));
     }
-    setChartData(Object.entries(days).map(([date, v]) => ({ date, ...v })));
   }
 
   function handleLogin() {
@@ -503,8 +537,12 @@ export default function AdminPage() {
   }
 
   useEffect(() => {
-    if (authed) { fetchPosts(); fetchStats(); }
+    if (authed) { fetchPosts(); fetchStats(); fetchChartData("7d"); }
   }, [authed]);
+
+  useEffect(() => {
+    if (authed) fetchChartData(chartRange);
+  }, [chartRange]);
 
   async function handleSave(postId: string, fields: { title: string; content: string; card_image_url: string }) {
     if (!isSupabaseReady) return;
@@ -652,7 +690,7 @@ export default function AdminPage() {
             <h1 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#111111" }}>콘텐츠 관리</h1>
           </div>
           <button
-            onClick={() => { fetchPosts(); fetchStats(); }}
+            onClick={() => { fetchPosts(); fetchStats(); fetchChartData(chartRange); }}
             style={{
               fontSize: "0.8125rem",
               fontWeight: 600,
@@ -878,11 +916,36 @@ export default function AdminPage() {
             </div>
           )}
 
-          {/* 일별 그래프 */}
-          {chartData.length === 7 && (
-            <div style={{ background: "#ffffff", borderRadius: "12px", border: "1px solid #eeeeee", padding: "24px", height: "350px", display: "flex", flexDirection: "column" }}>
-              <p style={{ fontSize: "0.875rem", fontWeight: 700, color: "#111111", marginBottom: "20px" }}>최근 7일 추이</p>
-              <div style={{ flex: 1, minHeight: 0 }}>
+          {/* 추이 차트 */}
+          <div style={{ background: "#ffffff", borderRadius: "12px", border: "1px solid #eeeeee", padding: "24px", height: "350px", display: "flex", flexDirection: "column" }}>
+            {/* 탭 버튼 */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
+              <p style={{ fontSize: "0.875rem", fontWeight: 700, color: "#111111" }}>
+                {{ "7d": "최근 7일 추이", "30d": "최근 1달 추이", monthly: "월별 추이" }[chartRange]}
+              </p>
+              <div style={{ display: "flex", gap: "6px" }}>
+                {([["7d", "7일 추이"], ["30d", "1달 추이"], ["monthly", "월별 추이"]] as const).map(([range, label]) => (
+                  <button
+                    key={range}
+                    onClick={() => setChartRange(range)}
+                    style={{
+                      fontSize: "0.75rem",
+                      fontWeight: 600,
+                      padding: "5px 12px",
+                      borderRadius: "50px",
+                      border: `1.5px solid ${chartRange === range ? "#111111" : "#dddddd"}`,
+                      background: chartRange === range ? "#111111" : "#ffffff",
+                      color: chartRange === range ? "#ffffff" : "#888888",
+                      cursor: "pointer",
+                      transition: "all 0.15s",
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div style={{ flex: 1, minHeight: 0 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -894,9 +957,8 @@ export default function AdminPage() {
                   <Line type="monotone" dataKey="quizCompletes" name="진단완료" stroke="#1E8A4C" strokeWidth={2} dot={{ r: 3 }} />
                 </LineChart>
               </ResponsiveContainer>
-              </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
 
