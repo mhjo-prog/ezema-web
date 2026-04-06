@@ -47,7 +47,8 @@ const constitutions = [
 export default function LandingPage({ onStart }: Props) {
   useEffect(() => {
     if (isSupabaseReady) {
-      supabase.from("analytics").insert({ event_type: "page_visit" });
+      supabase.from("analytics").insert({ event_type: "page_visit" })
+        .then(({ error }) => { if (error) console.log("[analytics] insert error:", error); });
     }
   }, []);
 
