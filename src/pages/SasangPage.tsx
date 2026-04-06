@@ -11,7 +11,7 @@ const CONSTITUTION_COLORS: Record<ConstitutionType, string> = {
   소양인: "#0774C4",
 };
 
-const FILTERS = ["전체", "태음인", "소음인", "태양인", "소양인"] as const;
+const FILTERS = ["전체", "태양인", "태음인", "소양인", "소음인"] as const;
 type FilterType = (typeof FILTERS)[number];
 
 function formatDate(dateStr: string) {
@@ -96,6 +96,8 @@ function PostCard({ post, onClick }: { post: Post; onClick: () => void }) {
   );
 }
 
+const PAGE_SIZE = 9;
+
 export default function SasangPage() {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
@@ -103,8 +105,10 @@ export default function SasangPage() {
   const [filter, setFilter] = useState<FilterType>("전체");
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchBarRef = useRef<HTMLDivElement>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!searchOpen) return;
@@ -148,6 +152,28 @@ export default function SasangPage() {
       const q = searchQuery.trim().toLowerCase();
       return p.title.toLowerCase().includes(q) || p.content.toLowerCase().includes(q);
     });
+
+  const visiblePosts = filtered.slice(0, visibleCount);
+  const hasMore = visibleCount < filtered.length;
+
+  useEffect(() => {
+    if (!sentinelRef.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount((c) => c + PAGE_SIZE);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [hasMore]);
+
+  function handleFilterChange(f: FilterType) {
+    setFilter(f);
+    setVisibleCount(PAGE_SIZE);
+  }
 
   function toggleSearch() {
     if (searchOpen) {
@@ -200,7 +226,7 @@ export default function SasangPage() {
               return (
                 <button
                   key={f}
-                  onClick={() => setFilter(f)}
+                  onClick={() => handleFilterChange(f)}
                   style={{
                     fontSize: "0.8125rem",
                     fontWeight: 600,
@@ -325,24 +351,29 @@ export default function SasangPage() {
             <p style={{ fontSize: "0.875rem", color: "#bbbbbb" }}>매일 새로운 이야기가 추가됩니다.</p>
           </div>
         ) : (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
-              gap: "24px",
-            }}
-          >
-            {filtered.map((post, i) => (
-              <motion.div
-                key={post.id}
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.55, delay: 0.4 + i * 0.08, ease: "easeOut" }}
-              >
-                <PostCard post={post} onClick={() => navigate(`/sasang/${post.id}`)} />
-              </motion.div>
-            ))}
-          </div>
+          <>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3, 1fr)",
+                gap: "24px",
+              }}
+            >
+              {visiblePosts.map((post, i) => (
+                <motion.div
+                  key={post.id}
+                  initial={{ opacity: 0, y: 24 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.45, delay: Math.min(i % PAGE_SIZE, 5) * 0.07, ease: "easeOut" }}
+                >
+                  <PostCard post={post} onClick={() => navigate(`/sasang/${post.id}`)} />
+                </motion.div>
+              ))}
+            </div>
+            {hasMore && (
+              <div ref={sentinelRef} style={{ height: "1px", marginTop: "40px" }} />
+            )}
+          </>
         )}
       </div>
 
