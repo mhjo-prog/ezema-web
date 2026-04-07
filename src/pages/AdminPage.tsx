@@ -430,6 +430,8 @@ export default function AdminPage() {
   const [stats, setStats] = useState<{ visits: number; quizCompletes: number } | null>(null);
   const [chartData, setChartData] = useState<{ date: string; visits: number; quizCompletes: number }[]>([]);
   const [chartRange, setChartRange] = useState<"7d" | "30d" | "monthly">("7d");
+  const [statsRefreshing, setStatsRefreshing] = useState(false);
+  const [postsRefreshing, setPostsRefreshing] = useState(false);
 
   function showToast(msg: string) {
     setToast(msg);
@@ -717,7 +719,12 @@ export default function AdminPage() {
             <h1 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#111111" }}>콘텐츠 관리</h1>
           </div>
           <button
-            onClick={() => { fetchPosts(); fetchStats(); fetchChartData(chartRange); }}
+            onClick={async () => {
+              setPostsRefreshing(true);
+              await new Promise((r) => setTimeout(r, 200));
+              await Promise.all([fetchPosts(), fetchStats(), fetchChartData(chartRange)]);
+              setPostsRefreshing(false);
+            }}
             style={{
               fontSize: "0.8125rem",
               fontWeight: 600,
@@ -732,6 +739,10 @@ export default function AdminPage() {
           </button>
         </div>
 
+        <motion.div
+          animate={{ opacity: postsRefreshing ? 0 : 1 }}
+          transition={{ duration: 0.2 }}
+        >
         {/* 통계 카드 */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px", marginBottom: "32px" }}>
           {[
@@ -913,6 +924,7 @@ export default function AdminPage() {
             })}
           </div>
         )}
+        </motion.div>
         </div>
 
         {/* 세로 구분선 */}
@@ -927,7 +939,30 @@ export default function AdminPage() {
               </p>
               <h2 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#111111" }}>고객 방문 추이</h2>
             </div>
+            <button
+              onClick={async () => {
+                setStatsRefreshing(true);
+                await new Promise((r) => setTimeout(r, 200));
+                await Promise.all([fetchStats(), fetchChartData(chartRange)]);
+                setStatsRefreshing(false);
+              }}
+              style={{
+                fontSize: "0.8125rem",
+                fontWeight: 600,
+                color: "#0774C4",
+                border: "1.5px solid #0774C4",
+                padding: "8px 16px",
+                borderRadius: "50px",
+                cursor: "pointer",
+              }}
+            >
+              새로고침
+            </button>
           </div>
+          <motion.div
+            animate={{ opacity: statsRefreshing ? 0 : 1 }}
+            transition={{ duration: 0.2 }}
+          >
           {/* 통계 카드 */}
           {stats && (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px", marginBottom: "32px" }}>
@@ -985,6 +1020,7 @@ export default function AdminPage() {
               </ResponsiveContainer>
             </div>
           </div>
+          </motion.div>
         </div>
       </div>
 
