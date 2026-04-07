@@ -11,13 +11,15 @@ const supabase = createClient(
 async function main() {
   console.log("승인된 포스트를 published로 전환 중...");
 
+  const now = new Date().toISOString();
   const { data, error } = await supabase
     .from("posts")
     .update({
       status: "published",
-      published_at: new Date().toISOString(),
+      published_at: now,
     })
     .eq("status", "approved")
+    .lte("scheduled_at", now)
     .select();
 
   if (error) {

@@ -2,8 +2,8 @@ name: Publish Approved Posts
 
 on:
   schedule:
-    # 09:30 KST (UTC 00:30) - approved → published 전환
-    - cron: "30 0 * * *"
+    # 10분마다 실행: scheduled_at 도달한 approved 포스트를 published로 전환
+    - cron: "*/10 * * * *"
   workflow_dispatch:
     inputs:
       action:
@@ -15,11 +15,11 @@ on:
           - publish
 
 jobs:
-  # ── 09:30 KST: approved → published 전환 ────────────────────────────
+  # scheduled_at <= now() 인 approved 포스트를 published로 전환
   publish-approved:
     if: >
       (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'publish') ||
-      (github.event_name == 'schedule' && github.event.schedule == '30 0 * * *')
+      github.event_name == 'schedule'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

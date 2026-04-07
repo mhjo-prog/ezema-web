@@ -583,30 +583,35 @@ function Buttons({ onRetry, constitutionType, scores, isShared = false }: { onRe
 
   if (isShared) {
     return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.1, duration: 0.5 }}
-      >
-        <motion.button
-          onClick={() => { window.location.href = "/"; }}
-          className="font-semibold transition-all duration-200"
-          style={{
-            width: "100%",
-            padding: "17px",
-            borderRadius: "50px",
-            background: "#0774C4",
-            border: "1.5px solid #0774C4",
-            color: "#ffffff",
-            fontSize: "0.95rem",
-            cursor: "pointer",
-          }}
-          whileHover={{ background: "#0560a8", borderColor: "#0560a8" }}
-          whileTap={{ scale: 0.99 }}
+      <>
+        {/* COUPANG PARTNERS AD */}
+        <CoupangBanner constitutionType={constitutionType} />
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.1, duration: 0.5 }}
         >
-          내 체질도 알아보기
-        </motion.button>
-      </motion.div>
+          <motion.button
+            onClick={() => { window.location.href = "/"; }}
+            className="font-semibold transition-all duration-200"
+            style={{
+              width: "100%",
+              padding: "17px",
+              borderRadius: "50px",
+              background: "#0774C4",
+              border: "1.5px solid #0774C4",
+              color: "#ffffff",
+              fontSize: "0.95rem",
+              cursor: "pointer",
+            }}
+            whileHover={{ background: "#0560a8", borderColor: "#0560a8" }}
+            whileTap={{ scale: 0.99 }}
+          >
+            내 체질도 알아보기
+          </motion.button>
+        </motion.div>
+      </>
     );
   }
 
@@ -717,7 +722,7 @@ export default function ResultPage({ constitutionType, scores, onRetry, isShared
   const constitution = constitutionInfo[constitutionType];
 
   useEffect(() => {
-    if (isSupabaseReady && constitutionType) {
+    if (isSupabaseReady && constitutionType && !isShared) {
       supabase.from("analytics").insert({ event_type: "quiz_complete", constitution_type: constitutionType })
         .then(({ error }) => { if (error) console.log("[analytics] insert error:", error); });
     }
@@ -1051,10 +1056,8 @@ export default function ResultPage({ constitutionType, scores, onRetry, isShared
 
         {/* Reference footer */}
         <p className="pb-6 text-xs text-gray-400 text-center px-4" style={{ lineHeight: 1.8, marginTop: '20px' }}>
-          본 설문은 아래 자료를 기반으로 제작되었습니다.<br />
-          이제마 동의수세보원(東醫壽世保元)<br />
-          이제마 성정의 불변성(性情之不變性)<br />
-          대한한의사협회(Korean Medical Association)
+          본 설문은 '이제마 동의수세보원(東醫壽世保元)'을 기반으로 제작되었습니다.<br />
+          © 2026 KeepSlow. All rights reserved.
         </p>
       </div>
     </motion.div>

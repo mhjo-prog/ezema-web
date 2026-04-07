@@ -541,6 +541,26 @@ export default function AdminPage() {
   }, [authed]);
 
   useEffect(() => {
+    if (!authed || !isSupabaseReady) return;
+    const interval = setInterval(async () => {
+      const now = new Date().toISOString();
+      const { data, error } = await supabase
+        .from("posts")
+        .update({ status: "published" })
+        .eq("status", "approved")
+        .lte("scheduled_at", now)
+        .select("id");
+      if (!error && data && data.length > 0) {
+        const publishedIds = new Set(data.map((p: { id: string }) => p.id));
+        setPosts((prev) =>
+          prev.map((p) => (publishedIds.has(p.id) ? { ...p, status: "published" } : p))
+        );
+      }
+    }, 60_000);
+    return () => clearInterval(interval);
+  }, [authed, isSupabaseReady]);
+
+  useEffect(() => {
     if (authed) fetchChartData(chartRange);
   }, [chartRange]);
 
@@ -574,15 +594,22 @@ export default function AdminPage() {
   async function handleApprove(postId: string) {
     if (!isSupabaseReady) return;
     setApproving(postId);
+    const scheduledAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
     const { error } = await supabase
       .from("posts")
-      .update({ status: "approved" })
+      .update({ status: "approved", scheduled_at: scheduledAt })
       .eq("id", postId);
 
     if (!error) {
-      setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, status: "approved" } : p)));
+      setPosts((prev) =>
+        prev.map((p) => (p.id === postId ? { ...p, status: "approved", scheduled_at: scheduledAt } : p))
+      );
       setPreview(null);
-      showToast("승인 완료! 09:30에 자동 게시됩니다.");
+      const scheduledTime = new Date(scheduledAt).toLocaleTimeString("ko-KR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      showToast(`승인 완료! ${scheduledTime}에 자동 게시됩니다.`);
     } else {
       showToast("오류가 발생했습니다.");
     }
