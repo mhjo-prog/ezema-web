@@ -58,6 +58,7 @@ function PostCard({ post, onClick }: { post: Post; onClick: () => void }) {
 
       {/* 제목 */}
       <p
+        className="card-title"
         style={{
           fontSize: "0.9375rem",
           fontWeight: 600,
@@ -215,7 +216,7 @@ export default function SasangPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.35, duration: 0.6 }}
           >
-            나의 체질을 이해하면 삶이 달라집니다. 매일 새로운 이야기를 만나보세요.
+            나의 체질을 이해하면 삶이 달라집니다.<br className="mobile-br" /> 매일 새로운 이야기를 만나보세요.
           </motion.p>
         </div>
 
@@ -386,11 +387,14 @@ export default function SasangPage() {
           0% { background-position: 200% 0; }
           100% { background-position: -200% 0; }
         }
+        .mobile-br { display: none; }
         @media (max-width: 768px) {
           .card-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .mobile-br { display: block; }
         }
         @media (max-width: 480px) {
           .card-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
+          .card-title { font-size: 0.8125rem !important; }
         }
       `}</style>
     </motion.div>
