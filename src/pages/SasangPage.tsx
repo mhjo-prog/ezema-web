@@ -228,6 +228,7 @@ export default function SasangPage() {
               return (
                 <button
                   key={f}
+                  className="filter-tab"
                   onClick={() => handleFilterChange(f)}
                   style={{
                     fontSize: "0.8125rem",
@@ -395,6 +396,7 @@ export default function SasangPage() {
         @media (max-width: 480px) {
           .card-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
           .card-title { font-size: 0.8125rem !important; }
+          .filter-tab { font-size: 0.75rem !important; padding: 5px 11px !important; }
         }
       `}</style>
     </motion.div>
