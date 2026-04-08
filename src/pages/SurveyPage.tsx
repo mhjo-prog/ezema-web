@@ -119,6 +119,7 @@ export default function SurveyPage({ onComplete, onBack }: Props) {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: direction * -40 }}
               transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+              style={{ willChange: "transform, opacity", transform: "translateZ(0)" }}
             >
               {/* Question text */}
               <h2
@@ -144,11 +145,10 @@ export default function SurveyPage({ onComplete, onBack }: Props) {
                       onClick={() => handleSelect(option.id)}
                       initial={{ opacity: 0, y: 14 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.055, duration: 0.35, type: "spring", stiffness: 300, damping: 20 }}
-                      whileHover={!selectedId ? { y: -2 } : {}}
+                      transition={{ delay: i * 0.055, duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
                       whileTap={!selectedId ? { scale: 0.99 } : {}}
                       className="w-full text-left transition-all duration-200"
-                      style={{ cursor: selectedId ? "default" : "pointer" }}
+                      style={{ cursor: selectedId ? "default" : "pointer", willChange: "transform, opacity", transform: "translateZ(0)" }}
                     >
 
                       <div
@@ -203,7 +203,8 @@ export default function SurveyPage({ onComplete, onBack }: Props) {
                           <motion.span
                             initial={{ scale: 0, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
-                            style={{
+                            transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+                            style={{ willChange: "transform, opacity",
                               flexShrink: 0,
                               width: "22px",
                               height: "22px",
@@ -229,7 +230,7 @@ export default function SurveyPage({ onComplete, onBack }: Props) {
                   onClick={handleBack}
                   initial={{ opacity: 0, y: 14 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 4 * 0.055, duration: 0.35, type: "spring", stiffness: 300, damping: 20 }}
+                  transition={{ delay: 4 * 0.055, duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
                   className="w-full flex justify-center"
                   style={{
                     background: "none",

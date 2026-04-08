@@ -95,5 +95,5 @@ button {
 }
 
 @media (max-width: 480px) {
-  .footer-text { font-size: 10.5px !important; }
+  .footer-text { font-size: 10px !important; }
 }
