@@ -115,11 +115,11 @@ export default function SurveyPage({ onComplete, onBack }: Props) {
             <motion.div
               key={currentIndex}
               custom={direction}
-              initial={{ opacity: 0, x: direction * 40 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: direction * -40 }}
-              transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-              style={{ willChange: "transform, opacity", transform: "translateZ(0)" }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              style={{ willChange: "opacity", backfaceVisibility: "hidden" }}
             >
               {/* Question text */}
               <h2
@@ -143,12 +143,12 @@ export default function SurveyPage({ onComplete, onBack }: Props) {
                     <motion.button
                       key={option.id}
                       onClick={() => handleSelect(option.id)}
-                      initial={{ opacity: 0, y: 14 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.055, duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: i * 0.055, duration: 0.25, ease: "easeOut" }}
                       whileTap={!selectedId ? { scale: 0.99 } : {}}
                       className="w-full text-left transition-all duration-200"
-                      style={{ cursor: selectedId ? "default" : "pointer", willChange: "transform, opacity", transform: "translateZ(0)" }}
+                      style={{ cursor: selectedId ? "default" : "pointer", willChange: "opacity", backfaceVisibility: "hidden" }}
                     >
 
                       <div
@@ -228,9 +228,9 @@ export default function SurveyPage({ onComplete, onBack }: Props) {
                 {/* Back button — inside options group */}
                 <motion.button
                   onClick={handleBack}
-                  initial={{ opacity: 0, y: 14 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 4 * 0.055, duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 4 * 0.055, duration: 0.25, ease: "easeOut" }}
                   className="w-full flex justify-center"
                   style={{
                     background: "none",
