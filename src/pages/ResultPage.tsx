@@ -831,18 +831,7 @@ export default function ResultPage({ constitutionType, scores, onRetry, isShared
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.48, duration: 0.5 }}
         >
-          {result.description.split('. ').map((sentence, i, arr) => {
-            const text = i < arr.length - 1 ? sentence + '.' : sentence;
-            const parts = text.split('\n');
-            return (
-              <span key={i}>
-                {parts.map((part, j) => (
-                  <span key={j}>{part}{j < parts.length - 1 && <br />}</span>
-                ))}
-                {i < arr.length - 1 && <br />}
-              </span>
-            );
-          })}
+          {result.description}
         </motion.p>
       </div>
       </div>

@@ -96,5 +96,5 @@ button {
 
 @media (max-width: 480px) {
   .footer-text { font-size: 10px !important; }
-  .coupang-disclaimer { font-size: 9px !important; }
+  .coupang-disclaimer { font-size: 7px !important; }
 }
