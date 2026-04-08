@@ -97,4 +97,7 @@ button {
 @media (max-width: 480px) {
   .footer-text { font-size: 10px !important; }
   .coupang-disclaimer { font-size: 7px !important; }
+  .drink-card { padding: 12px 14px !important; }
+  .drink-name { font-size: 0.875rem !important; }
+  .drink-desc { font-size: 0.775rem !important; }
 }

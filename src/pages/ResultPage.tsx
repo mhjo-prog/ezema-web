@@ -701,15 +701,17 @@ function CoupangBanner({ constitutionType }: { constitutionType: string }) {
       <div style={{ padding: "2rem 2rem 1rem" }}>
         <SectionLabel>Recommended Drinks</SectionLabel>
       </div>
-      <iframe
-        src={`https://ads-partners.coupang.com/widgets.html?id=${id}&template=carousel&trackingCode=AF8415971&subId=&width=680&height=140&tsource=`}
-        width="100%"
-        height="140"
-        frameBorder="0"
-        scrolling="no"
-        referrerPolicy="unsafe-url"
-        style={{ display: "block" }}
-      />
+      <div style={{ overflow: "hidden", maxWidth: "100%" }}>
+        <iframe
+          src={`https://ads-partners.coupang.com/widgets.html?id=${id}&template=carousel&trackingCode=AF8415971&subId=&width=680&height=140&tsource=`}
+          width="100%"
+          height="140"
+          frameBorder="0"
+          scrolling="no"
+          referrerPolicy="unsafe-url"
+          style={{ display: "block", maxWidth: "100%" }}
+        />
+      </div>
       <p className="coupang-disclaimer" style={{ fontSize: "11px", color: "#999", margin: "4px 2rem 1rem", textAlign: "center" }}>
         쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
       </p>
@@ -910,6 +912,7 @@ export default function ResultPage({ constitutionType, scores, onRetry, isShared
               <motion.div
                 key={drink.name}
                 className="flex items-center gap-4"
+                className="drink-card"
                 style={{ padding: "16px 18px", borderRadius: "12px", background: "#f8f8f8", border: "1px solid #eeeeee" }}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -917,8 +920,8 @@ export default function ResultPage({ constitutionType, scores, onRetry, isShared
               >
                 <span style={{ fontSize: "1.75rem", lineHeight: 1, flexShrink: 0 }}>{drink.emoji}</span>
                 <div>
-                  <p className="font-semibold" style={{ fontSize: "0.97rem", color: "#111111", marginBottom: "2px" }}>{drink.name}</p>
-                  <p style={{ fontSize: "0.85rem", color: "#888888", lineHeight: 1.5 }}>{drink.description}</p>
+                  <p className="font-semibold drink-name" style={{ fontSize: "0.97rem", color: "#111111", marginBottom: "2px" }}>{drink.name}</p>
+                  <p className="drink-desc" style={{ fontSize: "0.85rem", color: "#888888", lineHeight: 1.5 }}>{drink.description}</p>
                 </div>
               </motion.div>
             ))}
@@ -935,7 +938,8 @@ export default function ResultPage({ constitutionType, scores, onRetry, isShared
                   <motion.div
                     key={drink.name}
                     className="flex items-center gap-4"
-                    style={{ padding: "16px 18px", borderRadius: "12px", background: "#f8f8f8", border: "1px solid #eeeeee" }}
+                    className="drink-card"
+                style={{ padding: "16px 18px", borderRadius: "12px", background: "#f8f8f8", border: "1px solid #eeeeee" }}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 1.06 + i * 0.07, duration: 0.4 }}
