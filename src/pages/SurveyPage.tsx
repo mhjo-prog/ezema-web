@@ -115,11 +115,10 @@ export default function SurveyPage({ onComplete, onBack }: Props) {
             <motion.div
               key={currentIndex}
               custom={direction}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-              style={{ willChange: "opacity", backfaceVisibility: "hidden" }}
+              initial={{ opacity: 0, x: direction * 40 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: direction * -40 }}
+              transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
             >
               {/* Question text */}
               <h2
@@ -143,12 +142,13 @@ export default function SurveyPage({ onComplete, onBack }: Props) {
                     <motion.button
                       key={option.id}
                       onClick={() => handleSelect(option.id)}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: i * 0.055, duration: 0.25, ease: "easeOut" }}
+                      initial={{ opacity: 0, y: 14 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.055, duration: 0.35, type: "spring", stiffness: 300, damping: 20 }}
+                      whileHover={!selectedId ? { y: -2 } : {}}
                       whileTap={!selectedId ? { scale: 0.99 } : {}}
                       className="w-full text-left transition-all duration-200"
-                      style={{ cursor: selectedId ? "default" : "pointer", willChange: "opacity", backfaceVisibility: "hidden" }}
+                      style={{ cursor: selectedId ? "default" : "pointer" }}
                     >
 
                       <div
@@ -203,8 +203,7 @@ export default function SurveyPage({ onComplete, onBack }: Props) {
                           <motion.span
                             initial={{ scale: 0, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
-                            transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-                            style={{ willChange: "transform, opacity",
+                            style={{
                               flexShrink: 0,
                               width: "22px",
                               height: "22px",
@@ -228,9 +227,9 @@ export default function SurveyPage({ onComplete, onBack }: Props) {
                 {/* Back button — inside options group */}
                 <motion.button
                   onClick={handleBack}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 4 * 0.055, duration: 0.25, ease: "easeOut" }}
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 4 * 0.055, duration: 0.35, type: "spring", stiffness: 300, damping: 20 }}
                   className="w-full flex justify-center"
                   style={{
                     background: "none",

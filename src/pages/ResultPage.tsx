@@ -710,7 +710,7 @@ function CoupangBanner({ constitutionType }: { constitutionType: string }) {
         referrerPolicy="unsafe-url"
         style={{ display: "block" }}
       />
-      <p style={{ fontSize: "11px", color: "#999", margin: "4px 2rem 1rem", textAlign: "center" }}>
+      <p className="coupang-disclaimer" style={{ fontSize: "11px", color: "#999", margin: "4px 2rem 1rem", textAlign: "center" }}>
         쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
       </p>
     </div>
