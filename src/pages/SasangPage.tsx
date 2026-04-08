@@ -396,7 +396,7 @@ export default function SasangPage() {
         @media (max-width: 480px) {
           .card-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
           .card-title { font-size: 0.8125rem !important; }
-          .filter-tab { font-size: 0.75rem !important; padding: 5px 11px !important; }
+          .filter-tab { font-size: 0.8125rem !important; padding: 5px 11px !important; letter-spacing: -0.1em !important; }
         }
       `}</style>
     </motion.div>
