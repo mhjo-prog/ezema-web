@@ -65,7 +65,7 @@ ${trendSection}
 {
   "title": "매력적이고 구체적인 제목 (30자 이내)",
   "content": "본문 내용",
-  "unsplash_query": "Unsplash 이미지 검색 키워드 (영어, 2-3단어, 한국 전통의학/자연/건강/음식 관련)"
+  "unsplash_query": "Unsplash 이미지 검색 키워드 (영어, 2-4단어, 이 글의 제목과 핵심 주제를 직접 반영한 구체적인 키워드 — 예: 글이 '항공 여행 피로 회복'이면 'airplane travel fatigue rest', '소화 약한 체질 따뜻한 음식'이면 'warm soup digestion comfort food')"
 }
 
 content 필드 작성 규칙:

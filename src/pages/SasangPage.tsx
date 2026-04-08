@@ -221,7 +221,7 @@ export default function SasangPage() {
 
         {/* 필터 탭 */}
         <div ref={searchBarRef} style={{ marginBottom: "32px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", overflowX: "auto" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", overflowX: "auto", scrollbarWidth: "none" }}>
             {FILTERS.map((f) => {
               const isActive = filter === f;
               return (
@@ -240,6 +240,7 @@ export default function SasangPage() {
                     cursor: "pointer",
                     transition: "all 0.15s",
                     letterSpacing: "0.01em",
+                    flexShrink: 0,
                   }}
                 >
                   {f}
@@ -308,6 +309,7 @@ export default function SasangPage() {
         {/* 카드 그리드 */}
         {loading ? (
           <div
+            className="card-grid"
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(3, 1fr)",
@@ -354,6 +356,7 @@ export default function SasangPage() {
         ) : (
           <>
             <div
+              className="card-grid"
               style={{
                 display: "grid",
                 gridTemplateColumns: "repeat(3, 1fr)",
@@ -387,7 +390,7 @@ export default function SasangPage() {
           .card-grid { grid-template-columns: repeat(2, 1fr) !important; }
         }
         @media (max-width: 480px) {
-          .card-grid { grid-template-columns: 1fr !important; }
+          .card-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
         }
       `}</style>
     </motion.div>
