@@ -1055,7 +1055,7 @@ export default function ResultPage({ constitutionType, scores, onRetry, isShared
         <Buttons onRetry={onRetry} constitutionType={constitutionType} scores={scores} isShared={isShared} />
 
         {/* Reference footer */}
-        <p className="pb-6 text-xs text-gray-400 text-center px-4" style={{ lineHeight: 1.8, marginTop: '20px' }}>
+        <p className="footer-text pb-6 text-xs text-gray-400 text-center px-4" style={{ lineHeight: 1.8, marginTop: '20px' }}>
           본 설문은 '이제마 동의수세보원(東醫壽世保元)'을 기반으로 제작되었습니다.<br />
           © 2026 KeepSlow. All rights reserved.
         </p>

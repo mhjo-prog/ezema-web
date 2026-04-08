@@ -93,3 +93,7 @@ button {
   color: #444;
   margin: 0.6em 0;
 }
+
+@media (max-width: 480px) {
+  .footer-text { font-size: 10.5px !important; }
+}

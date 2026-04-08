@@ -433,10 +433,10 @@ export default function LandingPage({ onStart }: Props) {
       {/* ── Footer ── */}
       <footer style={{ background: "#ffffff", padding: "32px 24px" }}>
         <div style={{ maxWidth: "760px", margin: "0 auto", textAlign: "center" }}>
-          <p style={{ fontSize: "11px", color: "#aaaaaa", lineHeight: 2 }}>
+          <p className="footer-text" style={{ fontSize: "11px", color: "#aaaaaa", lineHeight: 2 }}>
             본 설문은 '이제마 동의수세보원(東醫壽世保元)' 을 기반으로 제작되었습니다.
           </p>
-          <p style={{ fontSize: "11px", color: "#cccccc", marginTop: "12px" }}>
+          <p className="footer-text" style={{ fontSize: "11px", color: "#cccccc", marginTop: "12px" }}>
             © 2026 KeepSlow. All rights reserved.
           </p>
         </div>
