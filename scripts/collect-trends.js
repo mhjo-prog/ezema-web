@@ -1,5 +1,5 @@
 // scripts/collect-trends.js
-// 트렌드 수집: Google Trends RSS + Naver DataLab
+// 트렌드 수집: Google Trends RSS (Naver DataLab은 선택적)
 // Claude API 호출 없음 — 순수 크롤링만
 
 import { createClient } from "@supabase/supabase-js";
@@ -106,7 +106,7 @@ async function collectGoogleTrends() {
   console.log("  Google Trends RSS 파싱 중...");
   try {
     const res = await fetch(
-      "https://trends.google.com/trends/trendingsearches/daily/rss?geo=KR",
+      "https://trends.google.com/trending/rss?geo=KR",
       {
         headers: { "User-Agent": "Mozilla/5.0 (compatible; KeepSlowBot/1.0)" },
         signal: AbortSignal.timeout(10000),
