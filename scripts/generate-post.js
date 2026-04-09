@@ -122,8 +122,13 @@ async function fetchUnsplashImage(query) {
 
 // ── 오늘 이미 생성된 draft 확인 ──────────────────────────────────────
 async function checkAlreadyGenerated(constitutionType) {
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
+  // KST(UTC+9) 기준 오늘 00:00을 UTC로 변환
+  const now = new Date();
+  const kstNow = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const todayStart = new Date(
+    Date.UTC(kstNow.getUTCFullYear(), kstNow.getUTCMonth(), kstNow.getUTCDate())
+    - 9 * 60 * 60 * 1000
+  );
 
   const { data, error } = await supabase
     .from("posts")
