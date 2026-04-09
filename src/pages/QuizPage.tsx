@@ -16,6 +16,8 @@ function determineType(scores: Record<string, number>): string {
   ).type;
 }
 
+const SESSION_KEY = "ezema_quiz_result";
+
 export default function QuizPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -26,6 +28,7 @@ export default function QuizPage() {
   const [isShared, setIsShared] = useState(false);
 
   useEffect(() => {
+    // 1) URL 파라미터로 공유된 결과 (카카오 공유 등)
     const type = searchParams.get("type");
     if (type && VALID_TYPES.includes(type)) {
       setConstitutionType(type);
@@ -37,12 +40,30 @@ export default function QuizPage() {
       if (Object.keys(urlScores).length > 0) setScores(urlScores);
       setIsShared(true);
       setScreen("result");
+      return;
+    }
+
+    // 2) 새로고침 시 sessionStorage에 저장된 결과 복원
+    const saved = sessionStorage.getItem(SESSION_KEY);
+    if (saved) {
+      try {
+        const { constitutionType: savedType, scores: savedScores } = JSON.parse(saved);
+        if (savedType && VALID_TYPES.includes(savedType)) {
+          setConstitutionType(savedType);
+          setScores(savedScores ?? {});
+          setScreen("result");
+        }
+      } catch {
+        sessionStorage.removeItem(SESSION_KEY);
+      }
     }
   }, []);
 
   const handleSurveyComplete = useCallback((s: Record<string, number>) => {
+    const type = determineType(s);
     setScores(s);
-    setConstitutionType(determineType(s));
+    setConstitutionType(type);
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify({ constitutionType: type, scores: s }));
     setScreen("loading");
   }, []);
 
@@ -71,6 +92,7 @@ export default function QuizPage() {
           constitutionType={constitutionType}
           scores={scores}
           onRetry={() => {
+            sessionStorage.removeItem(SESSION_KEY);
             setConstitutionType("");
             setScores({});
             setIsShared(false);
