@@ -911,8 +911,7 @@ export default function ResultPage({ constitutionType, scores, onRetry, isShared
             {result.drinks.map((drink, i) => (
               <motion.div
                 key={drink.name}
-                className="flex items-center gap-4"
-                className="drink-card"
+                className="flex items-center gap-4 drink-card"
                 style={{ padding: "16px 18px", borderRadius: "12px", background: "#f8f8f8", border: "1px solid #eeeeee" }}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -937,8 +936,7 @@ export default function ResultPage({ constitutionType, scores, onRetry, isShared
                 {result2.drinks.map((drink, i) => (
                   <motion.div
                     key={drink.name}
-                    className="flex items-center gap-4"
-                    className="drink-card"
+                    className="flex items-center gap-4 drink-card"
                 style={{ padding: "16px 18px", borderRadius: "12px", background: "#f8f8f8", border: "1px solid #eeeeee" }}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
