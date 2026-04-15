@@ -66,6 +66,10 @@ export default function SasangDetailPage() {
         setNotFound(true);
       } else {
         setPost(data as Post);
+        supabase
+          .from("posts")
+          .update({ view_count: (data.view_count ?? 0) + 1 })
+          .eq("id", id);
       }
       setLoading(false);
     }

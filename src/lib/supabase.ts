@@ -28,6 +28,7 @@ export interface Post {
   status: PostStatus;
   scheduled_at: string | null;
   created_at: string;
+  view_count: number;
   category?: string;
 }
 

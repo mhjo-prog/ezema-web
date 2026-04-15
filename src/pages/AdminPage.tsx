@@ -344,21 +344,7 @@ function PostPreviewModal({
               >
                 승인하기
               </button>
-            ) : (
-              <div
-                style={{
-                  padding: "12px",
-                  background: "#1E8A4C14",
-                  color: "#1E8A4C",
-                  fontWeight: 700,
-                  fontSize: "0.9375rem",
-                  borderRadius: "10px",
-                  textAlign: "center",
-                }}
-              >
-                ✓ 승인됨 — 09:30 자동 게시 예정
-              </div>
-            )}
+            ) : null}
 
             {/* 하단 버튼 3개 */}
             <div style={{ display: "flex", gap: "8px", paddingTop: "4px" }}>
@@ -416,6 +402,8 @@ function PostPreviewModal({
   );
 }
 
+type FeedbackRow = { feedback_score: number | null; feedback_note: string | null };
+
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false);
   const [pw, setPw] = useState("");
@@ -433,10 +421,57 @@ export default function AdminPage() {
   const [statsRefreshing, setStatsRefreshing] = useState(false);
   const [postsRefreshing, setPostsRefreshing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [feedbacks, setFeedbacks] = useState<Record<string, FeedbackRow>>({});
+  const [feedbackDrafts, setFeedbackDrafts] = useState<Record<string, { score: number | null; note: string }>>({});
+  const [savingFeedback, setSavingFeedback] = useState<string | null>(null);
 
   function showToast(msg: string) {
     setToast(msg);
     setTimeout(() => setToast(null), 3000);
+  }
+
+  async function fetchFeedbacks(postIds: string[]) {
+    if (!isSupabaseReady || postIds.length === 0) return;
+    const { data } = await supabase
+      .from("post_feedback")
+      .select("post_id, feedback_score, feedback_note")
+      .in("post_id", postIds)
+      .order("created_at", { ascending: false });
+    if (!data) return;
+    const map: Record<string, FeedbackRow> = {};
+    data.forEach((row: { post_id: string; feedback_score: number | null; feedback_note: string | null }) => {
+      if (!map[row.post_id]) map[row.post_id] = { feedback_score: row.feedback_score, feedback_note: row.feedback_note };
+    });
+    setFeedbacks(map);
+    setFeedbackDrafts((prev) => {
+      const next = { ...prev };
+      Object.entries(map).forEach(([pid, fb]) => {
+        if (!next[pid]) next[pid] = { score: fb.feedback_score, note: fb.feedback_note ?? "" };
+      });
+      return next;
+    });
+  }
+
+  async function handleSaveFeedback(post: Post) {
+    const draft = feedbackDrafts[post.id];
+    if (!draft?.score) { showToast("별점을 선택해주세요."); return; }
+    setSavingFeedback(post.id);
+    const { error } = await supabase.from("post_feedback").insert({
+      post_id: post.id,
+      constitution_type: post.constitution_type,
+      title: post.title,
+      original_content: post.content,
+      feedback_score: draft.score,
+      feedback_note: draft.note || null,
+      view_count: post.view_count ?? 0,
+    });
+    if (!error) {
+      setFeedbacks((prev) => ({ ...prev, [post.id]: { feedback_score: draft.score, feedback_note: draft.note || null } }));
+      showToast("피드백이 저장되었습니다.");
+    } else {
+      showToast("저장 중 오류가 발생했습니다.");
+    }
+    setSavingFeedback(null);
   }
 
   async function fetchPosts() {
@@ -448,7 +483,10 @@ export default function AdminPage() {
       .in("status", ["draft", "approved", "published"])
       .order("created_at", { ascending: false });
 
-    if (!error && data) setPosts(data as Post[]);
+    if (!error && data) {
+      setPosts(data as Post[]);
+      fetchFeedbacks(data.map((p: Post) => p.id));
+    }
     setLoading(false);
   }
 
@@ -569,10 +607,23 @@ export default function AdminPage() {
 
   async function handleSave(postId: string, fields: { title: string; content: string; card_image_url: string }) {
     if (!isSupabaseReady) return;
+    const originalPost = posts.find((p) => p.id === postId);
     const { error } = await supabase.from("posts").update(fields).eq("id", postId);
     if (!error) {
       setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, ...fields } : p)));
       setPreview((prev) => (prev ? { ...prev, ...fields } : null));
+
+      // content가 변경됐을 때만 post_feedback에 학습 데이터 저장
+      if (originalPost && fields.content !== originalPost.content) {
+        await supabase.from("post_feedback").insert({
+          post_id: postId,
+          constitution_type: originalPost.constitution_type,
+          title: fields.title || originalPost.title,
+          original_content: originalPost.content,
+          edited_content: fields.content,
+        });
+      }
+
       showToast("수정되었습니다.");
     } else {
       showToast("수정 중 오류가 발생했습니다.");
@@ -821,10 +872,12 @@ export default function AdminPage() {
                     border: "1px solid #eeeeee",
                     padding: "20px",
                     display: "flex",
-                    alignItems: "center",
-                    gap: "16px",
+                    flexDirection: "column",
+                    gap: "0",
                   }}
                 >
+                  {/* 상단 행: 썸네일 + 내용 + 버튼 */}
+                  <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
                   {/* 이미지 썸네일 */}
                   <div
                     style={{
@@ -887,11 +940,22 @@ export default function AdminPage() {
                     </p>
                     <p style={{ fontSize: "0.75rem", color: "#aaaaaa", marginTop: "2px" }}>
                       {formatDate(post.created_at)}
+                      {post.view_count > 0 && (
+                        <span style={{ marginLeft: "8px" }}>👁 {post.view_count}</span>
+                      )}
                     </p>
                   </div>
 
                   {/* 버튼들 */}
-                  <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
+                  <div style={{ display: "flex", gap: "8px", flexShrink: 0, alignItems: "flex-start" }}>
+                    {/* 별점 표시 (저장된 피드백) */}
+                    {feedbacks[post.id]?.feedback_score && (
+                      <div style={{ display: "flex", alignItems: "center", gap: "2px", padding: "6px 10px", background: "#fffbf0", borderRadius: "8px", border: "1.5px solid #f0d070" }}>
+                        {Array.from({ length: 5 }, (_, i) => (
+                          <span key={i} style={{ fontSize: "0.875rem", color: i < (feedbacks[post.id]?.feedback_score ?? 0) ? "#f5a623" : "#e0e0e0" }}>★</span>
+                        ))}
+                      </div>
+                    )}
                     <button
                       onClick={() => setPreview(post)}
                       style={{
@@ -924,6 +988,77 @@ export default function AdminPage() {
                       </button>
                     )}
                   </div>
+                  </div>
+
+                {/* 피드백 영역 */}
+                <div style={{ borderTop: "1px solid #f0f0f0", marginTop: "14px", paddingTop: "14px", display: "flex", gap: "12px", alignItems: "flex-end", flexWrap: "wrap" }}>
+                  {/* 별점 */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                    <span style={{ fontSize: "0.6875rem", fontWeight: 600, color: "#888888" }}>별점</span>
+                    <div style={{ display: "flex", gap: "2px" }}>
+                      {[1, 2, 3, 4, 5].map((star) => {
+                        const selected = (feedbackDrafts[post.id]?.score ?? 0) >= star;
+                        return (
+                          <button
+                            key={star}
+                            onClick={() => setFeedbackDrafts((prev) => ({ ...prev, [post.id]: { score: star, note: prev[post.id]?.note ?? "" } }))}
+                            style={{
+                              fontSize: "1.125rem",
+                              color: selected ? "#f5a623" : "#d0d0d0",
+                              background: "transparent",
+                              border: "none",
+                              cursor: "pointer",
+                              padding: "0 1px",
+                              lineHeight: 1,
+                            }}
+                          >
+                            ★
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* 메모 */}
+                  <div style={{ flex: 1, minWidth: "180px", display: "flex", flexDirection: "column", gap: "4px" }}>
+                    <span style={{ fontSize: "0.6875rem", fontWeight: 600, color: "#888888" }}>메모</span>
+                    <input
+                      value={feedbackDrafts[post.id]?.note ?? ""}
+                      onChange={(e) => setFeedbackDrafts((prev) => ({ ...prev, [post.id]: { score: prev[post.id]?.score ?? null, note: e.target.value } }))}
+                      placeholder="이 게시물에 대한 메모..."
+                      style={{
+                        padding: "7px 10px",
+                        border: "1.5px solid #e0e0e0",
+                        borderRadius: "8px",
+                        fontSize: "0.8125rem",
+                        color: "#111111",
+                        outline: "none",
+                        width: "100%",
+                        boxSizing: "border-box" as const,
+                      }}
+                    />
+                  </div>
+
+                  {/* 저장 버튼 */}
+                  <button
+                    onClick={() => handleSaveFeedback(post)}
+                    disabled={savingFeedback === post.id}
+                    style={{
+                      fontSize: "0.8125rem",
+                      fontWeight: 600,
+                      color: "#444444",
+                      background: "#ffffff",
+                      border: "1.5px solid #e0e0e0",
+                      padding: "8px 14px",
+                      borderRadius: "8px",
+                      cursor: savingFeedback === post.id ? "not-allowed" : "pointer",
+                      whiteSpace: "nowrap" as const,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {savingFeedback === post.id ? "저장 중..." : "피드백 저장"}
+                  </button>
+                </div>
                 </div>
               );
             })}
