@@ -941,7 +941,7 @@ export default function AdminPage() {
                     <p style={{ fontSize: "0.75rem", color: "#aaaaaa", marginTop: "2px" }}>
                       {formatDate(post.created_at)}
                       {post.view_count > 0 && (
-                        <span style={{ marginLeft: "8px" }}>👁 {post.view_count}</span>
+                        <span style={{ marginLeft: "8px" }}>👀 {post.view_count}</span>
                       )}
                     </p>
                   </div>

@@ -66,7 +66,7 @@ export default function SasangDetailPage() {
         setNotFound(true);
       } else {
         setPost(data as Post);
-        supabase
+        await supabase
           .from("posts")
           .update({ view_count: (data.view_count ?? 0) + 1 })
           .eq("id", id);
