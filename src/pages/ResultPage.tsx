@@ -584,8 +584,10 @@ function Buttons({ onRetry, constitutionType, scores, isShared = false }: { onRe
   if (isShared) {
     return (
       <>
-        {/* COUPANG PARTNERS AD */}
-        <CoupangBanner constitutionType={constitutionType} />
+        {/* TODO: 쿠팡파트너스 배너 - 필요시 활성화 */}
+        <div style={{ display: "none" }}>
+          <CoupangBanner constitutionType={constitutionType} />
+        </div>
 
         <motion.div
           initial={{ opacity: 0 }}
@@ -617,8 +619,10 @@ function Buttons({ onRetry, constitutionType, scores, isShared = false }: { onRe
 
   return (
     <>
-      {/* COUPANG PARTNERS AD */}
-      <CoupangBanner constitutionType={constitutionType} />
+      {/* TODO: 쿠팡파트너스 배너 - 필요시 활성화 */}
+      <div style={{ display: "none" }}>
+        <CoupangBanner constitutionType={constitutionType} />
+      </div>
 
       <motion.div
         style={{ display: "flex", gap: "8px" }}

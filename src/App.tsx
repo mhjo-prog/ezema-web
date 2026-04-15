@@ -31,6 +31,7 @@ export default function App() {
 
   const handleQuizStart = () => {
     quizStarted.current = true;
+    sessionStorage.removeItem("ezema_quiz_result");
     navigate("/quiz");
   };
 

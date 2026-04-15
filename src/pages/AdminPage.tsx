@@ -432,6 +432,7 @@ export default function AdminPage() {
   const [chartRange, setChartRange] = useState<"7d" | "30d" | "monthly">("7d");
   const [statsRefreshing, setStatsRefreshing] = useState(false);
   const [postsRefreshing, setPostsRefreshing] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   function showToast(msg: string) {
     setToast(msg);
@@ -701,6 +702,9 @@ export default function AdminPage() {
   const approvedPosts = posts.filter((p) => p.status === "approved");
   const publishedPosts = posts.filter((p) => p.status === "published");
   const filteredPosts = activeFilter === "draft" ? draftPosts : activeFilter === "approved" ? approvedPosts : publishedPosts;
+  const PAGE_SIZE = 10;
+  const totalPages = Math.ceil(filteredPosts.length / PAGE_SIZE);
+  const pagedPosts = filteredPosts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   return (
     <motion.div
@@ -754,7 +758,7 @@ export default function AdminPage() {
             return (
               <div
                 key={stat.label}
-                onClick={() => setActiveFilter(stat.filter)}
+                onClick={() => { setActiveFilter(stat.filter); setCurrentPage(1); }}
                 style={{
                   background: "#ffffff",
                   borderRadius: "12px",
@@ -803,11 +807,12 @@ export default function AdminPage() {
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-            {filteredPosts.map((post) => {
+            {pagedPosts.map((post) => {
               const color = CONSTITUTION_COLORS[post.constitution_type];
               const isDraft = post.status === "draft";
               const isPublished = post.status === "published";
               return (
+
                 <div
                   key={post.id}
                   style={{
@@ -922,6 +927,61 @@ export default function AdminPage() {
                 </div>
               );
             })}
+          </div>
+        )}
+        {totalPages > 1 && (
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "8px", marginTop: "24px" }}>
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              style={{
+                fontSize: "0.875rem",
+                fontWeight: 600,
+                color: currentPage === 1 ? "#cccccc" : "#0774C4",
+                border: `1.5px solid ${currentPage === 1 ? "#eeeeee" : "#0774C4"}`,
+                padding: "7px 16px",
+                borderRadius: "8px",
+                cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                background: "#ffffff",
+              }}
+            >
+              &lt;
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                style={{
+                  fontSize: "0.875rem",
+                  fontWeight: 600,
+                  color: page === currentPage ? "#ffffff" : "#444444",
+                  background: page === currentPage ? "#0774C4" : "#ffffff",
+                  border: `1.5px solid ${page === currentPage ? "#0774C4" : "#e0e0e0"}`,
+                  padding: "7px 13px",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  minWidth: "38px",
+                }}
+              >
+                {page}
+              </button>
+            ))}
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              style={{
+                fontSize: "0.875rem",
+                fontWeight: 600,
+                color: currentPage === totalPages ? "#cccccc" : "#0774C4",
+                border: `1.5px solid ${currentPage === totalPages ? "#eeeeee" : "#0774C4"}`,
+                padding: "7px 16px",
+                borderRadius: "8px",
+                cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+                background: "#ffffff",
+              }}
+            >
+              &gt;
+            </button>
           </div>
         )}
         </motion.div>

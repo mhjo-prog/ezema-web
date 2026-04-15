@@ -23,6 +23,7 @@ export default function QuizPage() {
   const navigate = useNavigate();
 
   const [screen, setScreen] = useState<QuizScreen>("survey");
+  const [surveyKey, setSurveyKey] = useState(0);
   const [constitutionType, setConstitutionType] = useState("");
   const [scores, setScores] = useState<Record<string, number>>({});
   const [isShared, setIsShared] = useState(false);
@@ -75,7 +76,7 @@ export default function QuizPage() {
     <AnimatePresence mode="wait">
       {screen === "survey" && (
         <SurveyPage
-          key="survey"
+          key={`survey-${surveyKey}`}
           onComplete={handleSurveyComplete}
           onBack={() => navigate("/")}
         />
@@ -96,6 +97,7 @@ export default function QuizPage() {
             setConstitutionType("");
             setScores({});
             setIsShared(false);
+            setSurveyKey((k) => k + 1);
             setScreen("survey");
           }}
           isShared={isShared}

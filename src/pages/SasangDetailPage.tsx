@@ -283,7 +283,10 @@ export default function SasangDetailPage() {
             </div>
           </div>
 
-          <CoupangBannerInner constitutionType={post.constitution_type} />
+          {/* TODO: 쿠팡파트너스 배너 - 필요시 활성화 */}
+          <div style={{ display: "none" }}>
+            <CoupangBannerInner constitutionType={post.constitution_type} />
+          </div>
         </div>
 
         {/* 하단 구분선 + 돌아가기 */}
