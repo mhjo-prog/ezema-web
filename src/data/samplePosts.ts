@@ -13,6 +13,7 @@ export const samplePosts: Post[] = [
     constitution_type: "태음인",
     status: "published",
     scheduled_at: null,
+    view_count: 0,
     created_at: "2026-04-01T09:30:00Z",
   },
   {
@@ -27,6 +28,7 @@ export const samplePosts: Post[] = [
     constitution_type: "소음인",
     status: "published",
     scheduled_at: null,
+    view_count: 0,
     created_at: "2026-04-02T09:30:00Z",
   },
   {
@@ -41,6 +43,7 @@ export const samplePosts: Post[] = [
     constitution_type: "태양인",
     status: "published",
     scheduled_at: null,
+    view_count: 0,
     created_at: "2026-04-03T09:30:00Z",
   },
   {
@@ -55,6 +58,7 @@ export const samplePosts: Post[] = [
     constitution_type: "소양인",
     status: "published",
     scheduled_at: null,
+    view_count: 0,
     created_at: "2026-04-04T09:30:00Z",
   },
   {
@@ -69,6 +73,7 @@ export const samplePosts: Post[] = [
     constitution_type: "태음인",
     status: "published",
     scheduled_at: null,
+    view_count: 0,
     created_at: "2026-04-05T09:30:00Z",
   },
   {
@@ -83,6 +88,7 @@ export const samplePosts: Post[] = [
     constitution_type: "소음인",
     status: "published",
     scheduled_at: null,
+    view_count: 0,
     created_at: "2026-04-06T09:30:00Z",
   },
 ];
