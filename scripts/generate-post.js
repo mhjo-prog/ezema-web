@@ -70,8 +70,31 @@ async function fetchRecentFeedback(constitutionType) {
   }
 }
 
+// ── Supabase에서 리서치 문서 읽기 ────────────────────────────────────
+async function fetchResearchDocs(constitutionType) {
+  try {
+    const { data, error } = await supabase
+      .from("research_docs")
+      .select("title, category, content")
+      .or(`constitution_type.eq.${constitutionType},constitution_type.is.null`)
+      .order("created_at", { ascending: false })
+      .limit(5);
+
+    if (error || !data || data.length === 0) {
+      console.log("리서치 문서 없음. 기본 프롬프트 사용.");
+      return [];
+    }
+
+    console.log(`리서치 문서 ${data.length}건 로드됨`);
+    return data;
+  } catch (err) {
+    console.warn("리서치 문서 로드 오류 (무시):", err.message);
+    return [];
+  }
+}
+
 // ── Claude로 콘텐츠 생성 ─────────────────────────────────────────────
-async function generatePostContent(constitutionType, trends, feedbacks) {
+async function generatePostContent(constitutionType, trends, feedbacks, researchDocs) {
   const trendSection =
     trends.length > 0
       ? `\n요즘 많이 검색되는 건강 키워드: ${trends.map((t) => t.keyword).join(", ")}\n이 중 ${constitutionType}과 연결할 수 있는 키워드를 자연스럽게 녹여주세요.\n`
@@ -94,6 +117,18 @@ async function generatePostContent(constitutionType, trends, feedbacks) {
         `\n점수가 낮거나 수정이 많았던 글의 패턴을 피하고, 높은 평가를 받은 스타일을 참고해서 작성해주세요.\n`
       : "";
 
+  const researchSection =
+    researchDocs.length > 0
+      ? `\n[참고 리서치 자료]\n` +
+        researchDocs
+          .map((d) => {
+            const category = d.category ? ` [${d.category}]` : "";
+            return `- 제목: "${d.title}"${category}\n  내용: ${d.content.slice(0, 300)}${d.content.length > 300 ? "..." : ""}`;
+          })
+          .join("\n") +
+        `\n위 자료를 참고해 전문성과 신뢰도 높은 콘텐츠를 작성해주세요.\n`
+      : "";
+
   const message = await anthropic.messages.create({
     model: "claude-opus-4-6",
     max_tokens: 1024,
@@ -101,7 +136,7 @@ async function generatePostContent(constitutionType, trends, feedbacks) {
       {
         role: "user",
         content: `당신은 사상체질 전문가입니다. 오늘의 ${constitutionType} 이야기를 작성해주세요.
-${trendSection}${feedbackSection}
+${trendSection}${feedbackSection}${researchSection}
 다음 JSON 형식으로만 응답하세요 (다른 텍스트 없이):
 {
   "title": "매력적이고 구체적인 제목 (30자 이내)",
@@ -207,22 +242,27 @@ async function main() {
   console.log("Supabase에서 이전 피드백 로드 중...");
   const feedbacks = await fetchRecentFeedback(constitutionType);
 
-  // 3. Claude로 콘텐츠 생성
+  // 3. 리서치 문서 로드 (없어도 계속 진행)
+  console.log("Supabase에서 리서치 문서 로드 중...");
+  const researchDocs = await fetchResearchDocs(constitutionType);
+
+  // 4. Claude로 콘텐츠 생성
   console.log("\nClaude API로 콘텐츠 생성 중...");
   const { title, content, unsplash_query } = await generatePostContent(
     constitutionType,
     trends,
-    feedbacks
+    feedbacks,
+    researchDocs
   );
   console.log(`제목: ${title}`);
   console.log(`Unsplash 쿼리: ${unsplash_query}`);
 
-  // 4. Unsplash 이미지 가져오기
+  // 5. Unsplash 이미지 가져오기
   console.log("\nUnsplash 이미지 검색 중...");
   const imageUrl = await fetchUnsplashImage(unsplash_query);
   console.log(`이미지 URL: ${imageUrl || "없음 (기본값 사용)"}`);
 
-  // 5. Supabase에 draft로 저장
+  // 6. Supabase에 draft로 저장
   console.log("\nSupabase에 저장 중...");
   const { data, error } = await supabase.from("posts").insert({
     title,
