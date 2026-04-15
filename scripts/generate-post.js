@@ -126,7 +126,7 @@ async function generatePostContent(constitutionType, trends, feedbacks, research
             return `- 제목: "${d.title}"${category}\n  내용: ${d.content.slice(0, 300)}${d.content.length > 300 ? "..." : ""}`;
           })
           .join("\n") +
-        `\n위 자료를 참고해 전문성과 신뢰도 높은 콘텐츠를 작성해주세요.\n`
+        `\n위 자료를 단순 인용하지 말고, 핵심 인사이트를 현대적 시각으로 재해석해서 독자가 처음 듣는 것처럼 신선하게 풀어써줘.\n`
       : "";
 
   const message = await anthropic.messages.create({
