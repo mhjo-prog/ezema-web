@@ -46,11 +46,52 @@ async function fetchRecentTrends() {
   }
 }
 
+// ── Supabase에서 이전 피드백 읽기 ────────────────────────────────────
+async function fetchRecentFeedback(constitutionType) {
+  try {
+    const { data, error } = await supabase
+      .from("post_feedback")
+      .select("title, feedback_score, feedback_note, edited_content, original_content")
+      .eq("constitution_type", constitutionType)
+      .not("feedback_score", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(5);
+
+    if (error || !data || data.length === 0) {
+      console.log("이전 피드백 없음. 기본 프롬프트 사용.");
+      return [];
+    }
+
+    console.log(`이전 피드백 ${data.length}건 로드됨`);
+    return data;
+  } catch (err) {
+    console.warn("피드백 로드 오류 (무시):", err.message);
+    return [];
+  }
+}
+
 // ── Claude로 콘텐츠 생성 ─────────────────────────────────────────────
-async function generatePostContent(constitutionType, trends) {
+async function generatePostContent(constitutionType, trends, feedbacks) {
   const trendSection =
     trends.length > 0
       ? `\n요즘 많이 검색되는 건강 키워드: ${trends.map((t) => t.keyword).join(", ")}\n이 중 ${constitutionType}과 연결할 수 있는 키워드를 자연스럽게 녹여주세요.\n`
+      : "";
+
+  const feedbackSection =
+    feedbacks.length > 0
+      ? `\n[이전 게시물 피드백 참고]\n` +
+        feedbacks
+          .map((f) => {
+            const score = `점수: ${f.feedback_score}/5`;
+            const note = f.feedback_note ? `\n  메모: ${f.feedback_note}` : "";
+            const diff =
+              f.edited_content && f.edited_content !== f.original_content
+                ? `\n  수정됨 (원본과 다름)`
+                : "";
+            return `- 제목: "${f.title}"\n  ${score}${note}${diff}`;
+          })
+          .join("\n") +
+        `\n점수가 낮거나 수정이 많았던 글의 패턴을 피하고, 높은 평가를 받은 스타일을 참고해서 작성해주세요.\n`
       : "";
 
   const message = await anthropic.messages.create({
@@ -60,7 +101,7 @@ async function generatePostContent(constitutionType, trends) {
       {
         role: "user",
         content: `당신은 사상체질 전문가입니다. 오늘의 ${constitutionType} 이야기를 작성해주세요.
-${trendSection}
+${trendSection}${feedbackSection}
 다음 JSON 형식으로만 응답하세요 (다른 텍스트 없이):
 {
   "title": "매력적이고 구체적인 제목 (30자 이내)",
@@ -162,21 +203,26 @@ async function main() {
   console.log("Supabase에서 최근 트렌드 로드 중...");
   const trends = await fetchRecentTrends();
 
-  // 2. Claude로 콘텐츠 생성
+  // 2. 이전 피드백 로드 (없어도 계속 진행)
+  console.log("Supabase에서 이전 피드백 로드 중...");
+  const feedbacks = await fetchRecentFeedback(constitutionType);
+
+  // 3. Claude로 콘텐츠 생성
   console.log("\nClaude API로 콘텐츠 생성 중...");
   const { title, content, unsplash_query } = await generatePostContent(
     constitutionType,
-    trends
+    trends,
+    feedbacks
   );
   console.log(`제목: ${title}`);
   console.log(`Unsplash 쿼리: ${unsplash_query}`);
 
-  // 3. Unsplash 이미지 가져오기
+  // 4. Unsplash 이미지 가져오기
   console.log("\nUnsplash 이미지 검색 중...");
   const imageUrl = await fetchUnsplashImage(unsplash_query);
   console.log(`이미지 URL: ${imageUrl || "없음 (기본값 사용)"}`);
 
-  // 4. Supabase에 draft로 저장
+  // 5. Supabase에 draft로 저장
   console.log("\nSupabase에 저장 중...");
   const { data, error } = await supabase.from("posts").insert({
     title,
