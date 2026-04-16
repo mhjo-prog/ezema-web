@@ -843,7 +843,7 @@ export default function AdminPage() {
             {activeFilter === "draft" ? (
               <>
                 <p style={{ fontSize: "1rem" }}>검토할 포스트가 없습니다.</p>
-                <p style={{ fontSize: "0.875rem", marginTop: "6px" }}>매일 09:00에 새 초안이 생성됩니다.</p>
+                <p style={{ fontSize: "0.875rem", marginTop: "6px" }}>매일 15:00에 새 초안이 생성됩니다.</p>
               </>
             ) : activeFilter === "approved" ? (
               <>
