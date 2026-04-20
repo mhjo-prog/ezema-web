@@ -1,0 +1,52 @@
+name: Daily Wellness Post
+
+on:
+  schedule:
+    # 09:00 KST (UTC 00:00) - 웰니스 글 생성 (트렌드는 사상체질 워크플로우에서 08:00 KST에 수집됨)
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+    inputs:
+      category:
+        description: "웰니스 카테고리 (비워두면 자동 순환)"
+        required: false
+        default: ""
+        type: choice
+        options:
+          - ""
+          - 수면
+          - 식단
+          - 운동
+          - 명상
+          - 스트레스
+
+jobs:
+  # ── 09:00 KST: 웰니스 글 생성 ───────────────────────────────────────
+  generate-wellness-post:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm ci --prefix scripts
+
+      - name: Create .env
+        run: |
+          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> .env
+          echo "SUPABASE_SERVICE_KEY=${{ secrets.SUPABASE_SERVICE_KEY }}" >> .env
+          echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> .env
+          echo "UNSPLASH_ACCESS_KEY=${{ secrets.UNSPLASH_ACCESS_KEY }}" >> .env
+
+      - name: Generate wellness post
+        run: |
+          CATEGORY="${{ github.event.inputs.category }}"
+          if [ -n "$CATEGORY" ]; then
+            node --env-file=.env scripts/generate-wellness-post.js "$CATEGORY"
+          else
+            node --env-file=.env scripts/generate-wellness-post.js
+          fi

@@ -11,7 +11,9 @@
     "collect-trends": "node --env-file=.env scripts/collect-trends.js",
     "generate-post": "node --env-file=.env scripts/generate-post.js",
     "publish-approved": "node --env-file=.env scripts/publish-approved.js",
-    "cleanup-drafts": "node --env-file=.env scripts/cleanup-drafts.js"
+    "cleanup-drafts": "node --env-file=.env scripts/cleanup-drafts.js",
+    "generate-rss": "node --env-file=.env scripts/generate-rss.js",
+    "generate-wellness-post": "node --env-file=.env scripts/generate-wellness-post.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.101.1",
