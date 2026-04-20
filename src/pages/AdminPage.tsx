@@ -962,7 +962,7 @@ export default function AdminPage() {
           <div style={{ display: "flex", gap: "0", marginBottom: "28px", background: "#f0f0f0", borderRadius: "10px", padding: "4px" }}>
             {([
               { key: "sasang", label: "사상체질 이야기" },
-              { key: "wellness", label: "웰니스" },
+              { key: "wellness", label: "Wellness" },
             ] as const).map(({ key, label }) => (
               <button
                 key={key}
