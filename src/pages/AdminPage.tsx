@@ -1186,8 +1186,8 @@ export default function AdminPage() {
                   <div style={{ textAlign: "center", padding: "60px", background: "#ffffff", borderRadius: "12px", border: "1px solid #eeeeee", color: "#aaaaaa" }}>
                     {wellnessFilter === "draft" ? (
                       <>
-                        <p style={{ fontSize: "1rem" }}>검토할 웰니스 포스트가 없습니다.</p>
-                        <p style={{ fontSize: "0.875rem", marginTop: "6px" }}>매일 09:00 KST에 새 초안이 생성됩니다.</p>
+                        <p style={{ fontSize: "1rem" }}>검토할 포스트가 없습니다.</p>
+                        <p style={{ fontSize: "0.875rem", marginTop: "6px" }}>매일 15:00에 새 초안이 생성됩니다.</p>
                       </>
                     ) : wellnessFilter === "approved" ? (
                       <>
