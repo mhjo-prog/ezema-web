@@ -9,31 +9,54 @@ const supabase = createClient(
 );
 
 async function main() {
-  console.log("승인된 포스트를 published로 전환 중...");
-
   const now = new Date().toISOString();
-  const { data, error } = await supabase
+  let totalPublished = 0;
+
+  // 사상체질 포스트
+  console.log("사상체질 승인된 포스트를 published로 전환 중...");
+  const { data: postsData, error: postsError } = await supabase
     .from("posts")
-    .update({
-      status: "published",
-      published_at: now,
-    })
+    .update({ status: "published" })
     .eq("status", "approved")
     .lte("scheduled_at", now)
     .select();
 
-  if (error) {
-    console.error("Supabase 오류:", error);
+  if (postsError) {
+    console.error("posts Supabase 오류:", postsError);
     process.exit(1);
   }
 
-  if (!data || data.length === 0) {
-    console.log("게시할 승인된 포스트가 없습니다.");
-    return;
+  if (postsData && postsData.length > 0) {
+    console.log(`✅ 사상체질 ${postsData.length}개 포스트 게시 완료:`);
+    postsData.forEach((p) => console.log(`  - [${p.constitution_type}] ${p.title}`));
+    totalPublished += postsData.length;
+  } else {
+    console.log("게시할 사상체질 승인된 포스트가 없습니다.");
   }
 
-  console.log(`✅ ${data.length}개 포스트 게시 완료:`);
-  data.forEach((p) => console.log(`  - [${p.constitution_type}] ${p.title}`));
+  // 웰니스 포스트
+  console.log("웰니스 승인된 포스트를 published로 전환 중...");
+  const { data: wellnessData, error: wellnessError } = await supabase
+    .from("wellness_posts")
+    .update({ status: "published" })
+    .eq("status", "approved")
+    .lte("scheduled_at", now)
+    .select();
+
+  if (wellnessError) {
+    console.error("wellness_posts Supabase 오류:", wellnessError);
+    process.exit(1);
+  }
+
+  if (wellnessData && wellnessData.length > 0) {
+    console.log(`✅ 웰니스 ${wellnessData.length}개 포스트 게시 완료:`);
+    wellnessData.forEach((p) => console.log(`  - [${p.wellness_category}] ${p.title}`));
+    totalPublished += wellnessData.length;
+  } else {
+    console.log("게시할 웰니스 승인된 포스트가 없습니다.");
+  }
+
+  console.log(`\n총 ${totalPublished}개 포스트 게시 완료.`);
 }
 
 main().catch((err) => {

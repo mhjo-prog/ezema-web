@@ -33,8 +33,10 @@ jobs:
       - name: Install dependencies
         run: npm ci --prefix scripts
 
+      - name: Create .env
+        run: |
+          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> .env
+          echo "SUPABASE_SERVICE_KEY=${{ secrets.SUPABASE_SERVICE_KEY }}" >> .env
+
       - name: Publish approved posts
-        run: npm run publish-approved
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node --env-file=.env scripts/publish-approved.js
