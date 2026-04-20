@@ -525,6 +525,9 @@ export default function AdminPage() {
   const [, setWellnessDeleting] = useState<string | null>(null);
   const [wellnessFilter, setWellnessFilter] = useState<"draft" | "approved" | "published">("draft");
   const [wellnessPage, setWellnessPage] = useState(1);
+  const [wellnessFeedbacks, setWellnessFeedbacks] = useState<Record<string, FeedbackRow>>({});
+  const [wellnessFeedbackDrafts, setWellnessFeedbackDrafts] = useState<Record<string, { score: number | null; note: string }>>({});
+  const [savingWellnessFeedback, setSavingWellnessFeedback] = useState<string | null>(null);
 
   // 공통
   const [toast, setToast] = useState<string | null>(null);
@@ -657,6 +660,50 @@ export default function AdminPage() {
   }
 
   // ── 웰니스 ───────────────────────────────────────────────────────
+  async function fetchWellnessFeedbacks(postIds: string[]) {
+    if (!isSupabaseReady || postIds.length === 0) return;
+    const { data } = await supabase
+      .from("wellness_post_feedback")
+      .select("post_id, feedback_score, feedback_note")
+      .in("post_id", postIds)
+      .order("created_at", { ascending: false });
+    if (!data) return;
+    const map: Record<string, FeedbackRow> = {};
+    data.forEach((row: { post_id: string; feedback_score: number | null; feedback_note: string | null }) => {
+      if (!map[row.post_id]) map[row.post_id] = { feedback_score: row.feedback_score, feedback_note: row.feedback_note };
+    });
+    setWellnessFeedbacks(map);
+    setWellnessFeedbackDrafts((prev) => {
+      const next = { ...prev };
+      Object.entries(map).forEach(([pid, fb]) => {
+        if (!next[pid]) next[pid] = { score: fb.feedback_score, note: fb.feedback_note ?? "" };
+      });
+      return next;
+    });
+  }
+
+  async function handleSaveWellnessFeedback(post: WellnessPost) {
+    const draft = wellnessFeedbackDrafts[post.id];
+    if (!draft?.score) { showToast("별점을 선택해주세요."); return; }
+    setSavingWellnessFeedback(post.id);
+    const { error } = await supabase.from("wellness_post_feedback").insert({
+      post_id: post.id,
+      wellness_category: post.wellness_category,
+      title: post.title,
+      original_content: post.content,
+      feedback_score: draft.score,
+      feedback_note: draft.note || null,
+      view_count: post.view_count ?? 0,
+    });
+    if (!error) {
+      setWellnessFeedbacks((prev) => ({ ...prev, [post.id]: { feedback_score: draft.score, feedback_note: draft.note || null } }));
+      showToast("피드백이 저장되었습니다.");
+    } else {
+      showToast("저장 중 오류가 발생했습니다.");
+    }
+    setSavingWellnessFeedback(null);
+  }
+
   async function fetchWellnessPosts() {
     if (!isSupabaseReady) { setWellnessLoading(false); return; }
     setWellnessLoading(true);
@@ -667,6 +714,7 @@ export default function AdminPage() {
       .order("created_at", { ascending: false });
     if (!error && data) {
       setWellnessPosts(data as WellnessPost[]);
+      fetchWellnessFeedbacks(data.map((p: WellnessPost) => p.id));
     }
     setWellnessLoading(false);
   }
@@ -1207,45 +1255,91 @@ export default function AdminPage() {
                       return (
                         <div
                           key={post.id}
-                          style={{ background: "#ffffff", borderRadius: "12px", border: "1px solid #eeeeee", padding: "20px", display: "flex", alignItems: "center", gap: "16px" }}
+                          style={{ background: "#ffffff", borderRadius: "12px", border: "1px solid #eeeeee", padding: "20px" }}
                         >
-                          <div style={{ width: "80px", height: "52px", borderRadius: "8px", overflow: "hidden", flexShrink: 0, background: "#f0f0f0" }}>
-                            {post.card_image_url && (
-                              <img src={post.card_image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                            )}
-                          </div>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-                              <span style={{ fontSize: "0.6875rem", fontWeight: 700, color, background: `${color}14`, padding: "2px 8px", borderRadius: "20px" }}>
-                                {post.wellness_category}
-                              </span>
-                              <span style={{ fontSize: "0.6875rem", fontWeight: 600, color: isDraft ? "#888888" : isPublished ? "#0774C4" : "#1E8A4C", background: isDraft ? "#f0f0f0" : isPublished ? "#0774C414" : "#1E8A4C14", padding: "2px 8px", borderRadius: "20px" }}>
-                                {isDraft ? "Draft" : isPublished ? "게시됨" : "승인됨"}
-                              </span>
+                          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                            <div style={{ width: "80px", height: "52px", borderRadius: "8px", overflow: "hidden", flexShrink: 0, background: "#f0f0f0" }}>
+                              {post.card_image_url && (
+                                <img src={post.card_image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                              )}
                             </div>
-                            <p style={{ fontSize: "0.9rem", fontWeight: 600, color: "#111111", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                              {post.title}
-                            </p>
-                            <p style={{ fontSize: "0.75rem", color: "#aaaaaa", marginTop: "2px" }}>
-                              {formatDate(post.created_at)}
-                            </p>
-                          </div>
-                          <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
-                            <button
-                              onClick={() => setWellnessPreview(post)}
-                              style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#444444", border: "1.5px solid #e0e0e0", padding: "8px 14px", borderRadius: "8px", cursor: "pointer" }}
-                            >
-                              미리보기
-                            </button>
-                            {isDraft && (
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+                                <span style={{ fontSize: "0.6875rem", fontWeight: 700, color, background: `${color}14`, padding: "2px 8px", borderRadius: "20px" }}>
+                                  {post.wellness_category}
+                                </span>
+                                <span style={{ fontSize: "0.6875rem", fontWeight: 600, color: isDraft ? "#888888" : isPublished ? "#0774C4" : "#1E8A4C", background: isDraft ? "#f0f0f0" : isPublished ? "#0774C414" : "#1E8A4C14", padding: "2px 8px", borderRadius: "20px" }}>
+                                  {isDraft ? "Draft" : isPublished ? "게시됨" : "승인됨"}
+                                </span>
+                              </div>
+                              <p style={{ fontSize: "0.9rem", fontWeight: 600, color: "#111111", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                {post.title}
+                              </p>
+                              <p style={{ fontSize: "0.75rem", color: "#aaaaaa", marginTop: "2px" }}>
+                                {formatDate(post.created_at)}
+                              </p>
+                            </div>
+                            <div style={{ display: "flex", gap: "8px", flexShrink: 0, alignItems: "flex-start" }}>
+                              {wellnessFeedbacks[post.id]?.feedback_score && (
+                                <div style={{ display: "flex", alignItems: "center", gap: "2px", padding: "6px 10px", background: "#fffbf0", borderRadius: "8px", border: "1.5px solid #f0d070" }}>
+                                  {Array.from({ length: 5 }, (_, i) => (
+                                    <span key={i} style={{ fontSize: "0.875rem", color: i < (wellnessFeedbacks[post.id]?.feedback_score ?? 0) ? "#f5a623" : "#e0e0e0" }}>★</span>
+                                  ))}
+                                </div>
+                              )}
                               <button
-                                onClick={() => handleWellnessApprove(post.id)}
-                                disabled={wellnessApproving === post.id}
-                                style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#ffffff", background: wellnessApproving === post.id ? "#aaaaaa" : "#1E8A4C", padding: "8px 14px", borderRadius: "8px", cursor: wellnessApproving === post.id ? "not-allowed" : "pointer" }}
+                                onClick={() => setWellnessPreview(post)}
+                                style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#444444", border: "1.5px solid #e0e0e0", padding: "8px 14px", borderRadius: "8px", cursor: "pointer" }}
                               >
-                                {wellnessApproving === post.id ? "처리 중..." : "승인"}
+                                미리보기
                               </button>
-                            )}
+                              {isDraft && (
+                                <button
+                                  onClick={() => handleWellnessApprove(post.id)}
+                                  disabled={wellnessApproving === post.id}
+                                  style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#ffffff", background: wellnessApproving === post.id ? "#aaaaaa" : "#1E8A4C", padding: "8px 14px", borderRadius: "8px", cursor: wellnessApproving === post.id ? "not-allowed" : "pointer" }}
+                                >
+                                  {wellnessApproving === post.id ? "처리 중..." : "승인"}
+                                </button>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* 피드백 */}
+                          <div style={{ borderTop: "1px solid #f0f0f0", marginTop: "14px", paddingTop: "14px", display: "flex", gap: "12px", alignItems: "flex-end", flexWrap: "wrap" }}>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                              <span style={{ fontSize: "0.6875rem", fontWeight: 600, color: "#888888" }}>별점</span>
+                              <div style={{ display: "flex", gap: "2px" }}>
+                                {[1, 2, 3, 4, 5].map((star) => {
+                                  const selected = (wellnessFeedbackDrafts[post.id]?.score ?? 0) >= star;
+                                  return (
+                                    <button
+                                      key={star}
+                                      onClick={() => setWellnessFeedbackDrafts((prev) => ({ ...prev, [post.id]: { score: star, note: prev[post.id]?.note ?? "" } }))}
+                                      style={{ fontSize: "1.125rem", color: selected ? "#f5a623" : "#d0d0d0", background: "transparent", border: "none", cursor: "pointer", padding: "0 1px", lineHeight: 1 }}
+                                    >
+                                      ★
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                            <div style={{ flex: 1, minWidth: "180px", display: "flex", flexDirection: "column", gap: "4px" }}>
+                              <span style={{ fontSize: "0.6875rem", fontWeight: 600, color: "#888888" }}>메모</span>
+                              <input
+                                value={wellnessFeedbackDrafts[post.id]?.note ?? ""}
+                                onChange={(e) => setWellnessFeedbackDrafts((prev) => ({ ...prev, [post.id]: { score: prev[post.id]?.score ?? null, note: e.target.value } }))}
+                                placeholder="이 게시물에 대한 메모..."
+                                style={{ padding: "7px 10px", border: "1.5px solid #e0e0e0", borderRadius: "8px", fontSize: "0.8125rem", color: "#111111", outline: "none", width: "100%", boxSizing: "border-box" as const }}
+                              />
+                            </div>
+                            <button
+                              onClick={() => handleSaveWellnessFeedback(post)}
+                              disabled={savingWellnessFeedback === post.id}
+                              style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#444444", background: "#ffffff", border: "1.5px solid #e0e0e0", padding: "8px 14px", borderRadius: "8px", cursor: savingWellnessFeedback === post.id ? "not-allowed" : "pointer", whiteSpace: "nowrap" as const, flexShrink: 0 }}
+                            >
+                              {savingWellnessFeedback === post.id ? "저장 중..." : "피드백 저장"}
+                            </button>
                           </div>
                         </div>
                       );
