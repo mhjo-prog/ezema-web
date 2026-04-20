@@ -8,6 +8,7 @@ import SasangPage from "./pages/SasangPage";
 import SasangDetailPage from "./pages/SasangDetailPage";
 import AdminPage from "./pages/AdminPage";
 import WellnessPage from "./pages/WellnessPage";
+import WellnessDetailPage from "./pages/WellnessDetailPage";
 
 function AppRoutes({ onQuizStart }: { onQuizStart: () => void }) {
   const location = useLocation();
@@ -20,6 +21,7 @@ function AppRoutes({ onQuizStart }: { onQuizStart: () => void }) {
         <Route path="/sasang/:id" element={<SasangDetailPage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/wellness" element={<WellnessPage />} />
+        <Route path="/wellness/:id" element={<WellnessDetailPage />} />
       </Routes>
     </AnimatePresence>
   );
