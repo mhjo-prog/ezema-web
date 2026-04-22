@@ -528,6 +528,8 @@ export default function AdminPage() {
   const [wellnessFeedbacks, setWellnessFeedbacks] = useState<Record<string, FeedbackRow>>({});
   const [wellnessFeedbackDrafts, setWellnessFeedbackDrafts] = useState<Record<string, { score: number | null; note: string }>>({});
   const [savingWellnessFeedback, setSavingWellnessFeedback] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState<string | null>(null);
+  const [uploadingWellnessImage, setUploadingWellnessImage] = useState<string | null>(null);
 
   // 공통
   const [toast, setToast] = useState<string | null>(null);
@@ -539,6 +541,38 @@ export default function AdminPage() {
   function showToast(msg: string) {
     setToast(msg);
     setTimeout(() => setToast(null), 3000);
+  }
+
+  async function handleImageReplace(postId: string, file: File, table: "posts" | "wellness_posts") {
+    if (!isSupabaseReady) return;
+    const setter = table === "posts" ? setUploadingImage : setUploadingWellnessImage;
+    setter(postId);
+    const ext = file.name.split(".").pop();
+    const path = `${table}/${postId}_${Date.now()}.${ext}`;
+    const { error: uploadError } = await supabase.storage
+      .from("post-images")
+      .upload(path, file, { upsert: true });
+    if (uploadError) {
+      showToast("이미지 업로드 중 오류가 발생했습니다.");
+      setter(null);
+      return;
+    }
+    const { data: urlData } = supabase.storage.from("post-images").getPublicUrl(path);
+    const publicUrl = urlData.publicUrl;
+    const { error: dbError } = await supabase.from(table).update({ card_image_url: publicUrl }).eq("id", postId);
+    if (dbError) {
+      showToast("DB 업데이트 중 오류가 발생했습니다.");
+    } else {
+      if (table === "posts") {
+        setPosts((prev) => prev.map((p) => p.id === postId ? { ...p, card_image_url: publicUrl } : p));
+        setPreview((prev) => prev && prev.id === postId ? { ...prev, card_image_url: publicUrl } : prev);
+      } else {
+        setWellnessPosts((prev) => prev.map((p) => p.id === postId ? { ...p, card_image_url: publicUrl } : p));
+        setWellnessPreview((prev) => prev && prev.id === postId ? { ...prev, card_image_url: publicUrl } : prev);
+      }
+      showToast("이미지가 교체되었습니다.");
+    }
+    setter(null);
   }
 
   // ── 사상체질 ──────────────────────────────────────────────────────
@@ -1096,10 +1130,30 @@ export default function AdminPage() {
                           style={{ background: "#ffffff", borderRadius: "12px", border: "1px solid #eeeeee", padding: "20px", display: "flex", flexDirection: "column", gap: "0" }}
                         >
                           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                            <div style={{ width: "80px", height: "52px", borderRadius: "8px", overflow: "hidden", flexShrink: 0, background: "#f0f0f0" }}>
-                              {post.card_image_url && (
-                                <img src={post.card_image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                              )}
+                            <div style={{ display: "flex", flexDirection: "column", gap: "4px", flexShrink: 0 }}>
+                              <div style={{ width: "80px", height: "52px", borderRadius: "8px", overflow: "hidden", background: "#f0f0f0" }}>
+                                {post.card_image_url ? (
+                                  <img src={post.card_image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                ) : (
+                                  <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                    <span style={{ fontSize: "1.25rem", opacity: 0.25 }}>🌿</span>
+                                  </div>
+                                )}
+                              </div>
+                              <label style={{ width: "80px", fontSize: "0.6rem", fontWeight: 600, color: uploadingImage === post.id ? "#aaaaaa" : "#0774C4", background: uploadingImage === post.id ? "#f0f0f0" : "#f0f8ff", border: `1px solid ${uploadingImage === post.id ? "#e0e0e0" : "#0774C420"}`, borderRadius: "6px", padding: "3px 0", textAlign: "center", cursor: uploadingImage === post.id ? "not-allowed" : "pointer", display: "block", boxSizing: "border-box" as const }}>
+                                {uploadingImage === post.id ? "업로드 중..." : "이미지 교체"}
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  style={{ display: "none" }}
+                                  disabled={uploadingImage === post.id}
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) handleImageReplace(post.id, file, "posts");
+                                    e.target.value = "";
+                                  }}
+                                />
+                              </label>
                             </div>
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
@@ -1258,10 +1312,30 @@ export default function AdminPage() {
                           style={{ background: "#ffffff", borderRadius: "12px", border: "1px solid #eeeeee", padding: "20px" }}
                         >
                           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                            <div style={{ width: "80px", height: "52px", borderRadius: "8px", overflow: "hidden", flexShrink: 0, background: "#f0f0f0" }}>
-                              {post.card_image_url && (
-                                <img src={post.card_image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                              )}
+                            <div style={{ display: "flex", flexDirection: "column", gap: "4px", flexShrink: 0 }}>
+                              <div style={{ width: "80px", height: "52px", borderRadius: "8px", overflow: "hidden", background: "#f0f0f0" }}>
+                                {post.card_image_url ? (
+                                  <img src={post.card_image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                ) : (
+                                  <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                    <span style={{ fontSize: "1.25rem", opacity: 0.25 }}>🌿</span>
+                                  </div>
+                                )}
+                              </div>
+                              <label style={{ width: "80px", fontSize: "0.6rem", fontWeight: 600, color: uploadingWellnessImage === post.id ? "#aaaaaa" : "#1E8A4C", background: uploadingWellnessImage === post.id ? "#f0f0f0" : "#f0fff4", border: `1px solid ${uploadingWellnessImage === post.id ? "#e0e0e0" : "#1E8A4C20"}`, borderRadius: "6px", padding: "3px 0", textAlign: "center", cursor: uploadingWellnessImage === post.id ? "not-allowed" : "pointer", display: "block", boxSizing: "border-box" as const }}>
+                                {uploadingWellnessImage === post.id ? "업로드 중..." : "이미지 교체"}
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  style={{ display: "none" }}
+                                  disabled={uploadingWellnessImage === post.id}
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) handleImageReplace(post.id, file, "wellness_posts");
+                                    e.target.value = "";
+                                  }}
+                                />
+                              </label>
                             </div>
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
