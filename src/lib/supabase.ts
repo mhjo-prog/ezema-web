@@ -2,6 +2,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+const supabaseServiceKey = import.meta.env.VITE_SUPABASE_SERVICE_KEY as string;
 
 const isConfigured =
   supabaseUrl &&
@@ -12,6 +13,11 @@ const isConfigured =
 export const supabase: SupabaseClient = isConfigured
   ? createClient(supabaseUrl, supabaseAnonKey)
   : (null as unknown as SupabaseClient);
+
+// Storage 업로드용 — service role key 사용 (RLS 우회)
+export const adminSupabase: SupabaseClient = isConfigured && supabaseServiceKey
+  ? createClient(supabaseUrl, supabaseServiceKey)
+  : supabase;
 
 export const isSupabaseReady = isConfigured;
 

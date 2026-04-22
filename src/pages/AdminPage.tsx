@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { supabase, isSupabaseReady, type Post, type ConstitutionType, type WellnessPost, type WellnessCategory } from "../lib/supabase";
+import { supabase, adminSupabase, isSupabaseReady, type Post, type ConstitutionType, type WellnessPost, type WellnessCategory } from "../lib/supabase";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from "recharts";
 import ReactMarkdown from "react-markdown";
 import { useEditor, EditorContent } from "@tiptap/react";
@@ -149,12 +149,14 @@ function PostPreviewModal({
   onApprove,
   onDelete,
   onSave,
+  onError,
 }: {
   post: Post;
   onClose: () => void;
   onApprove: () => void;
   onDelete: () => void;
   onSave: (fields: { title: string; content: string; card_image_url: string }) => Promise<void>;
+  onError: (msg: string) => void;
 }) {
   const color = CONSTITUTION_COLORS[post.constitution_type];
   const [editMode, setEditMode] = useState(false);
@@ -180,9 +182,11 @@ function PostPreviewModal({
     setUploadingModalImage(true);
     const ext = file.name.split(".").pop();
     const path = `posts/${post.id}_${Date.now()}.${ext}`;
-    const { error: uploadError } = await supabase.storage.from("post-images").upload(path, file, { upsert: true });
-    if (!uploadError) {
-      const { data: urlData } = supabase.storage.from("post-images").getPublicUrl(path);
+    const { error: uploadError } = await adminSupabase.storage.from("post-images").upload(path, file, { upsert: true });
+    if (uploadError) {
+      onError(`이미지 업로드 실패: ${uploadError.message}`);
+    } else {
+      const { data: urlData } = adminSupabase.storage.from("post-images").getPublicUrl(path);
       setImageUrl(urlData.publicUrl);
     }
     setUploadingModalImage(false);
@@ -345,12 +349,14 @@ function WellnessPostPreviewModal({
   onApprove,
   onDelete,
   onSave,
+  onError,
 }: {
   post: WellnessPost;
   onClose: () => void;
   onApprove: () => void;
   onDelete: () => void;
   onSave: (fields: { title: string; content: string; card_image_url: string }) => Promise<void>;
+  onError: (msg: string) => void;
 }) {
   const color = WELLNESS_CATEGORY_COLORS[post.wellness_category];
   const [editMode, setEditMode] = useState(false);
@@ -376,9 +382,11 @@ function WellnessPostPreviewModal({
     setUploadingModalImage(true);
     const ext = file.name.split(".").pop();
     const path = `wellness_posts/${post.id}_${Date.now()}.${ext}`;
-    const { error: uploadError } = await supabase.storage.from("post-images").upload(path, file, { upsert: true });
-    if (!uploadError) {
-      const { data: urlData } = supabase.storage.from("post-images").getPublicUrl(path);
+    const { error: uploadError } = await adminSupabase.storage.from("post-images").upload(path, file, { upsert: true });
+    if (uploadError) {
+      onError(`이미지 업로드 실패: ${uploadError.message}`);
+    } else {
+      const { data: urlData } = adminSupabase.storage.from("post-images").getPublicUrl(path);
       setImageUrl(urlData.publicUrl);
     }
     setUploadingModalImage(false);
@@ -589,15 +597,15 @@ export default function AdminPage() {
     setter(postId);
     const ext = file.name.split(".").pop();
     const path = `${table}/${postId}_${Date.now()}.${ext}`;
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await adminSupabase.storage
       .from("post-images")
       .upload(path, file, { upsert: true });
     if (uploadError) {
-      showToast("이미지 업로드 중 오류가 발생했습니다.");
+      showToast(`이미지 업로드 실패: ${uploadError.message}`);
       setter(null);
       return;
     }
-    const { data: urlData } = supabase.storage.from("post-images").getPublicUrl(path);
+    const { data: urlData } = adminSupabase.storage.from("post-images").getPublicUrl(path);
     const publicUrl = urlData.publicUrl;
     const { error: dbError } = await supabase.from(table).update({ card_image_url: publicUrl }).eq("id", postId);
     if (dbError) {
@@ -1551,6 +1559,7 @@ export default function AdminPage() {
           onApprove={() => handleApprove(preview.id)}
           onDelete={() => handleDelete(preview.id)}
           onSave={(fields) => handleSave(preview.id, fields)}
+          onError={(msg) => showToast(msg)}
         />
       )}
 
@@ -1562,6 +1571,7 @@ export default function AdminPage() {
           onApprove={() => handleWellnessApprove(wellnessPreview.id)}
           onDelete={() => handleWellnessDelete(wellnessPreview.id)}
           onSave={(fields) => handleWellnessSave(wellnessPreview.id, fields)}
+          onError={(msg) => showToast(msg)}
         />
       )}
 
