@@ -13,10 +13,76 @@ const supabase = createClient(
 
 const WELLNESS_CATEGORIES = ["수면", "식단", "운동", "명상", "스트레스"];
 
+// ── 달램 뉴스레터 설정 ───────────────────────────────────────────────
+const DALLEM_KNOWN_NO = 95;  // 알려진 번호 — 새 호가 확인되면 여기만 올림
+const DALLEM_FETCH_COUNT = 10;
+
 // 오늘 날짜(UTC 기준 epoch 일수)를 5로 나눈 나머지로 카테고리 순환
 function getTodayWellnessCategory() {
   const dayIndex = Math.floor(Date.now() / 86400000) % WELLNESS_CATEGORIES.length;
   return WELLNESS_CATEGORIES[dayIndex];
+}
+
+// ── 달램 최신 번호 자동 탐지 ─────────────────────────────────────────
+async function detectDallemLatestNo() {
+  let no = DALLEM_KNOWN_NO;
+  while (true) {
+    try {
+      const res = await fetch(`https://dallem.stibee.com/p/${no + 1}`, {
+        method: "HEAD",
+        headers: { "User-Agent": "Mozilla/5.0" },
+        signal: AbortSignal.timeout(5000),
+      });
+      if (res.ok) {
+        no++;
+        console.log(`달램 #${no} 존재 확인, 계속 탐색...`);
+      } else {
+        break;
+      }
+    } catch {
+      break;
+    }
+  }
+  console.log(`달램 최신 번호: #${no}`);
+  return no;
+}
+
+// ── 달램 뉴스레터 크롤링 ─────────────────────────────────────────────
+async function fetchDallemNewsletters() {
+  const latestNo = await detectDallemLatestNo();
+  const results = [];
+  for (let no = latestNo; no > latestNo - DALLEM_FETCH_COUNT; no--) {
+    try {
+      const res = await fetch(`https://dallem.stibee.com/p/${no}`, {
+        headers: { "User-Agent": "Mozilla/5.0" },
+        signal: AbortSignal.timeout(8000),
+      });
+      if (!res.ok) {
+        console.log(`달램 #${no} 접근 실패 (${res.status}), skip`);
+        continue;
+      }
+      const html = await res.text();
+
+      // 제목: <title> 태그
+      const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+      const title = titleMatch ? titleMatch[1].trim().replace(/\s*[-|].*$/, "").trim() : `달램 #${no}`;
+
+      // 본문: <body> 내 텍스트에서 태그 제거 후 앞 600자
+      const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+      const bodyText = bodyMatch
+        ? bodyMatch[1].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()
+        : "";
+      const summary = bodyText.slice(0, 600);
+
+      if (summary.length > 50) {
+        results.push({ no, title, summary });
+        console.log(`달램 #${no} 수집 완료: "${title}"`);
+      }
+    } catch (err) {
+      console.log(`달램 #${no} 크롤링 오류 (skip): ${err.message}`);
+    }
+  }
+  return results;
 }
 
 // ── Supabase에서 최근 트렌드 키워드 읽기 ───────────────────────────
@@ -70,7 +136,16 @@ async function fetchRecentPostSummaries(category) {
 }
 
 // ── Claude로 웰니스 콘텐츠 생성 ─────────────────────────────────────
-async function generateWellnessPostContent(category, trends, existingPosts) {
+async function generateWellnessPostContent(category, trends, existingPosts, dallemNewsletters) {
+  const dallemSection =
+    dallemNewsletters.length > 0
+      ? `[달램 웰니스 뉴스레터 최신 트렌드 참고]\n아래 최신 웰니스 트렌드를 참고해서, 웰니스 관점으로 재해석하고 연결해서 작성해줘.\n` +
+        dallemNewsletters
+          .map((n) => `- 제목: "${n.title}"\n  내용 요약: ${n.summary}${n.summary.length >= 600 ? "..." : ""}`)
+          .join("\n") +
+        `\n`
+      : "";
+
   const trendSection =
     trends.length > 0
       ? `\n요즘 많이 검색되는 건강 키워드: ${trends.map((t) => t.keyword).join(", ")}\n이 중 '${category}'와 연결할 수 있는 키워드를 자연스럽게 녹여주세요.\n`
@@ -100,7 +175,7 @@ async function generateWellnessPostContent(category, trends, existingPosts) {
       {
         role: "user",
         content: `당신은 현대인의 건강한 삶을 돕는 웰니스 전문가입니다. 오늘의 '${category}' 웰니스 이야기를 작성해주세요.
-${trendSection}
+${dallemSection}${trendSection}
 카테고리 주제 범위: ${categoryGuide[category]}
 ${existingPostsSection}
 다음 JSON 형식으로만 응답하세요 (다른 텍스트 없이):
@@ -199,30 +274,36 @@ async function main() {
     process.exit(0);
   }
 
-  // 1. 트렌드 키워드 로드 (없어도 계속 진행)
+  // 1. 달램 뉴스레터 크롤링 (없어도 계속 진행)
+  console.log("달램 뉴스레터 크롤링 중...");
+  const dallemNewsletters = await fetchDallemNewsletters();
+  console.log(`달램 뉴스레터 ${dallemNewsletters.length}건 수집됨\n`);
+
+  // 2. 트렌드 키워드 로드 (없어도 계속 진행)
   console.log("Supabase에서 최근 트렌드 로드 중...");
   const trends = await fetchRecentTrends();
 
-  // 2. 기존 게시글 제목+요약 로드 (중복 방지용)
+  // 3. 기존 게시글 제목+요약 로드 (중복 방지용)
   console.log("Supabase에서 기존 게시글 요약 로드 중...");
   const existingPosts = await fetchRecentPostSummaries(category);
 
-  // 3. Claude로 콘텐츠 생성
+  // 4. Claude로 콘텐츠 생성
   console.log("\nClaude API로 웰니스 콘텐츠 생성 중...");
   const { title, content, unsplash_query } = await generateWellnessPostContent(
     category,
     trends,
-    existingPosts
+    existingPosts,
+    dallemNewsletters
   );
   console.log(`제목: ${title}`);
   console.log(`Unsplash 쿼리: ${unsplash_query}`);
 
-  // 4. Unsplash 이미지 가져오기
+  // 5. Unsplash 이미지 가져오기
   console.log("\nUnsplash 이미지 검색 중...");
   const imageUrl = await fetchUnsplashImage(unsplash_query);
   console.log(`이미지 URL: ${imageUrl || "없음 (기본값 사용)"}`);
 
-  // 5. Supabase에 draft로 저장
+  // 6. Supabase에 draft로 저장
   console.log("\nSupabase에 저장 중...");
   const { data, error } = await supabase.from("wellness_posts").insert({
     title,
