@@ -182,17 +182,17 @@ export default function SasangDetailPage() {
           <div
             style={{
               width: "100%",
-              aspectRatio: "16 / 9",
               borderRadius: "12px",
-              overflow: "hidden",
               marginBottom: "36px",
-              background: "#f7f8fa",
+              background: "#faf9f6",
+              display: "flex",
+              justifyContent: "center",
             }}
           >
             <img
               src={post.card_image_url}
               alt={post.title}
-              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+              style={{ maxWidth: "100%", height: "auto", display: "block", borderRadius: "12px" }}
             />
           </div>
         )}
