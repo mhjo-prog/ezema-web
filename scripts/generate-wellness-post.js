@@ -85,6 +85,73 @@ async function fetchDallemNewsletters() {
   return results;
 }
 
+// ── 네이버/헬스조선 웰니스 뉴스 크롤링 ──────────────────────────────
+async function fetchWellnessNews() {
+  const results = [];
+
+  // 1. 헬스조선 RSS
+  try {
+    const res = await fetch("https://health.chosun.com/rss/index.rss", {
+      headers: { "User-Agent": "Mozilla/5.0" },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (res.ok) {
+      const xml = await res.text();
+      const items = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)];
+      for (const [, itemXml] of items.slice(0, 5)) {
+        const titleMatch = itemXml.match(/<title>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>/);
+        const descMatch = itemXml.match(/<description>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/description>/);
+        const title = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, "").trim() : "";
+        const summary = descMatch
+          ? descMatch[1].replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim().slice(0, 200)
+          : "";
+        if (title) {
+          results.push({ source: "헬스조선", title, summary });
+          console.log(`  헬스조선 수집: "${title}"`);
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("헬스조선 RSS 오류 (skip):", err.message);
+  }
+
+  // 2. 네이버 뉴스 검색
+  try {
+    const res = await fetch(
+      `https://search.naver.com/search.naver?where=news&query=${encodeURIComponent("웰니스")}`,
+      {
+        headers: { "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36" },
+        signal: AbortSignal.timeout(8000),
+      }
+    );
+    if (res.ok) {
+      const html = await res.text();
+      // 제목: title 속성 또는 태그 내 텍스트
+      const titleRe = /class="news_tit"[^>]*(?:title="([^"]+)"|>([^<]{5,80}))<\/a>/g;
+      const descRe = /class="(?:dsc_wrap|api_txt_lines)[^"]*"[^>]*>\s*(?:<[^>]+>)?([^<]{20,200})/g;
+      const titles = [];
+      const descs = [];
+      let m;
+      while ((m = titleRe.exec(html)) !== null && titles.length < 5) {
+        const t = (m[1] || m[2] || "").trim();
+        if (t) titles.push(t);
+      }
+      while ((m = descRe.exec(html)) !== null && descs.length < 5) {
+        const d = m[1].replace(/&[a-z]+;/g, " ").trim();
+        if (d.length > 20) descs.push(d);
+      }
+      for (let i = 0; i < titles.length; i++) {
+        results.push({ source: "네이버뉴스", title: titles[i], summary: descs[i] || "" });
+        console.log(`  네이버뉴스 수집: "${titles[i]}"`);
+      }
+    }
+  } catch (err) {
+    console.warn("네이버 뉴스 크롤링 오류 (skip):", err.message);
+  }
+
+  return results;
+}
+
 // ── Supabase에서 최근 트렌드 키워드 읽기 ───────────────────────────
 async function fetchRecentTrends() {
   try {
@@ -136,15 +203,26 @@ async function fetchRecentPostSummaries(category) {
 }
 
 // ── Claude로 웰니스 콘텐츠 생성 ─────────────────────────────────────
-async function generateWellnessPostContent(category, trends, existingPosts, dallemNewsletters) {
-  const dallemSection =
-    dallemNewsletters.length > 0
-      ? `[달램 웰니스 뉴스레터 최신 트렌드 참고]\n아래 최신 웰니스 트렌드를 참고해서, 웰니스 관점으로 재해석하고 연결해서 작성해줘.\n` +
-        dallemNewsletters
+// externalRef: { source: "dallem"|"news", items: [{title, summary, source?}] } | null
+async function generateWellnessPostContent(category, trends, existingPosts, externalRef) {
+  let externalSection = "";
+  if (externalRef && externalRef.items.length > 0) {
+    if (externalRef.source === "dallem") {
+      externalSection =
+        `[달램 웰니스 뉴스레터 최신 트렌드 참고]\n아래 최신 웰니스 트렌드를 참고해서, 웰니스 관점으로 재해석하고 연결해서 작성해줘.\n` +
+        externalRef.items
           .map((n) => `- 제목: "${n.title}"\n  내용 요약: ${n.summary}${n.summary.length >= 600 ? "..." : ""}`)
           .join("\n") +
-        `\n`
-      : "";
+        "\n";
+    } else {
+      externalSection =
+        `[최신 웰니스 뉴스 트렌드 참고]\n아래 최신 웰니스 뉴스를 참고해서, 오늘의 주제와 연결해서 작성해줘.\n` +
+        externalRef.items
+          .map((n) => `- [${n.source}] 제목: "${n.title}"${n.summary ? `\n  요약: ${n.summary}` : ""}`)
+          .join("\n") +
+        "\n";
+    }
+  }
 
   const trendSection =
     trends.length > 0
@@ -175,7 +253,7 @@ async function generateWellnessPostContent(category, trends, existingPosts, dall
       {
         role: "user",
         content: `당신은 현대인의 건강한 삶을 돕는 웰니스 전문가입니다. 오늘의 '${category}' 웰니스 이야기를 작성해주세요.
-${dallemSection}${trendSection}
+${externalSection}${trendSection}
 카테고리 주제 범위: ${categoryGuide[category]}
 ${existingPostsSection}
 다음 JSON 형식으로만 응답하세요 (다른 텍스트 없이):
@@ -274,10 +352,20 @@ async function main() {
     process.exit(0);
   }
 
-  // 1. 달램 뉴스레터 크롤링 (없어도 계속 진행)
-  console.log("달램 뉴스레터 크롤링 중...");
-  const dallemNewsletters = await fetchDallemNewsletters();
-  console.log(`달램 뉴스레터 ${dallemNewsletters.length}건 수집됨\n`);
+  // 1. 외부 참고 소스 크롤링 — 50% 달램 / 50% 네이버+헬스조선 (없어도 계속 진행)
+  let externalRef = null;
+  if (Math.random() < 0.5) {
+    console.log("달램 뉴스레터 크롤링 중... (50% 확률 선택)");
+    const items = await fetchDallemNewsletters();
+    console.log(`달램 뉴스레터 ${items.length}건 수집됨`);
+    if (items.length > 0) externalRef = { source: "dallem", items };
+  } else {
+    console.log("웰니스 뉴스 크롤링 중... (50% 확률 선택)");
+    const items = await fetchWellnessNews();
+    console.log(`웰니스 뉴스 ${items.length}건 수집됨`);
+    if (items.length > 0) externalRef = { source: "news", items };
+  }
+  if (!externalRef) console.log("외부 참고 소스 없음 — 기본 트렌드만 사용\n");
 
   // 2. 트렌드 키워드 로드 (없어도 계속 진행)
   console.log("Supabase에서 최근 트렌드 로드 중...");
@@ -293,7 +381,7 @@ async function main() {
     category,
     trends,
     existingPosts,
-    dallemNewsletters
+    externalRef
   );
   console.log(`제목: ${title}`);
   console.log(`Unsplash 쿼리: ${unsplash_query}`);
