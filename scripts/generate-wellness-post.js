@@ -46,8 +46,31 @@ async function fetchRecentTrends() {
   }
 }
 
+// ── Supabase에서 최근 게시글 제목+요약 읽기 ──────────────────────────
+async function fetchRecentPostSummaries(category) {
+  try {
+    const { data, error } = await supabase
+      .from("wellness_posts")
+      .select("title, content")
+      .eq("wellness_category", category)
+      .order("created_at", { ascending: false })
+      .limit(30);
+
+    if (error || !data || data.length === 0) {
+      console.log("기존 게시글 없음.");
+      return [];
+    }
+
+    console.log(`기존 게시글 ${data.length}건 로드됨`);
+    return data.map((p) => ({ title: p.title, summary: p.content.slice(0, 200) }));
+  } catch (err) {
+    console.warn("기존 게시글 로드 오류 (무시):", err.message);
+    return [];
+  }
+}
+
 // ── Claude로 웰니스 콘텐츠 생성 ─────────────────────────────────────
-async function generateWellnessPostContent(category, trends) {
+async function generateWellnessPostContent(category, trends, existingPosts) {
   const trendSection =
     trends.length > 0
       ? `\n요즘 많이 검색되는 건강 키워드: ${trends.map((t) => t.keyword).join(", ")}\n이 중 '${category}'와 연결할 수 있는 키워드를 자연스럽게 녹여주세요.\n`
@@ -61,6 +84,15 @@ async function generateWellnessPostContent(category, trends) {
     스트레스: "스트레스 해소법, 번아웃 예방, 긴장 완화, 심리적 회복력",
   };
 
+  const existingPostsSection =
+    existingPosts.length > 0
+      ? `\n[기존 게시글 — 중복 금지]\n` +
+        existingPosts
+          .map((p) => `- 제목: "${p.title}"\n  요약: ${p.summary}${p.summary.length >= 200 ? "..." : ""}`)
+          .join("\n") +
+        `\n아래 기존 게시글과 주제, 소재, 핵심 메시지가 겹치지 않도록 완전히 새로운 각도로 작성해줘.\n`
+      : "";
+
   const message = await anthropic.messages.create({
     model: "claude-opus-4-6",
     max_tokens: 1024,
@@ -70,13 +102,18 @@ async function generateWellnessPostContent(category, trends) {
         content: `당신은 현대인의 건강한 삶을 돕는 웰니스 전문가입니다. 오늘의 '${category}' 웰니스 이야기를 작성해주세요.
 ${trendSection}
 카테고리 주제 범위: ${categoryGuide[category]}
-
+${existingPostsSection}
 다음 JSON 형식으로만 응답하세요 (다른 텍스트 없이):
 {
   "title": "매력적이고 구체적인 제목 (30자 이내)",
   "content": "본문 내용",
   "unsplash_query": "Unsplash 이미지 검색 키워드 (영어, 2-4단어, 이 글의 핵심 주제를 직접 반영한 구체적인 키워드 — 예: '수면 루틴'이면 'peaceful sleep bedroom', '스트레칭 루틴'이면 'morning stretch yoga')"
 }
+
+SEO/노출 최적화 지침:
+- 제목은 "~하는 법", "~의 이유", "~가 중요한 이유" 같은 검색 노출에 유리한 구체적인 표현 사용
+- 크롤링된 트렌드 키워드를 제목과 첫 문단에 자연스럽게 포함
+- 독자가 실제로 검색할 만한 키워드 중심으로 작성
 
 content 필드 작성 규칙:
 - ##, **, >, - 같은 마크다운 기호 절대 사용 금지
@@ -166,21 +203,26 @@ async function main() {
   console.log("Supabase에서 최근 트렌드 로드 중...");
   const trends = await fetchRecentTrends();
 
-  // 2. Claude로 콘텐츠 생성
+  // 2. 기존 게시글 제목+요약 로드 (중복 방지용)
+  console.log("Supabase에서 기존 게시글 요약 로드 중...");
+  const existingPosts = await fetchRecentPostSummaries(category);
+
+  // 3. Claude로 콘텐츠 생성
   console.log("\nClaude API로 웰니스 콘텐츠 생성 중...");
   const { title, content, unsplash_query } = await generateWellnessPostContent(
     category,
-    trends
+    trends,
+    existingPosts
   );
   console.log(`제목: ${title}`);
   console.log(`Unsplash 쿼리: ${unsplash_query}`);
 
-  // 3. Unsplash 이미지 가져오기
+  // 4. Unsplash 이미지 가져오기
   console.log("\nUnsplash 이미지 검색 중...");
   const imageUrl = await fetchUnsplashImage(unsplash_query);
   console.log(`이미지 URL: ${imageUrl || "없음 (기본값 사용)"}`);
 
-  // 4. Supabase에 draft로 저장
+  // 5. Supabase에 draft로 저장
   console.log("\nSupabase에 저장 중...");
   const { data, error } = await supabase.from("wellness_posts").insert({
     title,
