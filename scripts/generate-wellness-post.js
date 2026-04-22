@@ -75,8 +75,16 @@ ${trendSection}
 {
   "title": "매력적이고 구체적인 제목 (30자 이내)",
   "content": "본문 내용",
-  "image_keywords": "이 글의 핵심 시각 요소 2~3개 (영어로, 쉼표로 구분. 예: '수면 루틴'이면 'cozy bedroom, soft pillow, dim light', '스트레칭 루틴'이면 'morning stretch, open window, peaceful room')"
+  "image_keywords": "이 글의 핵심 시각 요소 2~3개 (영어로, 쉼표로 구분. 예: '수면 루틴'이면 'cozy bedroom, soft pillow, dim light', '스트레칭 루틴'이면 'morning stretch, open window, peaceful room')",
+  "characters": ["dad"]
 }
+
+characters 선택 규칙:
+- 가족 이야기, 집 안 장면, 식단/수면 루틴 → dad, mom 중심
+- 운동, 활동적인 내용 → brother, sister 중심
+- 산책, 힐링, 자연, 스트레스 해소 → dog 포함
+- 1~2개 선택, 배열로 작성 (예: ["dad"], ["mom", "sister"], ["dad", "dog"])
+- 반드시 brother/dad/dog/mom/sister 중에서만 선택
 
 content 필드 작성 규칙:
 - ##, **, >, - 같은 마크다운 기호 절대 사용 금지
@@ -102,74 +110,92 @@ content 필드 작성 규칙:
   return JSON.parse(jsonMatch[0]);
 }
 
-// ── DALL-E 3 이미지 생성 ─────────────────────────────────────────────
-const DALLE_STYLE_PROMPT =
-  "A black-and-white hand-drawn illustration in a rough pencil sketch style, warm and emotional tone, soft graphite pencil on textured paper, slightly messy and imperfect lines, minimal but expressive. Main character: middle-aged man with short parted hairstyle and full beard. Korean Sasang constitution wellness theme.";
+// ── GPT-4o Image (gpt-image-1) 이미지 생성 ───────────────────────────
+const STORAGE_BASE =
+  "https://gziaqastmqrhhmhvhlej.supabase.co/storage/v1/object/public/post-images";
 
-async function generateDalleImage(title, imageKeywords) {
+const CHARACTER_URLS = {
+  brother: `${STORAGE_BASE}/char-brother.png`,
+  dad: `${STORAGE_BASE}/char-dad.png`,
+  dog: `${STORAGE_BASE}/char-dog.png`,
+  mom: `${STORAGE_BASE}/char-mom.png`,
+  sister: `${STORAGE_BASE}/char-sister.png`,
+};
+
+const IMAGE_STYLE_PROMPT =
+  "A black-and-white hand-drawn illustration in a rough pencil sketch style, warm and emotional tone, soft graphite pencil on textured paper, slightly messy and imperfect lines, minimal but expressive. Korean Sasang constitution wellness theme.";
+
+async function generateGptImage(title, imageKeywords, characters) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     console.warn("OPENAI_API_KEY 없음. 기본 이미지 사용.");
     return null;
   }
 
-  const prompt = `${DALLE_STYLE_PROMPT} Theme of this image: ${title}. Key visual elements: ${imageKeywords}.`;
-  console.log(`DALL-E 프롬프트: ${prompt.slice(0, 120)}...`);
+  const validChars = (characters || []).filter((c) => CHARACTER_URLS[c]);
+  const selectedChars = validChars.length > 0 ? validChars : ["dad"];
+  console.log(`선택된 캐릭터: ${selectedChars.join(", ")}`);
+
+  const prompt = `${IMAGE_STYLE_PROMPT} Theme: ${title}. Key visual elements: ${imageKeywords}. Use the provided character reference images to maintain consistent character appearance and style.`;
+  console.log(`GPT-Image 프롬프트: ${prompt.slice(0, 120)}...`);
 
   try {
-    const res = await fetch("https://api.openai.com/v1/images/generations", {
+    // 선택된 캐릭터 레퍼런스 이미지 다운로드
+    const formData = new FormData();
+    for (const charName of selectedChars) {
+      const imgRes = await fetch(CHARACTER_URLS[charName]);
+      if (!imgRes.ok) {
+        console.warn(`캐릭터 이미지 다운로드 실패: ${charName}`);
+        continue;
+      }
+      const buffer = await imgRes.arrayBuffer();
+      const blob = new Blob([buffer], { type: "image/png" });
+      formData.append("image[]", blob, `${charName}.png`);
+    }
+
+    formData.append("model", "gpt-image-1");
+    formData.append("prompt", prompt);
+    formData.append("size", "1024x1024");
+    formData.append("quality", "standard");
+    formData.append("n", "1");
+
+    const res = await fetch("https://api.openai.com/v1/images/edits", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: "dall-e-3",
-        prompt,
-        n: 1,
-        size: "1024x1024",
-        quality: "standard",
-      }),
+      headers: { Authorization: `Bearer ${apiKey}` },
+      body: formData,
     });
 
     if (!res.ok) {
       const errText = await res.text();
-      console.warn(`DALL-E API 오류: ${res.status} - ${errText}`);
+      console.warn(`GPT-Image API 오류: ${res.status} - ${errText}`);
       return null;
     }
 
     const data = await res.json();
-    const tempUrl = data.data?.[0]?.url;
-    if (!tempUrl) {
-      console.warn("DALL-E 응답에 URL 없음.");
+    const b64 = data.data?.[0]?.b64_json;
+    if (!b64) {
+      console.warn("GPT-Image 응답에 데이터 없음.");
       return null;
     }
 
-    // DALL-E URL은 약 1시간 후 만료 → Supabase Storage에 영구 저장
-    console.log("이미지 다운로드 중...");
-    const imgRes = await fetch(tempUrl);
-    if (!imgRes.ok) {
-      console.warn("이미지 다운로드 실패. 임시 URL 사용.");
-      return tempUrl;
-    }
-
-    const buffer = await imgRes.arrayBuffer();
+    // base64 → Buffer → Supabase Storage 업로드
+    const imgBuffer = Buffer.from(b64, "base64");
     const fileName = `wellness-${Date.now()}.png`;
 
     const { error: uploadError } = await supabase.storage
       .from("post-images")
-      .upload(fileName, buffer, { contentType: "image/png", upsert: false });
+      .upload(fileName, imgBuffer, { contentType: "image/png", upsert: false });
 
     if (uploadError) {
-      console.warn("Supabase Storage 업로드 실패:", uploadError.message, "→ 임시 URL 사용.");
-      return tempUrl;
+      console.warn("Supabase Storage 업로드 실패:", uploadError.message);
+      return null;
     }
 
     const { data: urlData } = supabase.storage.from("post-images").getPublicUrl(fileName);
     console.log(`Supabase Storage 저장 완료: ${urlData?.publicUrl}`);
-    return urlData?.publicUrl || tempUrl;
+    return urlData?.publicUrl || null;
   } catch (err) {
-    console.warn("DALL-E 이미지 생성 오류:", err.message);
+    console.warn("GPT-Image 생성 오류:", err.message);
     return null;
   }
 }
@@ -218,16 +244,16 @@ async function main() {
 
   // 2. Claude로 콘텐츠 생성
   console.log("\nClaude API로 웰니스 콘텐츠 생성 중...");
-  const { title, content, image_keywords } = await generateWellnessPostContent(
+  const { title, content, image_keywords, characters } = await generateWellnessPostContent(
     category,
     trends
   );
   console.log(`제목: ${title}`);
   console.log(`이미지 키워드: ${image_keywords}`);
 
-  // 3. DALL-E 3 이미지 생성
-  console.log("\nDALL-E 3 이미지 생성 중...");
-  const imageUrl = await generateDalleImage(title, image_keywords);
+  // 3. GPT-4o Image 생성
+  console.log("\nGPT-4o Image 생성 중...");
+  const imageUrl = await generateGptImage(title, image_keywords, characters);
   console.log(`이미지 URL: ${imageUrl || "없음 (기본값 사용)"}`);
 
   // 4. Supabase에 draft로 저장
