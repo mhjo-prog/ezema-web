@@ -228,7 +228,6 @@ async function generateGptImage(title, imageKeywords, characters) {
     formData.append("model", "gpt-image-1");
     formData.append("prompt", prompt);
     formData.append("size", "1024x1024");
-    formData.append("quality", "standard");
     formData.append("n", "1");
 
     const res = await fetch("https://api.openai.com/v1/images/edits", {
