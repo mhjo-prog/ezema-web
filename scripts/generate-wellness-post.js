@@ -23,23 +23,32 @@ function getTodayWellnessCategory() {
   return WELLNESS_CATEGORIES[dayIndex];
 }
 
+// ── 달램 페이지 실존 여부 확인 (stibee는 404도 HTTP 200 반환) ────────
+async function isDallemPageReal(no) {
+  try {
+    const res = await fetch(`https://dallem.stibee.com/p/${no}`, {
+      headers: { "User-Agent": "Mozilla/5.0" },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return false;
+    const html = await res.text();
+    // 존재하지 않는 페이지는 icon_no_found_email.png 포함
+    return !html.includes("icon_no_found_email");
+  } catch {
+    return false;
+  }
+}
+
 // ── 달램 최신 번호 자동 탐지 ─────────────────────────────────────────
 async function detectDallemLatestNo() {
+  const MAX_SEARCH = 30; // DALLEM_KNOWN_NO 위로 최대 30개까지만 탐색
   let no = DALLEM_KNOWN_NO;
-  while (true) {
-    try {
-      const res = await fetch(`https://dallem.stibee.com/p/${no + 1}`, {
-        method: "HEAD",
-        headers: { "User-Agent": "Mozilla/5.0" },
-        signal: AbortSignal.timeout(5000),
-      });
-      if (res.ok) {
-        no++;
-        console.log(`달램 #${no} 존재 확인, 계속 탐색...`);
-      } else {
-        break;
-      }
-    } catch {
+  for (let i = 0; i < MAX_SEARCH; i++) {
+    const exists = await isDallemPageReal(no + 1);
+    if (exists) {
+      no++;
+      console.log(`달램 #${no} 존재 확인, 계속 탐색...`);
+    } else {
       break;
     }
   }
@@ -62,6 +71,10 @@ async function fetchDallemNewsletters() {
         continue;
       }
       const html = await res.text();
+      if (html.includes("icon_no_found_email")) {
+        console.log(`달램 #${no} 실제 없는 페이지, skip`);
+        continue;
+      }
 
       // 제목: <title> 태그
       const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
