@@ -75,7 +75,7 @@ ${trendSection}
 {
   "title": "매력적이고 구체적인 제목 (30자 이내)",
   "content": "본문 내용",
-  "unsplash_query": "Unsplash 이미지 검색 키워드 (영어, 2-4단어, 이 글의 핵심 주제를 직접 반영한 구체적인 키워드 — 예: '수면 루틴'이면 'peaceful sleep bedroom', '스트레칭 루틴'이면 'morning stretch yoga')"
+  "image_keywords": "이 글의 핵심 시각 요소 2~3개 (영어로, 쉼표로 구분. 예: '수면 루틴'이면 'cozy bedroom, soft pillow, dim light', '스트레칭 루틴'이면 'morning stretch, open window, peaceful room')"
 }
 
 content 필드 작성 규칙:
@@ -102,26 +102,76 @@ content 필드 작성 규칙:
   return JSON.parse(jsonMatch[0]);
 }
 
-// ── Unsplash 이미지 가져오기 ─────────────────────────────────────────
-async function fetchUnsplashImage(query) {
-  const accessKey = process.env.UNSPLASH_ACCESS_KEY;
-  if (!accessKey) {
-    console.warn("UNSPLASH_ACCESS_KEY 없음. 기본 이미지 사용.");
+// ── DALL-E 3 이미지 생성 ─────────────────────────────────────────────
+const DALLE_STYLE_PROMPT =
+  "A black-and-white hand-drawn illustration in a rough pencil sketch style, warm and emotional tone, soft graphite pencil on textured paper, slightly messy and imperfect lines, minimal but expressive. Main character: middle-aged man with short parted hairstyle and full beard. Korean Sasang constitution wellness theme.";
+
+async function generateDalleImage(title, imageKeywords) {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    console.warn("OPENAI_API_KEY 없음. 기본 이미지 사용.");
     return null;
   }
 
-  const res = await fetch(
-    `https://api.unsplash.com/photos/random?query=${encodeURIComponent(query)}&orientation=landscape&content_filter=high`,
-    { headers: { Authorization: `Client-ID ${accessKey}` } }
-  );
+  const prompt = `${DALLE_STYLE_PROMPT} Theme of this image: ${title}. Key visual elements: ${imageKeywords}.`;
+  console.log(`DALL-E 프롬프트: ${prompt.slice(0, 120)}...`);
 
-  if (!res.ok) {
-    console.warn(`Unsplash API 오류: ${res.status}`);
+  try {
+    const res = await fetch("https://api.openai.com/v1/images/generations", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: "dall-e-3",
+        prompt,
+        n: 1,
+        size: "1024x1024",
+        quality: "standard",
+      }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.warn(`DALL-E API 오류: ${res.status} - ${errText}`);
+      return null;
+    }
+
+    const data = await res.json();
+    const tempUrl = data.data?.[0]?.url;
+    if (!tempUrl) {
+      console.warn("DALL-E 응답에 URL 없음.");
+      return null;
+    }
+
+    // DALL-E URL은 약 1시간 후 만료 → Supabase Storage에 영구 저장
+    console.log("이미지 다운로드 중...");
+    const imgRes = await fetch(tempUrl);
+    if (!imgRes.ok) {
+      console.warn("이미지 다운로드 실패. 임시 URL 사용.");
+      return tempUrl;
+    }
+
+    const buffer = await imgRes.arrayBuffer();
+    const fileName = `wellness-${Date.now()}.png`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("post-images")
+      .upload(fileName, buffer, { contentType: "image/png", upsert: false });
+
+    if (uploadError) {
+      console.warn("Supabase Storage 업로드 실패:", uploadError.message, "→ 임시 URL 사용.");
+      return tempUrl;
+    }
+
+    const { data: urlData } = supabase.storage.from("post-images").getPublicUrl(fileName);
+    console.log(`Supabase Storage 저장 완료: ${urlData?.publicUrl}`);
+    return urlData?.publicUrl || tempUrl;
+  } catch (err) {
+    console.warn("DALL-E 이미지 생성 오류:", err.message);
     return null;
   }
-
-  const data = await res.json();
-  return data.urls?.regular || data.urls?.full || null;
 }
 
 // ── 오늘 이미 생성된 draft 확인 ──────────────────────────────────────
@@ -168,16 +218,16 @@ async function main() {
 
   // 2. Claude로 콘텐츠 생성
   console.log("\nClaude API로 웰니스 콘텐츠 생성 중...");
-  const { title, content, unsplash_query } = await generateWellnessPostContent(
+  const { title, content, image_keywords } = await generateWellnessPostContent(
     category,
     trends
   );
   console.log(`제목: ${title}`);
-  console.log(`Unsplash 쿼리: ${unsplash_query}`);
+  console.log(`이미지 키워드: ${image_keywords}`);
 
-  // 3. Unsplash 이미지 가져오기
-  console.log("\nUnsplash 이미지 검색 중...");
-  const imageUrl = await fetchUnsplashImage(unsplash_query);
+  // 3. DALL-E 3 이미지 생성
+  console.log("\nDALL-E 3 이미지 생성 중...");
+  const imageUrl = await generateDalleImage(title, image_keywords);
   console.log(`이미지 URL: ${imageUrl || "없음 (기본값 사용)"}`);
 
   // 4. Supabase에 draft로 저장
