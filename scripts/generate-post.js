@@ -154,11 +154,14 @@ async function generatePostContent(constitutionType, trends, feedbacks, research
 
   const existingPostsSection =
     existingPosts.length > 0
-      ? `\n[기존 게시글 — 중복 금지]\n` +
+      ? `\n[절대 금지 — 기존 게시글과 중복 불가]\n` +
+        `아래는 이미 발행된 게시글 목록이다. 이 글들과 주제, 소재, 핵심 메시지, 접근 방식이 단 1%라도 겹치면 안 된다.\n` +
+        `유사한 키워드가 나온다면 완전히 다른 각도, 다른 사례, 다른 과학적 근거로 접근해야 한다.\n` +
+        `기존 글을 "발전"시키거나 "보완"하는 것도 금지다. 완전히 새로운 주제를 골라라.\n\n` +
         existingPosts
           .map((p) => `- 제목: "${p.title}"\n  요약: ${p.summary}${p.summary.length >= 200 ? "..." : ""}`)
           .join("\n") +
-        `\n아래 기존 게시글과 주제, 소재, 핵심 메시지가 겹치지 않도록 완전히 새로운 각도로 작성해줘.\n`
+        `\n\n위 목록에 없는 완전히 새로운 주제로만 작성할 것.\n`
       : "";
 
   const message = await anthropic.messages.create({
