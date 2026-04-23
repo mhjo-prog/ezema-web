@@ -488,7 +488,7 @@ function WellnessPostPreviewModal({
               </div>
             </div>
             {imageUrl && (
-              <img src={imageUrl} alt="" style={{ width: "100%", aspectRatio: "16/9", objectFit: "cover", borderRadius: "8px" }} />
+              <img src={imageUrl} alt="" style={{ width: "100%", height: "auto", borderRadius: "8px", background: "#f5f5f5", display: "block" }} />
             )}
             <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
               <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#888888" }}>본문 상세 이미지 (상세 페이지에서 표시)</label>
@@ -501,7 +501,7 @@ function WellnessPostPreviewModal({
               </div>
             </div>
             {contentImageUrl && (
-              <img src={contentImageUrl} alt="" style={{ width: "100%", aspectRatio: "16/9", objectFit: "cover", borderRadius: "8px" }} />
+              <img src={contentImageUrl} alt="" style={{ width: "100%", height: "auto", borderRadius: "8px", background: "#f5f5f5", display: "block" }} />
             )}
             <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
               <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#888888" }}>본문</label>
@@ -1391,7 +1391,7 @@ export default function AdminPage() {
                           style={{ background: "#ffffff", borderRadius: "12px", border: "1px solid #eeeeee", padding: "20px" }}
                         >
                           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                            <div style={{ position: "relative", width: "80px", height: "52px", borderRadius: "8px", overflow: "hidden", background: "#f0f0f0", flexShrink: 0 }}>
+                            <div style={{ position: "relative", width: "80px", height: "52px", borderRadius: "8px", overflow: "hidden", background: "#f5f5f5", flexShrink: 0 }}>
                               {post.card_image_url ? (
                                 <img src={post.card_image_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                               ) : (
