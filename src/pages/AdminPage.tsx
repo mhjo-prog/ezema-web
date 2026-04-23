@@ -744,12 +744,13 @@ export default function AdminPage() {
   // ── 웰니스 ───────────────────────────────────────────────────────
   async function fetchWellnessFeedbacks(postIds: string[]) {
     if (!isSupabaseReady || postIds.length === 0) return;
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("wellness_post_feedback")
       .select("post_id, feedback_score, feedback_note")
       .in("post_id", postIds)
       .order("created_at", { ascending: false });
-    if (!data) return;
+    if (error) { console.error("fetchWellnessFeedbacks error:", error); return; }
+    if (!data || data.length === 0) return;
     const map: Record<string, FeedbackRow> = {};
     data.forEach((row: { post_id: string; feedback_score: number | null; feedback_note: string | null }) => {
       if (!map[row.post_id]) map[row.post_id] = { feedback_score: row.feedback_score, feedback_note: row.feedback_note };
