@@ -150,8 +150,8 @@ export default function WellnessDetailPage() {
           {post.title}
         </h1>
 
-        {/* 이미지 */}
-        {post.card_image_url && (
+        {/* 본문 상세 이미지 (없으면 썸네일로 fallback) */}
+        {(post.content_image_url || post.card_image_url) && (
           <div
             style={{
               width: "100%",
@@ -163,7 +163,7 @@ export default function WellnessDetailPage() {
             }}
           >
             <img
-              src={post.card_image_url}
+              src={post.content_image_url || post.card_image_url}
               alt={post.title}
               style={{ maxWidth: "100%", height: "auto", display: "block", borderRadius: "12px" }}
             />

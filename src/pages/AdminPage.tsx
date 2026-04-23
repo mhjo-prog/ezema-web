@@ -355,7 +355,7 @@ function WellnessPostPreviewModal({
   onClose: () => void;
   onApprove: () => void;
   onDelete: () => void;
-  onSave: (fields: { title: string; content: string; card_image_url: string }) => Promise<void>;
+  onSave: (fields: { title: string; content: string; card_image_url: string; content_image_url: string }) => Promise<void>;
   onError: (msg: string) => void;
 }) {
   const color = WELLNESS_CATEGORY_COLORS[post.wellness_category];
@@ -363,8 +363,10 @@ function WellnessPostPreviewModal({
   const [title, setTitle] = useState(post.title);
   const [content, setContent] = useState(post.content);
   const [imageUrl, setImageUrl] = useState(post.card_image_url ?? "");
+  const [contentImageUrl, setContentImageUrl] = useState(post.content_image_url ?? "");
   const [saving, setSaving] = useState(false);
   const [uploadingModalImage, setUploadingModalImage] = useState(false);
+  const [uploadingContentImage, setUploadingContentImage] = useState(false);
 
   const inputStyle = {
     width: "100%",
@@ -392,9 +394,24 @@ function WellnessPostPreviewModal({
     setUploadingModalImage(false);
   }
 
+  async function handleContentImageUpload(file: File) {
+    if (!isSupabaseReady) return;
+    setUploadingContentImage(true);
+    const ext = file.name.split(".").pop();
+    const path = `wellness_posts/${post.id}_content_${Date.now()}.${ext}`;
+    const { error: uploadError } = await adminSupabase.storage.from("post-images").upload(path, file, { upsert: true });
+    if (uploadError) {
+      onError(`이미지 업로드 실패: ${uploadError.message}`);
+    } else {
+      const { data: urlData } = adminSupabase.storage.from("post-images").getPublicUrl(path);
+      setContentImageUrl(urlData.publicUrl);
+    }
+    setUploadingContentImage(false);
+  }
+
   async function handleSave() {
     setSaving(true);
-    await onSave({ title, content, card_image_url: imageUrl });
+    await onSave({ title, content, card_image_url: imageUrl, content_image_url: contentImageUrl });
     setSaving(false);
     setEditMode(false);
   }
@@ -403,6 +420,7 @@ function WellnessPostPreviewModal({
     setTitle(post.title);
     setContent(post.content);
     setImageUrl(post.card_image_url ?? "");
+    setContentImageUrl(post.content_image_url ?? "");
     setEditMode(false);
   }
 
@@ -460,7 +478,7 @@ function WellnessPostPreviewModal({
               <input value={title} onChange={(e) => setTitle(e.target.value)} style={inputStyle} />
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-              <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#888888" }}>이미지 URL</label>
+              <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#888888" }}>썸네일 이미지 (목록에서 표시)</label>
               <div style={{ display: "flex", gap: "8px" }}>
                 <input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..." style={{ ...inputStyle, flex: 1 }} />
                 <label style={{ display: "flex", alignItems: "center", gap: "4px", padding: "0 14px", background: uploadingModalImage ? "#f0f0f0" : "#f7f8fa", border: "1.5px solid #e0e0e0", borderRadius: "8px", fontSize: "0.8125rem", fontWeight: 600, color: uploadingModalImage ? "#aaaaaa" : "#444444", cursor: uploadingModalImage ? "not-allowed" : "pointer", whiteSpace: "nowrap" as const, flexShrink: 0 }}>
@@ -471,6 +489,19 @@ function WellnessPostPreviewModal({
             </div>
             {imageUrl && (
               <img src={imageUrl} alt="" style={{ width: "100%", aspectRatio: "16/9", objectFit: "cover", borderRadius: "8px" }} />
+            )}
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#888888" }}>본문 상세 이미지 (상세 페이지에서 표시)</label>
+              <div style={{ display: "flex", gap: "8px" }}>
+                <input value={contentImageUrl} onChange={(e) => setContentImageUrl(e.target.value)} placeholder="https://..." style={{ ...inputStyle, flex: 1 }} />
+                <label style={{ display: "flex", alignItems: "center", gap: "4px", padding: "0 14px", background: uploadingContentImage ? "#f0f0f0" : "#f7f8fa", border: "1.5px solid #e0e0e0", borderRadius: "8px", fontSize: "0.8125rem", fontWeight: 600, color: uploadingContentImage ? "#aaaaaa" : "#444444", cursor: uploadingContentImage ? "not-allowed" : "pointer", whiteSpace: "nowrap" as const, flexShrink: 0 }}>
+                  {uploadingContentImage ? "업로드 중..." : "파일 업로드"}
+                  <input type="file" accept="image/*" style={{ display: "none" }} disabled={uploadingContentImage} onChange={(e) => { const f = e.target.files?.[0]; if (f) handleContentImageUpload(f); e.target.value = ""; }} />
+                </label>
+              </div>
+            </div>
+            {contentImageUrl && (
+              <img src={contentImageUrl} alt="" style={{ width: "100%", aspectRatio: "16/9", objectFit: "cover", borderRadius: "8px" }} />
             )}
             <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
               <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#888888" }}>본문</label>
@@ -803,7 +834,7 @@ export default function AdminPage() {
     setWellnessLoading(false);
   }
 
-  async function handleWellnessSave(postId: string, fields: { title: string; content: string; card_image_url: string }) {
+  async function handleWellnessSave(postId: string, fields: { title: string; content: string; card_image_url: string; content_image_url: string }) {
     if (!isSupabaseReady) return;
     const { error } = await supabase.from("wellness_posts").update(fields).eq("id", postId);
     if (!error) {

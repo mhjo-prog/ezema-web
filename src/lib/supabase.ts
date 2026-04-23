@@ -40,6 +40,7 @@ export interface WellnessPost {
   title: string;
   content: string;
   card_image_url: string;
+  content_image_url?: string;
   wellness_category: WellnessCategory;
   status: PostStatus;
   scheduled_at: string | null;
