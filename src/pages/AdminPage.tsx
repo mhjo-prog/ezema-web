@@ -781,7 +781,8 @@ export default function AdminPage() {
       setWellnessFeedbacks((prev) => ({ ...prev, [post.id]: { feedback_score: draft.score, feedback_note: draft.note || null } }));
       showToast("피드백이 저장되었습니다.");
     } else {
-      showToast("저장 중 오류가 발생했습니다.");
+      console.error("wellness feedback save error:", error);
+      showToast(`저장 중 오류: ${error.message}`);
     }
     setSavingWellnessFeedback(null);
   }

@@ -2,7 +2,6 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
-const supabaseServiceKey = import.meta.env.VITE_SUPABASE_SERVICE_KEY as string;
 
 const isConfigured =
   supabaseUrl &&
@@ -14,10 +13,8 @@ export const supabase: SupabaseClient = isConfigured
   ? createClient(supabaseUrl, supabaseAnonKey)
   : (null as unknown as SupabaseClient);
 
-// Storage 업로드용 — service role key 사용 (RLS 우회)
-export const adminSupabase: SupabaseClient = isConfigured && supabaseServiceKey
-  ? createClient(supabaseUrl, supabaseServiceKey)
-  : supabase;
+// Storage 업로드용 — anon key 사용 (버킷 policy에서 INSERT 허용 필요)
+export const adminSupabase: SupabaseClient = supabase;
 
 export const isSupabaseReady = isConfigured;
 
