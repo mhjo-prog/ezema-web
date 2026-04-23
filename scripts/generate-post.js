@@ -117,7 +117,7 @@ async function fetchRecentPostSummaries(constitutionType) {
 }
 
 // ── Claude로 콘텐츠 생성 ─────────────────────────────────────────────
-async function generatePostContent(constitutionType, trends, feedbacks, researchDocs, existingPosts) {
+async function generatePostContent(constitutionType, trends, feedbacks, researchDocs, existingPosts, isListicle = false) {
   const trendSection =
     trends.length > 0
       ? `\n요즘 많이 검색되는 건강 키워드: ${trends.map((t) => t.keyword).join(", ")}\n이 중 ${constitutionType}과 연결할 수 있는 키워드를 자연스럽게 녹여주세요.\n`
@@ -164,26 +164,16 @@ async function generatePostContent(constitutionType, trends, feedbacks, research
         `\n\n위 목록에 없는 완전히 새로운 주제로만 작성할 것.\n`
       : "";
 
-  const message = await anthropic.messages.create({
-    model: "claude-opus-4-6",
-    max_tokens: 1024,
-    messages: [
-      {
-        role: "user",
-        content: `당신은 사상체질 전문가입니다. 오늘의 ${constitutionType} 이야기를 작성해주세요.
-${trendSection}${feedbackSection}${researchSection}${existingPostsSection}
-다음 JSON 형식으로만 응답하세요 (다른 텍스트 없이):
-{
-  "title": "매력적이고 구체적인 제목 (30자 이내)",
-  "content": "본문 내용",
-  "unsplash_query": "Unsplash 이미지 검색 키워드 (영어, 2-4단어, 이 글의 제목과 핵심 주제를 직접 반영한 구체적인 키워드 — 예: 글이 '항공 여행 피로 회복'이면 'airplane travel fatigue rest', '소화 약한 체질 따뜻한 음식'이면 'warm soup digestion comfort food')"
-}
-
-SEO/노출 최적화 지침:
-- 제목은 "~하는 법", "~의 이유", "~가 중요한 이유" 같은 검색 노출에 유리한 구체적인 표현 사용
-- 크롤링된 트렌드 키워드를 제목과 첫 문단에 자연스럽게 포함
-- 독자가 실제로 검색할 만한 키워드 중심으로 작성
-
+  const listicleGuide = isListicle
+    ? `
+[리스티클 형식으로 작성]
+- 제목은 반드시 "N가지", "TOP N", "N단계" 같은 숫자 포함 리스티클 형식으로 (예: "${constitutionType}에게 좋은 여름 음식 5가지", "${constitutionType} 수면 루틴 TOP 3")
+- 숫자는 3~7 사이로 선택
+- content는 각 항목을 "1. 항목명\\n설명" 형태로 구성 (번호. 항목명 한 줄 + 설명 1~2문장)
+- 항목 간 구분은 빈 줄(\\n\\n)로
+- 전체 분량 400-600자
+`
+    : `
 content 필드 작성 규칙:
 - ##, **, >, - 같은 마크다운 기호 절대 사용 금지
 - 일반 텍스트로만 작성, 단락 구분은 빈 줄(\\n\\n)로
@@ -198,7 +188,31 @@ content 필드 작성 규칙:
 땀을 잘 흘리는 것이 태음인 건강의 핵심입니다. 규칙적인 유산소 운동으로 충분히 땀을 내면 몸이 한결 가벼워집니다. 등산이나 빠른 걷기를 추천합니다.
 
 식사는 천천히, 80%만 먹는 습관을 들여보세요. 도라지, 율무, 현미처럼 폐를 돕는 식품이 태음인에게 잘 맞습니다.
+`;
 
+  const titleGuide = isListicle
+    ? `"제목은 숫자 포함 리스티클 형식 (예: '${constitutionType}에게 좋은 음식 5가지', '${constitutionType} 건강 루틴 TOP 3') — 30자 이내"`
+    : `"매력적이고 구체적인 제목 (30자 이내)"`;
+
+  const message = await anthropic.messages.create({
+    model: "claude-opus-4-6",
+    max_tokens: 1024,
+    messages: [
+      {
+        role: "user",
+        content: `당신은 사상체질 전문가입니다. 오늘의 ${constitutionType} 이야기를 작성해주세요.
+${trendSection}${feedbackSection}${researchSection}${existingPostsSection}
+다음 JSON 형식으로만 응답하세요 (다른 텍스트 없이):
+{
+  "title": ${titleGuide},
+  "content": "본문 내용",
+  "unsplash_query": "Unsplash 이미지 검색 키워드 (영어, 2-4단어, 이 글의 제목과 핵심 주제를 직접 반영한 구체적인 키워드 — 예: 글이 '항공 여행 피로 회복'이면 'airplane travel fatigue rest', '소화 약한 체질 따뜻한 음식'이면 'warm soup digestion comfort food')"
+}
+
+SEO/노출 최적화 지침:
+- 크롤링된 트렌드 키워드를 제목과 첫 문단에 자연스럽게 포함
+- 독자가 실제로 검색할 만한 키워드 중심으로 작성
+${listicleGuide}
 ${constitutionType}의 특성:
 - 태음인: 소화력 강함, 땀을 많이 흘림, 폐 기능 약함, 끈기 있고 보수적, 간 기능 발달
 - 소음인: 소화 약함, 추위 잘 탐, 신장 기능 발달, 꼼꼼하고 내성적, 비장 약함
@@ -290,14 +304,17 @@ async function main() {
   console.log("Supabase에서 기존 게시글 요약 로드 중...");
   const existingPosts = await fetchRecentPostSummaries(constitutionType);
 
-  // 5. Claude로 콘텐츠 생성
-  console.log("\nClaude API로 콘텐츠 생성 중...");
+  // 5. Claude로 콘텐츠 생성 (15% 확률로 리스티클 형식)
+  const isListicle = Math.random() < 0.15;
+  console.log(`\n콘텐츠 형식: ${isListicle ? "리스티클" : "일반"}`);
+  console.log("Claude API로 콘텐츠 생성 중...");
   const { title, content, unsplash_query } = await generatePostContent(
     constitutionType,
     trends,
     feedbacks,
     researchDocs,
-    existingPosts
+    existingPosts,
+    isListicle
   );
   console.log(`제목: ${title}`);
   console.log(`Unsplash 쿼리: ${unsplash_query}`);
