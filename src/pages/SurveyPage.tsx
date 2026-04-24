@@ -117,7 +117,7 @@ export default function SurveyPage({ onComplete, onBack }: Props) {
       {/* ── Question + Options ── */}
       <div
         ref={scrollContainerRef}
-        className="flex-1 flex flex-col items-center justify-center overflow-y-auto"
+        className="flex-1 flex flex-col items-center justify-start overflow-y-auto"
         style={{ padding: "0 24px 40px" }}
       >
         <div className="w-full max-w-lg">
