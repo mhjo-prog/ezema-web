@@ -22,7 +22,9 @@ export default function SurveyPage({ onComplete, onBack }: Props) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    scrollContainerRef.current?.scrollTo(0, 0);
+    if ([15, 16, 19].includes(questions[currentIndex].id)) {
+      scrollContainerRef.current?.scrollTo(0, 0);
+    }
     window.scrollTo(0, 0);
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
