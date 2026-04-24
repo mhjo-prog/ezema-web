@@ -132,7 +132,7 @@ export default function SurveyPage({ onComplete, onBack }: Props) {
               className="flex flex-col flex-1"
             >
               {/* Question text */}
-              <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div className="flex-1 flex items-center justify-center md:block">
                 <h2
                   className="font-bold text-center whitespace-pre-line"
                   style={{
@@ -140,6 +140,7 @@ export default function SurveyPage({ onComplete, onBack }: Props) {
                     lineHeight: 1.35,
                     letterSpacing: "-0.025em",
                     color: "#111111",
+                    marginBottom: "2.5rem",
                   }}
                 >
                   {current.text}
@@ -147,7 +148,7 @@ export default function SurveyPage({ onComplete, onBack }: Props) {
               </div>
 
               {/* Options */}
-              <div className="flex flex-col gap-3" style={{ paddingTop: "2rem" }}>
+              <div className="flex flex-col gap-3">
                 {current.options.map((option, i) => {
                   const isSelected = selectedId === option.id;
                   return (
