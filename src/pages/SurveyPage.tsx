@@ -117,10 +117,10 @@ export default function SurveyPage({ onComplete, onBack }: Props) {
       {/* ── Question + Options ── */}
       <div
         ref={scrollContainerRef}
-        className="flex-1 flex flex-col items-center overflow-y-auto"
-        style={{ padding: "24px 24px 40px" }}
+        className="flex-1 flex flex-col items-center justify-center overflow-y-auto"
+        style={{ padding: "0 24px 40px" }}
       >
-        <div className="w-full max-w-lg flex flex-col flex-1">
+        <div className="w-full max-w-lg">
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
               key={currentIndex}
@@ -129,23 +129,20 @@ export default function SurveyPage({ onComplete, onBack }: Props) {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: direction * -40 }}
               transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-              className="flex flex-col flex-1"
             >
               {/* Question text */}
-              <div className="flex-1 flex items-center justify-center md:block">
-                <h2
-                  className="font-bold text-center whitespace-pre-line"
-                  style={{
-                    fontSize: "clamp(1.6rem, 4.5vw, 2.2rem)",
-                    lineHeight: 1.35,
-                    letterSpacing: "-0.025em",
-                    color: "#111111",
-                    marginBottom: "2.5rem",
-                  }}
-                >
-                  {current.text}
-                </h2>
-              </div>
+              <h2
+                className="font-bold text-center whitespace-pre-line"
+                style={{
+                  fontSize: "clamp(1.6rem, 4.5vw, 2.2rem)",
+                  lineHeight: 1.35,
+                  letterSpacing: "-0.025em",
+                  color: "#111111",
+                  marginBottom: "2.5rem",
+                }}
+              >
+                {current.text}
+              </h2>
 
               {/* Options */}
               <div className="flex flex-col gap-3">
