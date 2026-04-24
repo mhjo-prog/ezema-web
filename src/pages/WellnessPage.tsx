@@ -40,6 +40,7 @@ function WellnessCard({ post, onClick }: { post: WellnessPost; onClick: () => vo
           borderRadius: "8px",
           flexShrink: 0,
           marginBottom: "12px",
+          overflow: "hidden",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -50,7 +51,7 @@ function WellnessCard({ post, onClick }: { post: WellnessPost; onClick: () => vo
             src={post.card_image_url}
             alt={post.title}
             onError={() => setImgError(true)}
-            style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
+            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
           />
         ) : (
           <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
