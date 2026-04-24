@@ -116,7 +116,7 @@ export const questions: Question[] = [
   {
     id: 9,
     category: "외모 · 건강",
-    text: "컨디션이 나빠질 때 먼저 나타나는 증상은?",
+    text: "컨디션이 나빠질 때\n먼저 나타나는 증상은?",
     options: [
       { id: "a", text: "다리 힘 빠짐 + 피곤함", scores: A },
       { id: "b", text: "땀 감소 + 얼굴 부음", scores: B },
@@ -184,7 +184,7 @@ export const questions: Question[] = [
   {
     id: 15,
     category: "소화 · 음식",
-    text: "소화 상태에 따른 컨디션 변화는 어떠한가요?",
+    text: "소화 상태에 따른 컨디션\n변화는 어떠한가요?",
     options: [
       { id: "a", text: "평소에 소화가 잘 안되며, 육류보다는 채소나 해산물이 편하다", scores: A },
       { id: "b", text: "과식을 해도 소화가 잘되며, 배가 든든해야 기운이 나고 일이 잘된다", scores: B },
@@ -195,7 +195,7 @@ export const questions: Question[] = [
   {
     id: 16,
     category: "소화 · 음식",
-    text: "평소 선호하거나 몸에 잘 맞는 음식의 온도는?",
+    text: "평소 선호하거나 몸에 잘 맞는\n음식의 온도는?",
     options: [
       { id: "a", text: "냉수보다는 적당히 시원한 온도의 맑은 차나 음료가 몸에 잘 맞는다", scores: A },
       { id: "b", text: "찬 것이나 뜨거운 것이나 가리지 않고 다 잘 먹으며 소화에 무리가 없다", scores: B },
@@ -228,7 +228,7 @@ export const questions: Question[] = [
   {
     id: 19,
     category: "소화 · 음식",
-    text: "특별히 당기거나 '소울 푸드'라고 생각하는 음식은?",
+    text: "특별히 당기거나 '소울 푸드' 라고\n생각하는 음식은?",
     options: [
       { id: "a", text: "전복, 조개, 메밀국수처럼 담백하고 깔끔한 맛을 선호한다", scores: A },
       { id: "b", text: "소고기 등 기름지고 든든한 고기 요리를 먹어야 기운이 난다", scores: B },
@@ -307,7 +307,7 @@ export const questions: Question[] = [
   {
     id: 26,
     category: "성격 · 심리",
-    text: "이중에서 무엇을 중요하게 생각하나요?",
+    text: "무엇을 중요하게 생각하나요?",
     options: [
       { id: "a", text: "권력", scores: A },
       { id: "b", text: "돈과 재물", scores: B },
@@ -340,7 +340,7 @@ export const questions: Question[] = [
   {
     id: 29,
     category: "성격 · 심리",
-    text: "사람을 판단할 때에 무엇을 기준으로 보나요?",
+    text: "사람을 판단할 때에\n무엇을 기준으로 보나요?",
     options: [
       { id: "a", text: "선과 악", scores: A },
       { id: "b", text: "근면과 게으름", scores: B },
