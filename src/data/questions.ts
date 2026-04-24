@@ -94,7 +94,7 @@ export const questions: Question[] = [
   {
     id: 7,
     category: "외모 · 건강",
-    text: "걸음걸이나 움직임은 어떤 스타일인가요?",
+    text: "걸음걸이나 움직임은\n어떤 스타일인가요?",
     options: [
       { id: "a", text: "걸음걸이가 꼿꼿하다", scores: A },
       { id: "b", text: "걸음이 느리고 무게 있게 걷는다", scores: B },
