@@ -173,7 +173,7 @@ export const questions: Question[] = [
   {
     id: 14,
     category: "소화 · 음식",
-    text: "식사 속도와 식사량은 어떤 편인가요?",
+    text: "식사 속도와 식사량은 어떤가요?",
     options: [
       { id: "a", text: "기름진 것보다는 담백한 것을 선호하며, 식욕이 크지 않다", scores: A },
       { id: "b", text: "음식을 가리지 않고 아주 복스럽고 많이 먹는 편이다", scores: B },
