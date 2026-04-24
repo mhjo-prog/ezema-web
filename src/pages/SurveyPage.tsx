@@ -118,7 +118,7 @@ export default function SurveyPage({ onComplete, onBack }: Props) {
       <div
         ref={scrollContainerRef}
         className={`flex-1 flex flex-col items-center overflow-y-auto ${[15, 16, 19].includes(current.id) ? 'justify-start' : 'justify-center'}`}
-        style={{ padding: "40px 24px" }}
+        style={{ padding: [15, 16, 19].includes(current.id) ? "0 24px 40px" : "40px 24px" }}
       >
         <div className="w-full max-w-lg">
           <AnimatePresence mode="wait" custom={direction}>
