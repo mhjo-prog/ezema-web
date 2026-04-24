@@ -250,7 +250,7 @@ function OrganIllustration({ constitutionType }: { constitutionType: string }) {
   if (!organs) return null;
   const { strong, weak } = organs;
 
-  const getHighlightColor = (organ: string) => organ === strong ? "#3b82f6" : organ === weak ? "#e53e3e" : "#888888";
+  const getHighlightColor = (organ: string) => organ === strong ? "#e53e3e" : organ === weak ? "#3b82f6" : "#888888";
 
   const getFillOpacity = (organ: string) => {
     if (organ === selected) return 0.55;
@@ -396,11 +396,11 @@ function OrganIllustration({ constitutionType }: { constitutionType: string }) {
       {/* Legend */}
       <div style={{ display: "flex", justifyContent: "center", gap: "24px", marginTop: "14px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <div style={{ width: "10px", height: "10px", borderRadius: "3px", background: "#3b82f6" }} />
+          <div style={{ width: "10px", height: "10px", borderRadius: "3px", background: "#e53e3e" }} />
           <span style={{ fontSize: "0.78rem", color: "#888" }}>강한 장기</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <div style={{ width: "10px", height: "10px", borderRadius: "3px", background: "#e53e3e" }} />
+          <div style={{ width: "10px", height: "10px", borderRadius: "3px", background: "#3b82f6" }} />
           <span style={{ fontSize: "0.78rem", color: "#888" }}>약한 장기</span>
         </div>
       </div>
