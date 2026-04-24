@@ -50,7 +50,7 @@ export const questions: Question[] = [
   {
     id: 3,
     category: "외모 · 건강",
-    text: "몸에서 외관상 가장 발달되거나\n큰 부분은?",
+    text: "몸에서 외관상 가장\n발달되거나 큰 부분은?",
     options: [
       { id: "a", text: "머리와 목", scores: A },
       { id: "b", text: "허리와 옆구리", scores: B },
