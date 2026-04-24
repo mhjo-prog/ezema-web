@@ -34,10 +34,15 @@ function PostCard({ post, onClick }: { post: Post; onClick: () => void }) {
       <div
         style={{
           width: "100%",
+          aspectRatio: "3 / 2",
           background: "#faf9f6",
           borderRadius: "8px",
           flexShrink: 0,
           marginBottom: "12px",
+          overflow: "hidden",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
         {post.card_image_url && !imgError ? (
@@ -45,7 +50,7 @@ function PostCard({ post, onClick }: { post: Post; onClick: () => void }) {
             src={post.card_image_url}
             alt={post.title}
             onError={() => setImgError(true)}
-            style={{ width: "100%", height: "auto", display: "block" }}
+            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
           />
         ) : (
           <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
