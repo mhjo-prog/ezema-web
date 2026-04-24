@@ -50,7 +50,7 @@ export const questions: Question[] = [
   {
     id: 3,
     category: "외모 · 건강",
-    text: "몸에서 외관상 가장 발달되거나 큰 부분은?",
+    text: "몸에서 외관상 가장 발달되거나\n큰 부분은?",
     options: [
       { id: "a", text: "머리와 목", scores: A },
       { id: "b", text: "허리와 옆구리", scores: B },
@@ -61,7 +61,7 @@ export const questions: Question[] = [
   {
     id: 4,
     category: "외모 · 건강",
-    text: "얼굴은 다음 중 어디에 가장 가깝나요?",
+    text: "얼굴은 다음 중 어디에\n가장 가깝나요?",
     options: [
       { id: "a", text: "광대뼈가 나왔고, 이마가 넓다", scores: A },
       { id: "b", text: "이목구비가 큼직하고, 얼굴 윤곽이 뚜렷하다", scores: B },
