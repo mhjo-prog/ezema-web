@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { questions } from "../data/questions";
 
@@ -18,6 +18,12 @@ export default function SurveyPage({ onComplete, onBack }: Props) {
     소음인: 0,
   });
   const [scoreHistory, setScoreHistory] = useState<Record<string, number>[]>([]);
+
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    scrollContainerRef.current?.scrollTo(0, 0);
+  }, [currentIndex]);
 
   const current = questions[currentIndex];
   const progressPct = ((currentIndex + 1) / questions.length) * 100;
@@ -107,6 +113,7 @@ export default function SurveyPage({ onComplete, onBack }: Props) {
 
       {/* ── Question + Options ── */}
       <div
+        ref={scrollContainerRef}
         className="flex-1 flex flex-col items-center justify-center overflow-y-auto"
         style={{ padding: "0 24px 40px" }}
       >
