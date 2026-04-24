@@ -24,6 +24,8 @@ export default function SurveyPage({ onComplete, onBack }: Props) {
   useEffect(() => {
     scrollContainerRef.current?.scrollTo(0, 0);
     window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
   }, [currentIndex]);
 
   const current = questions[currentIndex];
