@@ -400,6 +400,10 @@ function OrganIllustration({ constitutionType }: { constitutionType: string }) {
           <span style={{ fontSize: "0.78rem", color: "#888" }}>강한 장기</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <div style={{ width: "10px", height: "10px", borderRadius: "3px", background: "#888888" }} />
+          <span style={{ fontSize: "0.78rem", color: "#888" }}>보통 장기</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
           <div style={{ width: "10px", height: "10px", borderRadius: "3px", background: "#3b82f6" }} />
           <span style={{ fontSize: "0.78rem", color: "#888" }}>약한 장기</span>
         </div>
