@@ -132,22 +132,22 @@ export default function SurveyPage({ onComplete, onBack }: Props) {
               className="flex flex-col flex-1"
             >
               {/* Question text */}
-              <h2
-                className="font-bold text-center whitespace-pre-line"
-                style={{
-                  fontSize: "clamp(1.6rem, 4.5vw, 2.2rem)",
-                  lineHeight: 1.35,
-                  letterSpacing: "-0.025em",
-                  color: "#111111",
-                  marginTop: "auto",
-                  marginBottom: "2rem",
-                }}
-              >
-                {current.text}
-              </h2>
+              <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <h2
+                  className="font-bold text-center whitespace-pre-line"
+                  style={{
+                    fontSize: "clamp(1.6rem, 4.5vw, 2.2rem)",
+                    lineHeight: 1.35,
+                    letterSpacing: "-0.025em",
+                    color: "#111111",
+                  }}
+                >
+                  {current.text}
+                </h2>
+              </div>
 
               {/* Options */}
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-3" style={{ paddingTop: "2rem" }}>
                 {current.options.map((option, i) => {
                   const isSelected = selectedId === option.id;
                   return (
