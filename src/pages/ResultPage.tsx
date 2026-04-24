@@ -453,6 +453,7 @@ function ShareModal({ constitutionType, scores, onClose }: { constitutionType: s
     params.set(t, String(total > 0 ? Math.round((scores[t] || 0) / total * 100) : 0));
   });
   const shareUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+  console.log("shareUrl:", shareUrl);
   const [showToast, setShowToast] = useState(false);
 
   const handleKakao = () => {
