@@ -101,7 +101,7 @@ async function fetchRecentPostSummaries(constitutionType) {
       .select("title, content")
       .eq("constitution_type", constitutionType)
       .order("created_at", { ascending: false })
-      .limit(30);
+      .limit(100);
 
     if (error || !data || data.length === 0) {
       console.log("기존 게시글 없음.");
@@ -116,8 +116,58 @@ async function fetchRecentPostSummaries(constitutionType) {
   }
 }
 
+// ── 제목 핵심 명사 추출 (2글자 이상 토큰) ────────────────────────────
+function extractNouns(title) {
+  return title
+    .split(/\s+/)
+    .map((t) => t.replace(/[^가-힣a-zA-Z0-9]/g, ""))
+    .filter((t) => t.length >= 2);
+}
+
+// ── 제목 유사도 체크 ─────────────────────────────────────────────────
+// 반환값: 유사한 기존 제목 문자열 (없으면 null)
+function isTitleSimilar(newTitle, existingTitles) {
+  const newNouns = extractNouns(newTitle);
+  for (const existing of existingTitles) {
+    // 조건 b: 포함 관계
+    if (newTitle.includes(existing) || existing.includes(newTitle)) {
+      return existing;
+    }
+    // 조건 a: 핵심 명사 3개 이상 겹침
+    const existingNouns = extractNouns(existing);
+    const overlap = newNouns.filter((n) => existingNouns.includes(n));
+    if (overlap.length >= 3) {
+      return existing;
+    }
+  }
+  return null;
+}
+
+// ── 다른 체질 최근 게시글 제목 읽기 (교차 중복 방지용) ────────────────
+async function fetchCrossConstitutionTitles(constitutionType) {
+  try {
+    const { data, error } = await supabase
+      .from("posts")
+      .select("title")
+      .neq("constitution_type", constitutionType)
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    if (error || !data || data.length === 0) {
+      console.log("다른 체질 게시글 없음.");
+      return [];
+    }
+
+    console.log(`다른 체질 게시글 ${data.length}건 로드됨`);
+    return data.map((p) => p.title);
+  } catch (err) {
+    console.warn("다른 체질 게시글 로드 오류 (무시):", err.message);
+    return [];
+  }
+}
+
 // ── Claude로 콘텐츠 생성 ─────────────────────────────────────────────
-async function generatePostContent(constitutionType, trends, feedbacks, researchDocs, existingPosts, isListicle = false) {
+async function generatePostContent(constitutionType, trends, feedbacks, researchDocs, existingPosts, crossTitles, isListicle = false) {
   const trendSection =
     trends.length > 0
       ? `\n요즘 많이 검색되는 건강 키워드: ${trends.map((t) => t.keyword).join(", ")}\n이 중 ${constitutionType}과 연결할 수 있는 키워드를 자연스럽게 녹여주세요.\n`
@@ -164,6 +214,14 @@ async function generatePostContent(constitutionType, trends, feedbacks, research
         `\n\n위 목록에 없는 완전히 새로운 주제로만 작성할 것.\n`
       : "";
 
+  const crossTitlesSection =
+    crossTitles.length > 0
+      ? `\n[체질 간 교차 중복 금지]\n` +
+        `아래는 다른 체질로 이미 발행된 게시글 제목이다. 체질이 달라도 동일 주제는 금지다.\n` +
+        crossTitles.map((t) => `- "${t}"`).join("\n") +
+        `\n`
+      : "";
+
   const listicleGuide = isListicle
     ? `
 [리스티클 형식으로 작성]
@@ -201,7 +259,7 @@ content 필드 작성 규칙:
       {
         role: "user",
         content: `당신은 사상체질 전문가입니다. 오늘의 ${constitutionType} 이야기를 작성해주세요.
-${trendSection}${feedbackSection}${researchSection}${existingPostsSection}
+${trendSection}${feedbackSection}${researchSection}${existingPostsSection}${crossTitlesSection}
 다음 JSON 형식으로만 응답하세요 (다른 텍스트 없이):
 {
   "title": ${titleGuide},
@@ -250,7 +308,7 @@ async function fetchUnsplashImage(query) {
   return data.urls?.regular || data.urls?.full || null;
 }
 
-// ── 오늘 이미 생성된 draft 확인 ──────────────────────────────────────
+// ── 오늘 이미 생성된 포스트 확인 (draft/approved/published 모두 포함) ──
 async function checkAlreadyGenerated(constitutionType) {
   // KST(UTC+9) 기준 오늘 00:00을 UTC로 변환
   const now = new Date();
@@ -264,7 +322,7 @@ async function checkAlreadyGenerated(constitutionType) {
     .from("posts")
     .select("id")
     .eq("constitution_type", constitutionType)
-    .eq("status", "draft")
+    .in("status", ["draft", "approved", "published"])
     .gte("created_at", todayStart.toISOString())
     .limit(1);
 
@@ -280,8 +338,8 @@ async function main() {
   const constitutionType = process.argv[2] || getTodayConstitutionType();
   console.log(`오늘의 체질 타입: ${constitutionType}\n`);
 
-  // 0. 중복 생성 방지
-  console.log("오늘 이미 생성된 draft 확인 중...");
+  // 0. 중복 생성 방지 (draft/approved/published 모두 체크)
+  console.log("오늘 이미 생성된 포스트 확인 중...");
   const alreadyGenerated = await checkAlreadyGenerated(constitutionType);
   if (alreadyGenerated) {
     console.log(`오늘 이미 생성됨 (${constitutionType}), 스킵`);
@@ -304,18 +362,48 @@ async function main() {
   console.log("Supabase에서 기존 게시글 요약 로드 중...");
   const existingPosts = await fetchRecentPostSummaries(constitutionType);
 
-  // 5. Claude로 콘텐츠 생성 (15% 확률로 리스티클 형식)
+  // 4b. 다른 체질 게시글 제목 로드 (교차 중복 방지용)
+  console.log("Supabase에서 다른 체질 게시글 제목 로드 중...");
+  const crossTitles = await fetchCrossConstitutionTitles(constitutionType);
+
+  // 5. Claude로 콘텐츠 생성 (15% 확률로 리스티클 형식) + 제목 유사도 재시도
   const isListicle = Math.random() < 0.15;
   console.log(`\n콘텐츠 형식: ${isListicle ? "리스티클" : "일반"}`);
-  console.log("Claude API로 콘텐츠 생성 중...");
-  const { title, content, unsplash_query } = await generatePostContent(
-    constitutionType,
-    trends,
-    feedbacks,
-    researchDocs,
-    existingPosts,
-    isListicle
-  );
+
+  const allExistingTitles = [
+    ...existingPosts.map((p) => p.title),
+    ...crossTitles,
+  ];
+
+  let generated = null;
+  const MAX_RETRY = 3;
+  for (let attempt = 1; attempt <= MAX_RETRY; attempt++) {
+    console.log(`Claude API로 콘텐츠 생성 중... (시도 ${attempt}/${MAX_RETRY})`);
+    const candidate = await generatePostContent(
+      constitutionType,
+      trends,
+      feedbacks,
+      researchDocs,
+      existingPosts,
+      crossTitles,
+      isListicle
+    );
+
+    const similarTitle = isTitleSimilar(candidate.title, allExistingTitles);
+    if (!similarTitle) {
+      generated = candidate;
+      break;
+    }
+
+    console.warn(`⚠ RETRY [${attempt}/${MAX_RETRY}]: 제목 유사 감지 → '${similarTitle}' / 재생성 중...`);
+  }
+
+  if (!generated) {
+    console.error(`❌ ${MAX_RETRY}회 재시도 모두 실패 (${constitutionType}). 스킵합니다.`);
+    process.exit(0);
+  }
+
+  const { title, content, unsplash_query } = generated;
   console.log(`제목: ${title}`);
   console.log(`Unsplash 쿼리: ${unsplash_query}`);
 
