@@ -1,0 +1,146 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { KAKAO_REST_KEY, REDIRECT_URI, upsertKakaoUser, type KakaoUser } from "../lib/kakaoApi";
+import { useAuth } from "../context/AuthContext";
+
+type Status = "processing" | "error";
+
+export default function KakaoCallbackPage() {
+  const navigate = useNavigate();
+  const { setUserFromCallback } = useAuth();
+  const [status, setStatus] = useState<Status>("processing");
+  const [errorMsg, setErrorMsg] = useState("");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    const error = params.get("error");
+
+    if (error || !code) {
+      handleError("카카오 로그인이 취소되었습니다.");
+      return;
+    }
+
+    processLogin(code);
+  }, []);
+
+  const handleError = (msg: string) => {
+    setStatus("error");
+    setErrorMsg(msg);
+    if (window.opener && !window.opener.closed) {
+      window.opener.postMessage({ type: "KAKAO_LOGIN_ERROR", message: msg }, window.location.origin);
+      setTimeout(() => window.close(), 1200);
+    } else {
+      setTimeout(() => navigate("/", { replace: true }), 2000);
+    }
+  };
+
+  const processLogin = async (code: string) => {
+    try {
+      // 1. Authorization code → Access Token
+      const tokenRes = await fetch("https://kauth.kakao.com/oauth/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded;charset=utf-8" },
+        body: new URLSearchParams({
+          grant_type: "authorization_code",
+          client_id: KAKAO_REST_KEY,
+          redirect_uri: REDIRECT_URI,
+          code,
+        }),
+      });
+
+      if (!tokenRes.ok) {
+        const errData = await tokenRes.json().catch(() => ({}));
+        throw new Error((errData as any).error_description || "토큰 발급에 실패했습니다.");
+      }
+
+      const tokenData = await tokenRes.json();
+      const accessToken: string = tokenData.access_token;
+
+      // 2. Access Token → 유저 정보
+      const userRes = await fetch("https://kapi.kakao.com/v2/user/me", {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/x-www-form-urlencoded;charset=utf-8",
+        },
+      });
+
+      if (!userRes.ok) throw new Error("사용자 정보를 가져올 수 없습니다.");
+
+      const userData = await userRes.json();
+
+      const user: KakaoUser = {
+        kakao_id: String(userData.id),
+        nickname:
+          userData.kakao_account?.profile?.nickname ||
+          userData.properties?.nickname ||
+          "카카오 사용자",
+        email: userData.kakao_account?.email || undefined,
+        profile_image:
+          userData.kakao_account?.profile?.profile_image_url ||
+          userData.properties?.profile_image ||
+          undefined,
+      };
+
+      // 3. Supabase에 유저 저장 (upsert)
+      await upsertKakaoUser(user);
+
+      // 4. 팝업 → 부모에 메시지 전송 / 직접 접근 → localStorage 저장 후 리다이렉트
+      if (window.opener && !window.opener.closed) {
+        window.opener.postMessage(
+          { type: "KAKAO_LOGIN_SUCCESS", user },
+          window.location.origin
+        );
+        setTimeout(() => window.close(), 500);
+      } else {
+        setUserFromCallback(user);
+        navigate("/", { replace: true });
+      }
+    } catch (err) {
+      handleError(
+        err instanceof Error ? err.message : "로그인 처리 중 오류가 발생했습니다."
+      );
+    }
+  };
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "100vh",
+        gap: "20px",
+        background: "#fafafa",
+        fontFamily: "Pretendard, sans-serif",
+      }}
+    >
+      {status === "processing" ? (
+        <>
+          <div
+            style={{
+              width: "44px",
+              height: "44px",
+              border: "3px solid #f0f0f0",
+              borderTop: "3px solid #FEE500",
+              borderRadius: "50%",
+              animation: "ks-spin 0.75s linear infinite",
+            }}
+          />
+          <p style={{ color: "#555", fontSize: "0.9rem", margin: 0 }}>
+            카카오 로그인 처리 중...
+          </p>
+        </>
+      ) : (
+        <>
+          <p style={{ color: "#e53e3e", fontSize: "0.95rem", margin: 0 }}>{errorMsg}</p>
+          <p style={{ color: "#aaa", fontSize: "0.82rem", margin: 0 }}>
+            잠시 후 자동으로 이동합니다
+          </p>
+        </>
+      )}
+      <style>{`@keyframes ks-spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
+}

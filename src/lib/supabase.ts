@@ -18,6 +18,14 @@ export const adminSupabase: SupabaseClient = supabase;
 
 export const isSupabaseReady = isConfigured;
 
+export interface KakaoUser {
+  kakao_id: string;
+  nickname: string;
+  email?: string | null;
+  profile_image?: string | null;
+  updated_at?: string;
+}
+
 export type ConstitutionType = "태음인" | "소음인" | "태양인" | "소양인";
 export type PostStatus = "draft" | "approved" | "published";
 export type WellnessCategory = "수면" | "식단" | "운동" | "명상" | "스트레스";

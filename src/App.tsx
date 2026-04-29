@@ -9,6 +9,7 @@ import SasangDetailPage from "./pages/SasangDetailPage";
 import AdminPage from "./pages/AdminPage";
 import WellnessPage from "./pages/WellnessPage";
 import WellnessDetailPage from "./pages/WellnessDetailPage";
+import KakaoCallbackPage from "./pages/KakaoCallbackPage";
 
 function AppRoutes({ onQuizStart }: { onQuizStart: () => void }) {
   const location = useLocation();
@@ -22,6 +23,7 @@ function AppRoutes({ onQuizStart }: { onQuizStart: () => void }) {
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/wellness" element={<WellnessPage />} />
         <Route path="/wellness/:id" element={<WellnessDetailPage />} />
+        <Route path="/auth/kakao/callback" element={<KakaoCallbackPage />} />
       </Routes>
     </AnimatePresence>
   );
