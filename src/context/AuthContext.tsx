@@ -20,6 +20,7 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 const USER_STORAGE_KEY = "keepslow_kakao_user";
+export const KAKAO_BROADCAST_CHANNEL = "keepslow_kakao_auth";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<KakaoUser | null>(() => {
@@ -33,7 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const popupRef = useRef<Window | null>(null);
   const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const messageHandlerRef = useRef<((e: MessageEvent) => void) | null>(null);
+  const channelRef = useRef<BroadcastChannel | null>(null);
 
   useEffect(() => {
     const kakao = (window as any).Kakao;
@@ -47,10 +48,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       clearInterval(pollTimerRef.current);
       pollTimerRef.current = null;
     }
-    if (messageHandlerRef.current) {
-      window.removeEventListener("message", messageHandlerRef.current);
-      messageHandlerRef.current = null;
-    }
+    channelRef.current?.close();
+    channelRef.current = null;
     setIsLoading(false);
   };
 
@@ -81,21 +80,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     popupRef.current = popup;
     setIsLoading(true);
 
-    const handleMessage = (event: MessageEvent) => {
+    // BroadcastChannel로 수신 (window.opener가 COOP 헤더로 null이 되는 문제 우회)
+    const channel = new BroadcastChannel(KAKAO_BROADCAST_CHANNEL);
+    channelRef.current = channel;
+
+    channel.onmessage = (event: MessageEvent) => {
       if (event.data?.type === "KAKAO_LOGIN_SUCCESS") {
         const userData: KakaoUser = event.data.user;
         setUser(userData);
         localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData));
         cleanup();
-        popupRef.current?.close();
       } else if (event.data?.type === "KAKAO_LOGIN_ERROR") {
         cleanup();
-        popupRef.current?.close();
       }
     };
-
-    messageHandlerRef.current = handleMessage;
-    window.addEventListener("message", handleMessage);
 
     // 팝업 수동 닫기 감지
     pollTimerRef.current = setInterval(() => {

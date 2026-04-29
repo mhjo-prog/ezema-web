@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { KAKAO_REST_KEY, REDIRECT_URI, upsertKakaoUser, type KakaoUser } from "../lib/kakaoApi";
-import { useAuth } from "../context/AuthContext";
+import { useAuth, KAKAO_BROADCAST_CHANNEL } from "../context/AuthContext";
 
 type Status = "processing" | "error";
 
@@ -24,13 +24,32 @@ export default function KakaoCallbackPage() {
     processLogin(code);
   }, []);
 
+  const broadcast = (message: object) => {
+    // BroadcastChannel: window.opener가 COOP 헤더로 null인 경우에도 동작
+    try {
+      const channel = new BroadcastChannel(KAKAO_BROADCAST_CHANNEL);
+      channel.postMessage(message);
+      // 메시지 전달 보장 후 닫기
+      setTimeout(() => channel.close(), 300);
+    } catch {
+      // BroadcastChannel 미지원 브라우저 fallback
+      if (window.opener && !window.opener.closed) {
+        try {
+          window.opener.postMessage(message, window.location.origin);
+        } catch {}
+      }
+    }
+  };
+
   const handleError = (msg: string) => {
     setStatus("error");
     setErrorMsg(msg);
+
     if (window.opener && !window.opener.closed) {
-      window.opener.postMessage({ type: "KAKAO_LOGIN_ERROR", message: msg }, window.location.origin);
+      broadcast({ type: "KAKAO_LOGIN_ERROR", message: msg });
       setTimeout(() => window.close(), 1200);
     } else {
+      broadcast({ type: "KAKAO_LOGIN_ERROR", message: msg });
       setTimeout(() => navigate("/", { replace: true }), 2000);
     }
   };
@@ -85,13 +104,12 @@ export default function KakaoCallbackPage() {
       // 3. Supabase에 유저 저장 (upsert)
       await upsertKakaoUser(user);
 
-      // 4. 팝업 → 부모에 메시지 전송 / 직접 접근 → localStorage 저장 후 리다이렉트
-      if (window.opener && !window.opener.closed) {
-        window.opener.postMessage(
-          { type: "KAKAO_LOGIN_SUCCESS", user },
-          window.location.origin
-        );
-        setTimeout(() => window.close(), 500);
+      // 4. 팝업으로 열린 경우: BroadcastChannel로 부모에 전송 후 팝업 닫기
+      //    직접 접근한 경우: 상태 저장 후 메인으로 리다이렉트
+      if (window.opener !== null || window.name === "kakaoLogin") {
+        broadcast({ type: "KAKAO_LOGIN_SUCCESS", user });
+        // 메시지 전달 보장 후 팝업 닫기
+        setTimeout(() => window.close(), 300);
       } else {
         setUserFromCallback(user);
         navigate("/", { replace: true });

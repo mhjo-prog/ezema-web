@@ -15,7 +15,7 @@ declare global {
   }
 }
 
-const KAKAO_APP_KEY = "24eafa4d5cd9751908400f9de2e7f954";
+const KAKAO_APP_KEY = "fbf533c6007cf5212883947fe851e02d";
 
 interface Props {
   constitutionType: string;
