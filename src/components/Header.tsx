@@ -266,7 +266,7 @@ export default function Header({ onQuizStart }: HeaderProps) {
                 onClick={handleLoginClick}
                 disabled={isLoading}
                 style={{
-                  display: "flex",
+                  display: "none",
                   alignItems: "center",
                   gap: "6px",
                   padding: "6px 14px",
@@ -458,7 +458,7 @@ export default function Header({ onQuizStart }: HeaderProps) {
                     width: "100%",
                     padding: "14px 20px",
                     textAlign: "left",
-                    display: "flex",
+                    display: "none",
                     alignItems: "center",
                     gap: "8px",
                     fontSize: "0.9375rem",
