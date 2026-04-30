@@ -457,11 +457,24 @@ function ShareModal({ constitutionType, scores, onClose }: { constitutionType: s
   const [showToast, setShowToast] = useState(false);
 
   const handleKakao = () => {
-    window.open(
-      `https://sharer.kakao.com/talk/friends/picker/easylink?app_key=${KAKAO_APP_KEY}&redirect_uri=${encodeURIComponent(shareUrl)}`,
-      "_blank",
-      "width=500,height=600,scrollbars=yes,resizable=yes"
-    );
+    if (!window.Kakao) return;
+    if (!window.Kakao.isInitialized()) {
+      window.Kakao.init(KAKAO_APP_KEY);
+    }
+    window.Kakao.Share.sendDefault({
+      objectType: "feed",
+      content: {
+        title: `나는 ${constitutionType}! 당신의 체질은?`,
+        description: "사상체질 테스트로 나의 체질을 알아보세요.",
+        link: { mobileWebUrl: shareUrl, webUrl: shareUrl },
+      },
+      buttons: [
+        {
+          title: "결과 확인하기",
+          link: { mobileWebUrl: shareUrl, webUrl: shareUrl },
+        },
+      ],
+    });
   };
 
   const handleCopy = async () => {
