@@ -66,6 +66,7 @@ export default function HomePage() {
 
   const wheelOffsetRef = useRef(0);
   const touchStartXRef = useRef(0);
+  const touchStartYRef = useRef(0);
   const touchOffsetAtStartRef = useRef(0);
   const [showArrow, setShowArrow] = useState(true);
 
@@ -92,19 +93,30 @@ export default function HomePage() {
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartXRef.current = e.touches[0].clientX;
+    touchStartYRef.current = e.touches[0].clientY;
     touchOffsetAtStartRef.current = wheelOffsetRef.current;
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    const track = trackRef.current;
+  useEffect(() => {
+    if (!posts.length) return;
     const container = sectionRef.current;
-    if (!track || !container) return;
-    const dx = e.touches[0].clientX - touchStartXRef.current;
-    const maxTranslate = -(track.scrollWidth - container.clientWidth);
-    wheelOffsetRef.current = Math.max(maxTranslate, Math.min(0, touchOffsetAtStartRef.current + dx));
-    track.style.transform = `translateX(${wheelOffsetRef.current}px)`;
-    setShowArrow(wheelOffsetRef.current > maxTranslate + 8);
-  };
+    if (!container) return;
+    const handleTouchMove = (e: TouchEvent) => {
+      const track = trackRef.current;
+      if (!track) return;
+      const dx = Math.abs(e.touches[0].clientX - touchStartXRef.current);
+      const dy = Math.abs(e.touches[0].clientY - touchStartYRef.current);
+      if (dx < dy) return; // 세로 스크롤 우선
+      e.preventDefault();
+      const moveX = e.touches[0].clientX - touchStartXRef.current;
+      const maxTranslate = -(track.scrollWidth - container.clientWidth);
+      wheelOffsetRef.current = Math.max(maxTranslate, Math.min(0, touchOffsetAtStartRef.current + moveX));
+      track.style.transform = `translateX(${wheelOffsetRef.current}px)`;
+      setShowArrow(wheelOffsetRef.current > maxTranslate + 8);
+    };
+    container.addEventListener("touchmove", handleTouchMove, { passive: false });
+    return () => container.removeEventListener("touchmove", handleTouchMove);
+  }, [posts]);
 
   return (
     <div
@@ -449,9 +461,8 @@ export default function HomePage() {
         <>
           <section
             ref={sectionRef}
-            style={{ overflow: "hidden", padding: "24px 0", cursor: "default", position: "relative" }}
+            style={{ overflow: "hidden", padding: "24px 0", cursor: "default", position: "relative", touchAction: "pan-x", overscrollBehaviorX: "contain" }}
             onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
           >
             <div
               ref={trackRef}
