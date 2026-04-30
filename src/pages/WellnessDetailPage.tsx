@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { supabase, isSupabaseReady, type WellnessPost } from "../lib/supabase";
@@ -13,59 +13,158 @@ const WELLNESS_CATEGORY_COLORS: Record<string, string> = {
   스트레스: "#C4A007",
 };
 
-function ShareSection() {
-  const [toastVisible, setToastVisible] = useState(false);
+const KAKAO_APP_KEY = "fbf533c6007cf5212883947fe851e02d";
 
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href).then(() => {
-      setToastVisible(true);
-      setTimeout(() => setToastVisible(false), 2000);
+declare global {
+  interface Window {
+    Kakao: {
+      isInitialized: () => boolean;
+      init: (key: string) => void;
+      Share: { sendDefault: (options: Record<string, unknown>) => void };
+    };
+  }
+}
+
+function Toast({ visible }: { visible: boolean }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: visible ? 1 : 0, y: visible ? 0 : 16 }}
+      transition={{ duration: 0.22 }}
+      style={{
+        position: "fixed", bottom: "88px", left: "50%", transform: "translateX(-50%)",
+        background: "rgba(0,0,0,0.78)", color: "#ffffff",
+        padding: "11px 24px", borderRadius: "50px",
+        fontSize: "0.9rem", fontWeight: 600,
+        pointerEvents: "none", zIndex: 600, whiteSpace: "nowrap",
+      }}
+    >
+      복사됐습니다 ✓
+    </motion.div>
+  );
+}
+
+function ShareModal({ onClose }: { onClose: () => void }) {
+  const [showToast, setShowToast] = useState(false);
+  const shareUrl = window.location.href;
+
+  const handleKakao = () => {
+    if (!window.Kakao) return;
+    if (!window.Kakao.isInitialized()) window.Kakao.init(KAKAO_APP_KEY);
+    window.Kakao.Share.sendDefault({
+      objectType: "feed",
+      content: {
+        title: "KeepSlow",
+        description: "사상체질로 나의 건강을 알아보세요.",
+        link: { mobileWebUrl: shareUrl, webUrl: shareUrl },
+      },
+      buttons: [{ title: "읽어보기", link: { mobileWebUrl: shareUrl, webUrl: shareUrl } }],
     });
   };
 
-  const handleKakao = () => {
-    window.open(`https://story.kakao.com/share?url=${encodeURIComponent(window.location.href)}`);
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(shareUrl);
+    setShowToast(true);
+    setTimeout(() => { setShowToast(false); onClose(); }, 1800);
   };
 
   return (
-    <div style={{ marginTop: "48px", textAlign: "center" }}>
-      <p style={{ fontSize: "0.875rem", fontWeight: 700, color: "#111111", marginBottom: "6px" }}>친구에게 공유하기</p>
-      <p style={{ fontSize: "0.8125rem", color: "#888888", marginBottom: "20px" }}>게시물을 친구에게 공유해보세요</p>
-      <div style={{ display: "flex", justifyContent: "center", gap: "12px", flexWrap: "wrap" }}>
-        <button
-          onClick={handleCopyLink}
-          style={{
-            display: "inline-flex", alignItems: "center", gap: "6px",
-            fontSize: "0.875rem", fontWeight: 600, color: "#333333",
-            background: "#f2f2f2", border: "none", padding: "10px 20px",
-            borderRadius: "50px", cursor: "pointer",
-          }}
-        >
-          🔗 링크 복사하기
-        </button>
-        <button
-          onClick={handleKakao}
-          style={{
-            display: "inline-flex", alignItems: "center", gap: "6px",
-            fontSize: "0.875rem", fontWeight: 600, color: "#111111",
-            background: "#FEE500", border: "none", padding: "10px 20px",
-            borderRadius: "50px", cursor: "pointer",
-          }}
-        >
-          💬 카카오톡으로 보내기
-        </button>
-      </div>
-      {toastVisible && (
-        <div style={{
-          position: "fixed", bottom: "32px", left: "50%", transform: "translateX(-50%)",
-          background: "#111111", color: "#ffffff", fontSize: "0.875rem", fontWeight: 500,
-          padding: "10px 20px", borderRadius: "50px", zIndex: 9999,
-          boxShadow: "0 4px 16px rgba(0,0,0,0.18)",
-        }}>
-          링크가 복사되었습니다
+    <>
+      <motion.div
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        onClick={onClose}
+        style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 500 }}
+      />
+      <motion.div
+        initial={{ opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 60 }}
+        transition={{ type: "spring", damping: 28, stiffness: 320 }}
+        style={{
+          position: "fixed", bottom: 0, left: 0, right: 0,
+          background: "#ffffff", borderRadius: "20px 20px 0 0",
+          padding: "20px 24px 40px", zIndex: 501,
+          maxWidth: "560px", margin: "0 auto",
+        }}
+      >
+        <div style={{ width: "40px", height: "4px", background: "#e0e0e0", borderRadius: "2px", margin: "0 auto 24px" }} />
+        <p style={{ fontSize: "1.1rem", fontWeight: 700, color: "#111", textAlign: "center", marginBottom: "6px" }}>
+          친구에게 공유하기
+        </p>
+        <p style={{ fontSize: "0.875rem", color: "#888", textAlign: "center", marginBottom: "24px" }}>
+          결과 링크를 친구에게 공유해보세요
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          <motion.button
+            onClick={handleKakao} whileTap={{ scale: 0.98 }}
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center", gap: "10px",
+              width: "100%", padding: "16px", borderRadius: "14px",
+              background: "#FEE500", border: "none", color: "#3C1E1E",
+              fontSize: "0.975rem", fontWeight: 600, cursor: "pointer",
+            }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M12 3C6.477 3 2 6.477 2 10.909c0 2.756 1.528 5.19 3.878 6.702l-.99 3.697 4.27-2.817A11.64 11.64 0 0012 18.818c5.523 0 10-3.476 10-7.909C22 6.477 17.523 3 12 3z" fill="#3C1E1E"/>
+            </svg>
+            카카오톡으로 보내기
+          </motion.button>
+          <motion.button
+            onClick={handleCopy} whileTap={{ scale: 0.98 }}
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center", gap: "10px",
+              width: "100%", padding: "16px", borderRadius: "14px",
+              background: "#f5f5f5", border: "1.5px solid #e5e5e5", color: "#333333",
+              fontSize: "0.975rem", fontWeight: 600, cursor: "pointer",
+            }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/>
+              <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
+            </svg>
+            링크 복사하기
+          </motion.button>
         </div>
-      )}
-    </div>
+      </motion.div>
+      <Toast visible={showToast} />
+    </>
+  );
+}
+
+function BottomButtons({ backPath, navigate }: { backPath: string; navigate: (path: string) => void }) {
+  const [showModal, setShowModal] = useState(false);
+  return (
+    <>
+      <div style={{ borderTop: "1px solid #eeeeee", marginTop: "32px", paddingTop: "28px" }}>
+        <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
+          <motion.button
+            onClick={() => navigate(backPath)}
+            whileTap={{ scale: 0.99 }}
+            style={{
+              flex: 1, padding: "17px", borderRadius: "50px",
+              background: "#ffffff", border: "1.5px solid #dddddd",
+              color: "#666666", fontSize: "0.95rem", fontWeight: 600, cursor: "pointer",
+            }}
+            whileHover={{ borderColor: "#111111", color: "#111111" }}
+          >
+            목록으로 돌아가기
+          </motion.button>
+          <motion.button
+            onClick={() => setShowModal(true)}
+            whileTap={{ scale: 0.99 }}
+            style={{
+              flex: 1, padding: "17px", borderRadius: "50px",
+              background: "#111111", border: "1.5px solid #111111",
+              color: "#ffffff", fontSize: "0.95rem", fontWeight: 600, cursor: "pointer",
+            }}
+            whileHover={{ background: "#333333", borderColor: "#333333" }}
+          >
+            친구에게 공유하기
+          </motion.button>
+        </div>
+      </div>
+      <AnimatePresence>
+        {showModal && <ShareModal onClose={() => setShowModal(false)} />}
+      </AnimatePresence>
+    </>
   );
 }
 
@@ -272,38 +371,8 @@ export default function WellnessDetailPage() {
           </ReactMarkdown>
         </div>
 
-        {/* 하단 구분선 + 돌아가기 */}
-        <div style={{ borderTop: "1px solid #eeeeee", marginTop: "32px", paddingTop: "28px" }}>
-          <button
-            onClick={() => navigate("/wellness")}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px",
-              fontSize: "0.875rem",
-              fontWeight: 600,
-              color: "#111111",
-              border: "1.5px solid #111111",
-              padding: "10px 20px",
-              borderRadius: "50px",
-              cursor: "pointer",
-              transition: "all 0.18s",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "#111111";
-              e.currentTarget.style.color = "#ffffff";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "transparent";
-              e.currentTarget.style.color = "#111111";
-            }}
-          >
-            목록으로 돌아가기
-          </button>
-        </div>
-
-        {/* 공유 섹션 */}
-        <ShareSection />
+        {/* 하단 버튼 */}
+        <BottomButtons backPath="/wellness" navigate={navigate} />
       </div>
     </motion.div>
   );
