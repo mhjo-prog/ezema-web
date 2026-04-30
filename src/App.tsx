@@ -1,5 +1,13 @@
 import { useRef, useEffect } from "react";
 import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
 import { AnimatePresence } from "framer-motion";
 import Lenis from "lenis";
 import Header from "./components/Header";
@@ -18,6 +26,7 @@ function AppRoutes({ onQuizStart }: { onQuizStart: () => void }) {
   const location = useLocation();
   return (
     <AnimatePresence mode="wait">
+      <ScrollToTop />
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />
