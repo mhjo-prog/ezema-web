@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase, isSupabaseReady, type WellnessPost, type WellnessCategory } from "../lib/supabase";
 import { wellnessSamplePosts } from "../data/wellnessSamplePosts";
+import Footer from "../components/Footer";
 
 const CATEGORY_COLORS: Record<WellnessCategory, string> = {
   수면: "#0774C4",
@@ -398,6 +399,7 @@ export default function WellnessPage() {
           .filter-tab { font-size: 0.8125rem !important; padding: 5px 11px !important; letter-spacing: -0.15em !important; }
         }
       `}</style>
+      <Footer />
     </motion.div>
   );
 }

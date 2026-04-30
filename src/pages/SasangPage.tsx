@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase, isSupabaseReady, type Post, type ConstitutionType } from "../lib/supabase";
 import { samplePosts } from "../data/samplePosts";
+import Footer from "../components/Footer";
 
 const CONSTITUTION_COLORS: Record<ConstitutionType, string> = {
   태음인: "#1E8A4C",
@@ -401,6 +402,7 @@ export default function SasangPage() {
           .filter-tab { font-size: 0.8125rem !important; padding: 5px 11px !important; letter-spacing: -0.15em !important; }
         }
       `}</style>
+      <Footer />
     </motion.div>
   );
 }

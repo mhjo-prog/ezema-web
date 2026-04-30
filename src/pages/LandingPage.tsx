@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { supabase, isSupabaseReady } from "../lib/supabase";
+import Footer from "../components/Footer";
 
 interface Props {
   onStart: () => void;
@@ -452,6 +453,7 @@ export default function LandingPage({ onStart }: Props) {
           </p>
         </div>
       </footer>
+      <Footer />
     </motion.div>
   );
 }

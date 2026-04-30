@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import Footer from "../components/Footer";
 
 function FadeUp({
   children,
@@ -346,6 +347,7 @@ export default function AboutPage() {
           .about-cta-buttons button { width: 100% !important; max-width: 280px !important; }
         }
       `}</style>
+      <Footer />
     </div>
   );
 }
