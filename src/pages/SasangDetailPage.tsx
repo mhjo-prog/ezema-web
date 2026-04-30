@@ -40,6 +40,62 @@ const CONSTITUTION_COLORS: Record<ConstitutionType, string> = {
   소양인: "#0774C4",
 };
 
+function ShareSection() {
+  const [toastVisible, setToastVisible] = useState(false);
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      setToastVisible(true);
+      setTimeout(() => setToastVisible(false), 2000);
+    });
+  };
+
+  const handleKakao = () => {
+    window.open(`https://story.kakao.com/share?url=${encodeURIComponent(window.location.href)}`);
+  };
+
+  return (
+    <div style={{ marginTop: "48px", textAlign: "center" }}>
+      <p style={{ fontSize: "0.875rem", fontWeight: 700, color: "#111111", marginBottom: "6px" }}>친구에게 공유하기</p>
+      <p style={{ fontSize: "0.8125rem", color: "#888888", marginBottom: "20px" }}>게시물을 친구에게 공유해보세요</p>
+      <div style={{ display: "flex", justifyContent: "center", gap: "12px", flexWrap: "wrap" }}>
+        <button
+          onClick={handleCopyLink}
+          style={{
+            display: "inline-flex", alignItems: "center", gap: "6px",
+            fontSize: "0.875rem", fontWeight: 600, color: "#333333",
+            background: "#f2f2f2", border: "none", padding: "10px 20px",
+            borderRadius: "50px", cursor: "pointer",
+          }}
+        >
+          🔗 링크 복사하기
+        </button>
+        <button
+          onClick={handleKakao}
+          style={{
+            display: "inline-flex", alignItems: "center", gap: "6px",
+            fontSize: "0.875rem", fontWeight: 600, color: "#111111",
+            background: "#FEE500", border: "none", padding: "10px 20px",
+            borderRadius: "50px", cursor: "pointer",
+          }}
+        >
+          💬 카카오톡으로 보내기
+        </button>
+      </div>
+      {toastVisible && (
+        <div style={{
+          position: "fixed", bottom: "32px", left: "50%", transform: "translateX(-50%)",
+          background: "#111111", color: "#ffffff", fontSize: "0.875rem", fontWeight: 500,
+          padding: "10px 20px", borderRadius: "50px", zIndex: 9999,
+          boxShadow: "0 4px 16px rgba(0,0,0,0.18)",
+        }}>
+          링크가 복사되었습니다
+        </div>
+      )}
+    </div>
+  );
+}
+
 function formatDate(dateStr: string) {
   const d = new Date(dateStr);
   return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
@@ -322,6 +378,9 @@ export default function SasangDetailPage() {
             목록으로 돌아가기
           </button>
         </div>
+
+        {/* 공유 섹션 */}
+        <ShareSection />
       </div>
     </motion.div>
   );
