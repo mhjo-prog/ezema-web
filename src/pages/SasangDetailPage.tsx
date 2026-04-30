@@ -126,7 +126,7 @@ export default function SasangDetailPage() {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
-      style={{ height: "calc(100vh - 56px)", overflowY: "auto", background: "#ffffff", paddingTop: "56px" }}
+      style={{ minHeight: "100vh", background: "#ffffff", paddingTop: "56px" }}
     >
       <div style={{ maxWidth: "720px", margin: "0 auto", padding: "48px 24px 80px" }}>
         {/* 뒤로 가기 */}
