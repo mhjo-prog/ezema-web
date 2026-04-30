@@ -113,7 +113,7 @@ export default function HomePage() {
           transition={{ duration: 0.8, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
           style={{
             fontSize: "clamp(2rem, 6vw, 5rem)",
-            fontWeight: 400,
+            fontWeight: 800,
             lineHeight: 1.0,
             letterSpacing: "-0.03em",
             color: "#111",
@@ -525,7 +525,7 @@ export default function HomePage() {
 
       <style>{`
         @media (max-width: 480px) {
-          .hero-inner { padding-top: 140px !important; padding-bottom: 32px !important; }
+          .hero-inner { padding-top: 80px !important; padding-bottom: 28px !important; }
           .hero-title { margin-bottom: 52px !important; font-size: 1.5rem !important; }
           .hero-btn { padding: 10px 20px !important; font-size: 13px !important; width: fit-content !important; }
           .journal-section { padding-top: 48px !important; padding-bottom: 28px !important; }
