@@ -54,8 +54,7 @@ export default function LandingPage({ onStart }: Props) {
 
   return (
     <motion.div
-      className="fixed left-0 right-0 bottom-0 overflow-y-auto"
-      style={{ top: "56px" }}
+      style={{ paddingTop: "56px" }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -68,7 +67,7 @@ export default function LandingPage({ onStart }: Props) {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          padding: "80px 24px",
+          padding: "80px clamp(16px, 4vw, 40px)",
           background: "#ffffff",
         }}
       >
@@ -91,8 +90,8 @@ export default function LandingPage({ onStart }: Props) {
             transition={{ delay: 0.2, duration: 0.55 }}
           >
             <div style={{ height: "1px", width: "28px", background: "#0774C4", flexShrink: 0 }} />
-            <span style={{ fontWeight: 600, fontSize: "11px", letterSpacing: "0.28em", textTransform: "uppercase", color: "#0774C4", whiteSpace: "nowrap" }}>
-              AI Constitution Analysis
+            <span className="lp-label" style={{ fontWeight: 600, fontSize: "11px", letterSpacing: "0.28em", textTransform: "uppercase", color: "#0774C4", whiteSpace: "nowrap" }}>
+              SASANG BODY TYPE TEST
             </span>
             <div style={{ height: "1px", width: "28px", background: "#0774C4", flexShrink: 0 }} />
           </motion.div>
@@ -101,7 +100,7 @@ export default function LandingPage({ onStart }: Props) {
           <motion.h1
             style={{
               fontWeight: 800,
-              fontSize: "clamp(3.5rem, 7vw, 4.5rem)",
+              fontSize: "clamp(2rem, 8vw, 4rem)",
               letterSpacing: "-0.04em",
               lineHeight: 1.1,
               color: "#111111",
@@ -143,6 +142,7 @@ export default function LandingPage({ onStart }: Props) {
             transition={{ delay: 0.5, duration: 0.55 }}
             whileHover={{ scale: 1.025 }}
             whileTap={{ scale: 0.975 }}
+            className="lp-cta-btn"
             style={{
               padding: "16px 56px",
               borderRadius: "50px",
@@ -175,7 +175,7 @@ export default function LandingPage({ onStart }: Props) {
       </section>
 
       {/* ── Result Preview Section ── */}
-      <section style={{ padding: "clamp(56px, 8vw, 100px) 24px", background: "#f7f8fa" }}>
+      <section style={{ padding: "clamp(56px, 8vw, 100px) clamp(16px, 4vw, 40px)", background: "#f7f8fa" }}>
         <div style={{ maxWidth: "760px", margin: "0 auto" }}>
           <motion.div
             {...fadeUp}
@@ -200,90 +200,90 @@ export default function LandingPage({ onStart }: Props) {
                   onClick={onStart}
                   whileHover={{ scale: 1.025 }}
                   whileTap={{ scale: 0.975 }}
-                  style={{ padding: "14px 36px", borderRadius: "50px", background: "#111111", color: "#ffffff", fontSize: "0.9375rem", fontWeight: 600, letterSpacing: "0.02em", boxShadow: "0 4px 16px rgba(0,0,0,0.15)" }}
+                  style={{ padding: "14px 36px", borderRadius: "50px", background: "#111111", color: "#ffffff", fontSize: "0.9375rem", fontWeight: 600, letterSpacing: "0.02em", border: "none", cursor: "pointer", boxShadow: "0 4px 16px rgba(0,0,0,0.15)" }}
                 >
                   지금 체질 검사하기
                 </motion.button>
               </div>
             </div>
 
-            {/* Right: 카드 1장 */}
+            {/* Right: 태음인 결과 카드 */}
             <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
               <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
-                  style={{
-                    width: "100%",
-                    maxWidth: "300px",
-                    background: "#ffffff", borderRadius: "20px", padding: "24px 22px",
-                    boxShadow: "0 8px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)",
-                    transform: "rotate(2deg)",
-                    display: "flex", flexDirection: "column", gap: "14px",
-                  }}
-                >
-                  {/* Badge */}
-                  <div>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#1E8A4C", color: "#ffffff", fontWeight: 700, fontSize: "0.875rem", padding: "6px 14px", borderRadius: "50px" }}>
-                      태음인
-                      <span style={{ fontWeight: 400, fontSize: "0.7rem", opacity: 0.85 }}>太陰人</span>
-                    </span>
-                  </div>
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
+                style={{
+                  width: "100%",
+                  maxWidth: "300px",
+                  background: "#ffffff", borderRadius: "20px", padding: "24px 22px",
+                  boxShadow: "0 8px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)",
+                  transform: "rotate(2deg)",
+                  display: "flex", flexDirection: "column", gap: "14px",
+                }}
+              >
+                {/* Badge */}
+                <div>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#1E8A4C", color: "#ffffff", fontWeight: 700, fontSize: "0.875rem", padding: "6px 14px", borderRadius: "50px" }}>
+                    태음인
+                    <span style={{ fontWeight: 400, fontSize: "0.7rem", opacity: 0.85 }}>太陰人</span>
+                  </span>
+                </div>
 
-                  {/* Keywords */}
-                  <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
-                    {["신중", "끈기", "목표지향"].map((kw) => (
-                      <span key={kw} style={{ fontSize: "11px", fontWeight: 600, color: "#1E8A4C", background: "#1E8A4C18", padding: "3px 9px", borderRadius: "50px" }}>
-                        {kw}
+                {/* Keywords */}
+                <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
+                  {["신중", "끈기", "목표지향"].map((kw) => (
+                    <span key={kw} style={{ fontSize: "11px", fontWeight: 600, color: "#1E8A4C", background: "#1E8A4C18", padding: "3px 9px", borderRadius: "50px" }}>
+                      {kw}
+                    </span>
+                  ))}
+                </div>
+
+                {/* Radar — 마름모 */}
+                <div style={{ display: "flex", justifyContent: "center" }}>
+                  <svg width="110" height="110" viewBox="0 0 120 120">
+                    {[1.0, 0.66, 0.33].map((level) => (
+                      <polygon key={level} points={`60,${60 - 44 * level} ${60 + 44 * level},60 60,${60 + 44 * level} ${60 - 44 * level},60`} fill="none" stroke="#eeeeee" strokeWidth="1.2" />
+                    ))}
+                    <line x1="60" y1="16" x2="60" y2="104" stroke="#e0e0e0" strokeWidth="1" />
+                    <line x1="16" y1="60" x2="104" y2="60" stroke="#e0e0e0" strokeWidth="1" />
+                    <polygon points="60,50 74,60 60,88 40,60" fill="#1E8A4C22" stroke="#1E8A4C" strokeWidth="1.8" strokeLinejoin="round" />
+                    <circle cx="60" cy="50" r="3" fill="#1E8A4C" />
+                    <circle cx="74" cy="60" r="3" fill="#1E8A4C" />
+                    <circle cx="60" cy="88" r="3" fill="#1E8A4C" />
+                    <circle cx="40" cy="60" r="3" fill="#1E8A4C" />
+                    <text x="60" y="11" textAnchor="middle" fontSize="9" fontWeight="700" fill="#888">태</text>
+                    <text x="112" y="64" textAnchor="start" fontSize="9" fontWeight="700" fill="#888">양</text>
+                    <text x="60" y="114" textAnchor="middle" fontSize="9" fontWeight="700" fill="#888">소</text>
+                    <text x="8" y="64" textAnchor="end" fontSize="9" fontWeight="700" fill="#888">음</text>
+                  </svg>
+                </div>
+
+                {/* Description */}
+                <p style={{ fontSize: "0.8rem", color: "#555555", lineHeight: 1.65, textAlign: "center" }}>
+                  간(肝)이 강하고 폐(肺)가 약한 체질입니다.
+                </p>
+
+                {/* Drink tags */}
+                <div>
+                  <p style={{ fontSize: "10px", color: "#aaaaaa", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "7px" }}>추천 음료</p>
+                  <div style={{ display: "flex", gap: "5px" }}>
+                    {["율무차", "매실", "오미자", "칡"].map((drink) => (
+                      <span key={drink} style={{ fontSize: "11px", color: "#444444", background: "#f5f5f5", padding: "3px 9px", borderRadius: "50px", fontWeight: 500 }}>
+                        {drink}
                       </span>
                     ))}
                   </div>
-
-                  {/* Radar — 마름모 */}
-                  <div style={{ display: "flex", justifyContent: "center" }}>
-                    <svg width="110" height="110" viewBox="0 0 120 120">
-                      {[1.0, 0.66, 0.33].map((level) => (
-                        <polygon key={level} points={`60,${60 - 44 * level} ${60 + 44 * level},60 60,${60 + 44 * level} ${60 - 44 * level},60`} fill="none" stroke="#eeeeee" strokeWidth="1.2" />
-                      ))}
-                      <line x1="60" y1="16" x2="60" y2="104" stroke="#e0e0e0" strokeWidth="1" />
-                      <line x1="16" y1="60" x2="104" y2="60" stroke="#e0e0e0" strokeWidth="1" />
-                      <polygon points="60,50 74,60 60,88 40,60" fill="#1E8A4C22" stroke="#1E8A4C" strokeWidth="1.8" strokeLinejoin="round" />
-                      <circle cx="60" cy="50" r="3" fill="#1E8A4C" />
-                      <circle cx="74" cy="60" r="3" fill="#1E8A4C" />
-                      <circle cx="60" cy="88" r="3" fill="#1E8A4C" />
-                      <circle cx="40" cy="60" r="3" fill="#1E8A4C" />
-                      <text x="60" y="11" textAnchor="middle" fontSize="9" fontWeight="700" fill="#888">태</text>
-                      <text x="112" y="64" textAnchor="start" fontSize="9" fontWeight="700" fill="#888">양</text>
-                      <text x="60" y="114" textAnchor="middle" fontSize="9" fontWeight="700" fill="#888">소</text>
-                      <text x="8" y="64" textAnchor="end" fontSize="9" fontWeight="700" fill="#888">음</text>
-                    </svg>
-                  </div>
-
-                  {/* Description */}
-                  <p style={{ fontSize: "0.8rem", color: "#555555", lineHeight: 1.65, textAlign: "center" }}>
-                    간(肝)이 강하고 폐(肺)가 약한 체질입니다.
-                  </p>
-
-                  {/* Drink tags */}
-                  <div>
-                    <p style={{ fontSize: "10px", color: "#aaaaaa", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "7px" }}>추천 음료</p>
-                    <div style={{ display: "flex", gap: "5px" }}>
-                      {["율무차", "매실", "오미자", "칡"].map((drink) => (
-                        <span key={drink} style={{ fontSize: "11px", color: "#444444", background: "#f5f5f5", padding: "3px 9px", borderRadius: "50px", fontWeight: 500 }}>
-                          {drink}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </motion.div>
+                </div>
+              </motion.div>
             </div>
           </motion.div>
         </div>
       </section>
 
       {/* ── Constitution Section ── */}
-      <section style={{ padding: "clamp(56px, 8vw, 100px) 24px", background: "#ffffff" }}>
+      <section style={{ padding: "clamp(56px, 8vw, 100px) clamp(16px, 4vw, 40px)", background: "#ffffff" }}>
         <div style={{ maxWidth: "760px", margin: "0 auto" }}>
 
           {/* Section header */}
@@ -320,6 +320,7 @@ export default function LandingPage({ onStart }: Props) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.55, delay: i * 0.08, ease: "easeOut" }}
+                className="constitution-card"
                 style={{
                   background: "#ffffff",
                   border: "1px solid #eeeeee",
@@ -358,10 +359,10 @@ export default function LandingPage({ onStart }: Props) {
                   {c.keyword}
                 </span>
                 <div style={{ display: "flex", alignItems: "baseline", gap: "8px", marginBottom: "8px" }}>
-                  <span style={{ fontSize: "1.25rem", fontWeight: 800, color: "#111111" }}>{c.name}</span>
+                  <span className="constitution-card-name" style={{ fontSize: "1.25rem", fontWeight: 800, color: "#111111" }}>{c.name}</span>
                   <span style={{ fontSize: "0.8rem", color: "#aaaaaa", letterSpacing: "0.05em" }}>{c.hanja}</span>
                 </div>
-                <p style={{ fontSize: "0.875rem", color: "#666666", lineHeight: 1.7 }}>
+                <p className="constitution-card-desc" style={{ fontSize: "0.875rem", color: "#666666", lineHeight: 1.7 }}>
                   {c.desc.split("\n").map((line, i) => (
                     <span key={i}>{line}{i < c.desc.split("\n").length - 1 && <br />}</span>
                   ))}
@@ -373,7 +374,7 @@ export default function LandingPage({ onStart }: Props) {
       </section>
 
       {/* ── Brand Section ── */}
-      <section style={{ background: "#f7f8fa", padding: "clamp(56px, 8vw, 100px) 24px" }}>
+      <section style={{ background: "#f7f8fa", padding: "clamp(56px, 8vw, 100px) clamp(16px, 4vw, 40px)" }}>
         <div style={{ maxWidth: "760px", margin: "0 auto" }}>
           <motion.div
             {...fadeUp}
@@ -430,8 +431,18 @@ export default function LandingPage({ onStart }: Props) {
         </div>
       </section>
 
+      <style>{`
+        @media (max-width: 480px) {
+          .lp-label { font-size: 9px !important; letter-spacing: 0.18em !important; }
+          .lp-cta-btn { padding: 12px 28px !important; font-size: 0.875rem !important; width: fit-content !important; }
+          .constitution-card { padding: 18px 14px !important; border-radius: 12px !important; }
+          .constitution-card-name { font-size: 1rem !important; }
+          .constitution-card-desc { font-size: 0.8rem !important; word-break: keep-all !important; }
+        }
+      `}</style>
+
       {/* ── Footer ── */}
-      <footer style={{ background: "#ffffff", padding: "32px 24px" }}>
+      <footer style={{ background: "#ffffff", padding: "32px clamp(16px, 4vw, 40px)" }}>
         <div style={{ maxWidth: "760px", margin: "0 auto", textAlign: "center" }}>
           <p className="footer-text" style={{ fontSize: "11px", color: "#aaaaaa", lineHeight: 2 }}>
             본 설문은 '이제마 동의수세보원(東醫壽世保元)' 을 기반으로 제작되었습니다.

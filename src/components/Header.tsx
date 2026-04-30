@@ -10,23 +10,34 @@ interface HeaderProps {
 const NAV_ITEMS = [
   { label: "About", path: "/about" },
   { label: "Wellness", path: "/wellness" },
-  { label: "사상체질 이야기", path: "/sasang" },
-  { label: "사상체질 테스트", path: "/quiz", isPrimary: true },
+  { label: "Stories", path: "/sasang" },
+  { label: "Test", path: "/test", isPrimary: true },
 ];
 
-export default function Header({ onQuizStart }: HeaderProps) {
+export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isLoading, loginWithKakao, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+  const [_isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+  const [isSmallMobile, setIsSmallMobile] = useState(() => window.innerWidth <= 480);
+  const [scrolled, setScrolled] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handler = () => setIsMobile(window.innerWidth < 768);
+    const handler = () => {
+      setIsMobile(window.innerWidth < 768);
+      setIsSmallMobile(window.innerWidth <= 480);
+    };
     window.addEventListener("resize", handler);
     return () => window.removeEventListener("resize", handler);
+  }, []);
+
+  useEffect(() => {
+    const handler = () => setScrolled(window.scrollY > 50);
+    window.addEventListener("scroll", handler, { passive: true });
+    return () => window.removeEventListener("scroll", handler);
   }, []);
 
   useEffect(() => {
@@ -45,15 +56,9 @@ export default function Header({ onQuizStart }: HeaderProps) {
     ? "#000000"
     : "#0774C4";
 
-  const effectiveLogoColor = isMobile ? "#111111" : logoColor;
-
   const handleNavClick = (path: string) => {
     setMenuOpen(false);
-    if (path === "/quiz") {
-      onQuizStart();
-    } else {
-      navigate(path);
-    }
+    navigate(path);
   };
 
   const handleLoginClick = () => {
@@ -68,47 +73,91 @@ export default function Header({ onQuizStart }: HeaderProps) {
 
   return (
     <>
+      {/* Logo — position/size varies by route */}
+      {(() => {
+        const isLarge = location.pathname === "/" || location.pathname === "/about";
+        return (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            style={{
+              position: "fixed",
+              top: 0,
+              left: isLarge ? 0 : "50%",
+              transform: isLarge ? "none" : "translateX(-50%)",
+              zIndex: 51,
+              display: isSmallMobile ? "none" : "flex",
+              alignItems: "flex-start",
+            }}
+          >
+            <button
+              onClick={() => navigate("/")}
+              style={{
+                background: "none",
+                border: "none",
+                padding: 0,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                alignSelf: "center",
+              }}
+            >
+              <img
+                src="/keepslow-logo.png"
+                alt="KeepSlow"
+                style={{
+                  height: isLarge ? "96px" : "52px",
+                  width: "auto",
+                  display: "block",
+                  marginTop: isLarge ? "0px" : "10px",
+                  marginLeft: isLarge ? "24px" : "0px",
+                }}
+              />
+            </button>
+          </motion.div>
+        );
+      })()}
+
+      {/* Nav — pill when scrolled */}
       <motion.header
         style={{
           position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
+          top: isSmallMobile ? 0 : scrolled ? "8px" : 0,
+          left: isSmallMobile ? 0 : "auto",
+          right: isSmallMobile ? 0 : "16px",
+          transform: "none",
           zIndex: 50,
           height: "56px",
-          display: "grid",
-          gridTemplateColumns: "1fr auto 1fr",
+          width: isSmallMobile ? "100%" : "auto",
+          borderRadius: isSmallMobile ? 0 : scrolled ? "40px" : "0",
+          display: "flex",
           alignItems: "center",
-          padding: "0 24px",
-          background: "rgba(255,255,255,0.92)",
-          backdropFilter: "blur(12px)",
-          borderBottom: "1px solid #f0f0f0",
+          justifyContent: "flex-end",
+          padding: isSmallMobile ? "0 16px" : scrolled ? "4px 12px" : "0 24px",
+          marginTop: isSmallMobile ? 0 : scrolled ? "-2px" : "0",
+          marginRight: isSmallMobile ? 0 : scrolled ? "12px" : "0",
+          transition: "all 0.3s ease",
+          background: isSmallMobile ? "transparent" : scrolled ? "rgba(245,245,245,0.95)" : "transparent",
+          backdropFilter: isSmallMobile ? "none" : scrolled ? "blur(12px)" : "none",
+          boxShadow: isSmallMobile ? "none" : scrolled ? "0 2px 20px rgba(0,0,0,0.08)" : "none",
+          borderBottom: "none",
         }}
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        {/* Left: empty */}
-        <div />
-
-        {/* Center logo */}
-        <button
-          onClick={() => navigate("/")}
-          style={{
-            fontWeight: 700,
-            fontSize: "1.05rem",
-            letterSpacing: "0.12em",
-            color: effectiveLogoColor,
-            textTransform: "uppercase",
-            userSelect: "none",
-            padding: "0 16px",
-          }}
-        >
-          KeepSlow
-        </button>
-
         {/* Right: desktop nav + login + mobile hamburger */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "8px" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "8px", alignSelf: "center", width: isSmallMobile ? "100%" : "auto", position: isSmallMobile ? "relative" : "static" as const }}>
+          {/* Mobile center logo */}
+          {isSmallMobile && (
+            <button
+              onClick={() => navigate("/")}
+              style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", background: "none", border: "none", padding: 0, cursor: "pointer" }}
+            >
+              <img src="/keepslow-logo.png" alt="KeepSlow" style={{ height: "40px", width: "auto", display: "block" }} />
+            </button>
+          )}
 
           {/* Desktop nav — hidden on mobile */}
           <nav className="hidden md:flex" style={{ alignItems: "center", gap: "4px" }}>
@@ -116,27 +165,28 @@ export default function Header({ onQuizStart }: HeaderProps) {
               const isActive =
                 location.pathname === item.path ||
                 location.pathname.startsWith(item.path + "/");
-              const accent = logoColor;
               return (
                 <button
                   key={item.path}
                   onClick={() => handleNavClick(item.path)}
                   style={{
                     fontSize: "0.8125rem",
-                    fontWeight: 500,
-                    color: isActive ? accent : "#444444",
+                    fontWeight: isActive ? 700 : 500,
+                    color: isActive ? "#000000" : "#444444",
                     padding: "7px 12px",
                     border: "none",
-                    borderBottom: isActive ? `2px solid ${accent}` : "2px solid transparent",
+                    borderBottom: "none",
                     borderRadius: 0,
-                    transition: "color 0.18s",
+                    transition: "color 0.18s, font-weight 0.18s",
                     whiteSpace: "nowrap",
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.color = accent;
+                    e.currentTarget.style.color = "#000000";
+                    e.currentTarget.style.fontWeight = "700";
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.color = isActive ? accent : "#444444";
+                    e.currentTarget.style.color = isActive ? "#000000" : "#444444";
+                    e.currentTarget.style.fontWeight = isActive ? "700" : "500";
                   }}
                 >
                   {item.label}

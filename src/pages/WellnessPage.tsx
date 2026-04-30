@@ -192,22 +192,22 @@ export default function WellnessPage() {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}
       style={{
-        height: "calc(100vh - 56px)",
-        overflowY: "auto",
+        minHeight: "100vh",
+        overflowX: "hidden",
         background: "#ffffff",
         paddingTop: "56px",
       }}
     >
-      <div style={{ maxWidth: "1080px", margin: "0 auto", padding: "48px 24px 80px" }}>
+      <div style={{ maxWidth: "1080px", margin: "0 auto", padding: "48px clamp(12px, 4vw, 40px) 80px" }}>
         {/* 헤더 */}
         <div style={{ marginBottom: "36px" }}>
           <motion.h1
-            style={{ fontSize: "2rem", fontWeight: 800, color: "#000000", lineHeight: 1.2 }}
+            style={{ fontSize: "2rem", fontWeight: 800, color: "#000000", lineHeight: 1.2, textTransform: "uppercase" }}
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           >
-            KEEPSLOW WELLNESS
+            Wellness Comics
           </motion.h1>
           <motion.p
             style={{ marginTop: "10px", fontSize: "0.9375rem", color: "#666666", lineHeight: 1.6 }}
@@ -215,7 +215,7 @@ export default function WellnessPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.35, duration: 0.6 }}
           >
-            체질에 맞는 웰니스 루틴을 만나보세요.<br className="mobile-br" /> 매일 새로운 인사이트를 제공합니다.
+            수면, 식단, 운동, 명상, 스트레스<br />웰니스 카툰으로 만나보세요.
           </motion.p>
         </div>
 
@@ -393,8 +393,8 @@ export default function WellnessPage() {
           .mobile-br { display: block; }
         }
         @media (max-width: 480px) {
-          .card-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
-          .card-title { font-size: 0.8125rem !important; }
+          .card-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+          .card-title { font-size: 0.8125rem !important; word-break: keep-all; overflow-wrap: break-word; }
           .filter-tab { font-size: 0.8125rem !important; padding: 5px 11px !important; letter-spacing: -0.15em !important; }
         }
       `}</style>

@@ -119,8 +119,8 @@ export default function SurveyPage({ onComplete, onBack }: Props) {
       {/* ── Question + Options ── */}
       <div
         ref={scrollContainerRef}
-        className="flex-1 flex flex-col items-center justify-center overflow-y-auto"
-        style={{ padding: "0 24px 40px" }}
+        className="flex-1 flex flex-col items-center justify-center overflow-y-auto survey-scroll"
+        style={{ padding: "0 24px 40px", scrollbarWidth: "none" }}
       >
         <div className="w-full max-w-lg">
           <AnimatePresence mode="wait" custom={direction}>
@@ -263,6 +263,8 @@ export default function SurveyPage({ onComplete, onBack }: Props) {
           </AnimatePresence>
         </div>
       </div>
+
+      <style>{`.survey-scroll::-webkit-scrollbar { display: none; }`}</style>
     </motion.div>
   );
 }

@@ -196,8 +196,7 @@ export default function SasangPage() {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}
       style={{
-        height: "calc(100vh - 56px)",
-        overflowY: "auto",
+        minHeight: "100vh",
         background: "#ffffff",
         paddingTop: "56px",
       }}
@@ -211,7 +210,7 @@ export default function SasangPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           >
-            KEEPSLOW JOURNAL
+            TYPOLOGY STORIES
           </motion.h1>
           <motion.p
             style={{ marginTop: "10px", fontSize: "0.9375rem", color: "#666666", lineHeight: 1.6 }}
@@ -219,7 +218,7 @@ export default function SasangPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.35, duration: 0.6 }}
           >
-            나의 체질을 이해하면 삶이 달라집니다.<br className="mobile-br" /> 매일 새로운 이야기를 만나보세요.
+            나의 체질을 이해하는 첫 걸음<br /> 매일 새로운 이야기를 만나보세요.
           </motion.p>
         </div>
 

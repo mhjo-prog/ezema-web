@@ -65,6 +65,9 @@ export default function KakaoCallbackPage() {
           client_id: KAKAO_REST_KEY,
           redirect_uri: REDIRECT_URI,
           code,
+          ...(import.meta.env.VITE_KAKAO_CLIENT_SECRET
+            ? { client_secret: import.meta.env.VITE_KAKAO_CLIENT_SECRET }
+            : {}),
         }),
       });
 
