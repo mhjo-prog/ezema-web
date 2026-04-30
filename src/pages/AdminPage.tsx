@@ -236,6 +236,7 @@ function PostPreviewModal({
           flexDirection: "column",
           gap: "16px",
         }}
+        onWheel={(e) => e.stopPropagation()}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <span
@@ -454,6 +455,7 @@ function WellnessPostPreviewModal({
           flexDirection: "column",
           gap: "16px",
         }}
+        onWheel={(e) => e.stopPropagation()}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <span
@@ -836,10 +838,20 @@ export default function AdminPage() {
 
   async function handleWellnessSave(postId: string, fields: { title: string; content: string; card_image_url: string; content_image_url: string }) {
     if (!isSupabaseReady) return;
+    const originalPost = wellnessPosts.find((p) => p.id === postId);
     const { error } = await supabase.from("wellness_posts").update(fields).eq("id", postId);
     if (!error) {
       setWellnessPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, ...fields } : p)));
       setWellnessPreview((prev) => (prev ? { ...prev, ...fields } : null));
+      if (originalPost && fields.content !== originalPost.content) {
+        await supabase.from("wellness_post_feedback").insert({
+          post_id: postId,
+          wellness_category: originalPost.wellness_category,
+          title: fields.title || originalPost.title,
+          original_content: originalPost.content,
+          edited_content: fields.content,
+        });
+      }
       showToast("수정되었습니다.");
     } else {
       showToast("수정 중 오류가 발생했습니다.");
@@ -1097,7 +1109,7 @@ export default function AdminPage() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      style={{ height: "calc(100vh - 56px)", overflowY: "auto", background: "#f7f8fa", paddingTop: "56px" }}
+      style={{ minHeight: "100vh", background: "#f7f8fa", paddingTop: "56px" }}
     >
       <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "40px 24px 80px", display: "flex", gap: "32px", alignItems: "stretch" }}>
         <div style={{ flex: 1, minWidth: 0 }}>
