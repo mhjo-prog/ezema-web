@@ -161,7 +161,7 @@ export default function HomePage() {
         style={{
           maxWidth: "1100px",
           margin: "0 auto",
-          padding: "clamp(56px, 8vw, 96px) clamp(16px, 5vw, 80px)",
+          padding: "clamp(28px, 4vw, 48px) clamp(16px, 5vw, 80px)",
         }}
       >
         <FadeUp>
@@ -528,7 +528,7 @@ export default function HomePage() {
           .hero-inner { padding-top: 80px !important; padding-bottom: 28px !important; }
           .hero-title { margin-bottom: 52px !important; font-size: 1.5rem !important; }
           .hero-btn { padding: 10px 20px !important; font-size: 13px !important; width: fit-content !important; }
-          .journal-section { padding-top: 48px !important; padding-bottom: 28px !important; }
+          .journal-section { padding-top: 24px !important; padding-bottom: 16px !important; }
           .journal-header { margin-top: 24px !important; }
           .journal-header-sub { margin-bottom: 20px !important; }
         }
