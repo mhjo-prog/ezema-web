@@ -1,7 +1,6 @@
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import Footer from "../components/Footer";
 
 function FadeUp({
   children,
@@ -267,7 +266,7 @@ export default function AboutPage() {
       <section
         style={{
           background: "#111",
-          padding: "clamp(80px, 12vw, 160px) clamp(16px, 5vw, 80px)",
+          padding: "clamp(80px, 12vw, 160px) clamp(16px, 5vw, 80px) 32px",
           textAlign: "center",
         }}
       >
@@ -333,6 +332,36 @@ export default function AboutPage() {
             </button>
           </div>
         </FadeUp>
+
+        {/* ── Footer (dark) ── */}
+        <div style={{ marginTop: "clamp(48px, 8vw, 100px)", display: "flex", alignItems: "center", justifyContent: "center", gap: "16px" }}>
+          <a
+            href="https://www.instagram.com/keepslow_family/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ display: "inline-flex", opacity: 0.5, transition: "opacity 0.15s" }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.opacity = "1"; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.opacity = "0.5"; }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <radialGradient id="ig-grad-about" cx="30%" cy="107%" r="150%">
+                  <stop offset="0%" stopColor="#fdf497"/>
+                  <stop offset="5%" stopColor="#fdf497"/>
+                  <stop offset="45%" stopColor="#fd5949"/>
+                  <stop offset="60%" stopColor="#d6249f"/>
+                  <stop offset="90%" stopColor="#285AEB"/>
+                </radialGradient>
+              </defs>
+              <rect x="2" y="2" width="20" height="20" rx="6" fill="url(#ig-grad-about)"/>
+              <circle cx="12" cy="12" r="4.5" stroke="white" strokeWidth="1.8" fill="none"/>
+              <circle cx="17.5" cy="6.5" r="1.2" fill="white"/>
+            </svg>
+          </a>
+          <p style={{ fontSize: "12px", color: "#555", margin: 0 }}>
+            © 2026 KeepSlow. All rights reserved.
+          </p>
+        </div>
       </section>
 
       <style>{`
@@ -347,7 +376,6 @@ export default function AboutPage() {
           .about-cta-buttons button { width: 100% !important; max-width: 280px !important; }
         }
       `}</style>
-      <Footer />
     </div>
   );
 }
