@@ -21,6 +21,7 @@ import WellnessPage from "./pages/WellnessPage";
 import WellnessDetailPage from "./pages/WellnessDetailPage";
 import KakaoCallbackPage from "./pages/KakaoCallbackPage";
 import AboutPage from "./pages/AboutPage";
+import MyPage from "./pages/MyPage";
 
 function AppRoutes({ onQuizStart }: { onQuizStart: () => void }) {
   const location = useLocation();
@@ -38,6 +39,7 @@ function AppRoutes({ onQuizStart }: { onQuizStart: () => void }) {
         <Route path="/wellness" element={<WellnessPage />} />
         <Route path="/wellness/:id" element={<WellnessDetailPage />} />
         <Route path="/auth/kakao/callback" element={<KakaoCallbackPage />} />
+        <Route path="/mypage" element={<MyPage />} />
       </Routes>
     </AnimatePresence>
   );

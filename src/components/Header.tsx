@@ -199,6 +199,33 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
             })}
           </nav>
 
+          {/* Mypage button — desktop */}
+          <button
+            className="hidden md:flex"
+            onClick={() => user ? navigate("/mypage") : loginWithKakao()}
+            disabled={isLoading}
+            style={{
+              alignItems: "center",
+              fontSize: "0.8125rem",
+              fontWeight: location.pathname === "/mypage" ? 700 : 500,
+              color: location.pathname === "/mypage" ? "#000000" : "#444444",
+              padding: "7px 12px",
+              border: "none",
+              borderRadius: 0,
+              background: "none",
+              cursor: isLoading ? "not-allowed" : "pointer",
+              whiteSpace: "nowrap",
+              opacity: isLoading ? 0.6 : 1,
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = "#000000"; e.currentTarget.style.fontWeight = "700"; }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = location.pathname === "/mypage" ? "#000000" : "#444444";
+              e.currentTarget.style.fontWeight = location.pathname === "/mypage" ? "700" : "500";
+            }}
+          >
+            Mypage
+          </button>
+
           {/* Desktop login/user — hidden on mobile */}
           <div className="hidden md:flex" style={{ alignItems: "center" }}>
             {user ? (
@@ -445,6 +472,27 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
                 </button>
               );
             })}
+
+            {/* Mypage — mobile */}
+            <button
+              onClick={() => { setMenuOpen(false); user ? navigate("/mypage") : loginWithKakao(); }}
+              disabled={isLoading}
+              style={{
+                padding: "14px 20px",
+                textAlign: "left",
+                fontSize: "0.9375rem",
+                fontWeight: location.pathname === "/mypage" ? 700 : 500,
+                color: location.pathname === "/mypage" ? logoColor : "#333333",
+                background: "none",
+                border: "none",
+                borderBottom: "1px solid #f5f5f5",
+                cursor: isLoading ? "not-allowed" : "pointer",
+                width: "100%",
+                opacity: isLoading ? 0.6 : 1,
+              }}
+            >
+              Mypage
+            </button>
 
             {/* Mobile login/logout */}
             <div style={{ borderTop: "1px solid #f0f0f0" }}>

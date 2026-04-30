@@ -64,7 +64,9 @@ export default function QuizPage() {
     const type = determineType(s);
     setScores(s);
     setConstitutionType(type);
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify({ constitutionType: type, scores: s }));
+    const result = JSON.stringify({ constitutionType: type, scores: s });
+    sessionStorage.setItem(SESSION_KEY, result);
+    localStorage.setItem("ezema_mypage_result", result);
     setScreen("loading");
   }, []);
 
