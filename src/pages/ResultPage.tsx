@@ -749,8 +749,7 @@ export default function ResultPage({ constitutionType, scores, onRetry, isShared
 
   return (
     <motion.div
-      className="fixed left-0 right-0 bottom-0 overflow-y-auto"
-      style={{ top: "56px", background: "#f8f8f8" }}
+      style={{ paddingTop: "56px", background: "#f8f8f8" }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
