@@ -21,7 +21,6 @@ import WellnessPage from "./pages/WellnessPage";
 import WellnessDetailPage from "./pages/WellnessDetailPage";
 import KakaoCallbackPage from "./pages/KakaoCallbackPage";
 import AboutPage from "./pages/AboutPage";
-import MyPage from "./pages/MyPage";
 
 function AppRoutes({ onQuizStart }: { onQuizStart: () => void }) {
   const location = useLocation();
