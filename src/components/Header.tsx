@@ -84,11 +84,14 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
             style={{
               position: "fixed",
               top: 0,
-              left: isLarge ? 0 : "50%",
-              transform: isLarge ? "none" : "translateX(-50%)",
-              zIndex: 51,
+              left: isLarge ? 0 : 0,
+              right: isLarge ? "auto" : 0,
+              width: isLarge ? "auto" : "100%",
               display: isSmallMobile ? "none" : "flex",
               alignItems: "flex-start",
+              justifyContent: isLarge ? "flex-start" : "center",
+              pointerEvents: "none",
+              zIndex: 51,
             }}
           >
             <button
@@ -101,6 +104,7 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
                 display: "flex",
                 alignItems: "center",
                 alignSelf: "center",
+                pointerEvents: "auto",
               }}
             >
               <img

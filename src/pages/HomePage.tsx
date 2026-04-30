@@ -388,11 +388,11 @@ export default function HomePage() {
                     ))}
                     <line x1="60" y1="16" x2="60" y2="104" stroke="#e0e0e0" strokeWidth="1" />
                     <line x1="16" y1="60" x2="104" y2="60" stroke="#e0e0e0" strokeWidth="1" />
-                    <polygon points="60,50 74,60 60,88 40,60" fill="rgba(0,0,0,0.08)" stroke="#111111" strokeWidth="1.8" strokeLinejoin="round" />
-                    <circle cx="60" cy="50" r="3" fill="#111111" />
-                    <circle cx="74" cy="60" r="3" fill="#111111" />
-                    <circle cx="60" cy="88" r="3" fill="#111111" />
-                    <circle cx="40" cy="60" r="3" fill="#111111" />
+                    <polygon points="60,34 76,58 60,80 38,62" fill="rgba(0,0,0,0.08)" stroke="#111111" strokeWidth="1.8" strokeLinejoin="round" />
+                    <circle cx="60" cy="34" r="3" fill="#111111" />
+                    <circle cx="76" cy="58" r="3" fill="#111111" />
+                    <circle cx="60" cy="80" r="3" fill="#111111" />
+                    <circle cx="38" cy="62" r="3" fill="#111111" />
                     <text x="60" y="11" textAnchor="middle" fontSize="9" fontWeight="700" fill="#888">태</text>
                     <text x="112" y="64" textAnchor="start" fontSize="9" fontWeight="700" fill="#888">양</text>
                     <text x="60" y="114" textAnchor="middle" fontSize="9" fontWeight="700" fill="#888">소</text>
