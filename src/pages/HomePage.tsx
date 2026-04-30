@@ -65,6 +65,9 @@ export default function HomePage() {
   }, []);
 
   const wheelOffsetRef = useRef(0);
+  const touchStartXRef = useRef(0);
+  const touchOffsetAtStartRef = useRef(0);
+  const [showArrow, setShowArrow] = useState(true);
 
   useEffect(() => {
     if (!posts.length) return;
@@ -81,10 +84,27 @@ export default function HomePage() {
       e.stopPropagation();
       wheelOffsetRef.current = Math.max(maxTranslate, Math.min(0, wheelOffsetRef.current - e.deltaY * 2.5));
       track.style.transform = `translateX(${wheelOffsetRef.current}px)`;
+      setShowArrow(wheelOffsetRef.current > maxTranslate + 8);
     };
     container.addEventListener("wheel", handleWheel, { passive: false });
     return () => container.removeEventListener("wheel", handleWheel);
   }, [posts]);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartXRef.current = e.touches[0].clientX;
+    touchOffsetAtStartRef.current = wheelOffsetRef.current;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    const track = trackRef.current;
+    const container = sectionRef.current;
+    if (!track || !container) return;
+    const dx = e.touches[0].clientX - touchStartXRef.current;
+    const maxTranslate = -(track.scrollWidth - container.clientWidth);
+    wheelOffsetRef.current = Math.max(maxTranslate, Math.min(0, touchOffsetAtStartRef.current + dx));
+    track.style.transform = `translateX(${wheelOffsetRef.current}px)`;
+    setShowArrow(wheelOffsetRef.current > maxTranslate + 8);
+  };
 
   return (
     <div
@@ -429,7 +449,9 @@ export default function HomePage() {
         <>
           <section
             ref={sectionRef}
-            style={{ overflow: "hidden", padding: "24px 0", cursor: "default" }}
+            style={{ overflow: "hidden", padding: "24px 0", cursor: "default", position: "relative" }}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
           >
             <div
               ref={trackRef}
@@ -471,6 +493,27 @@ export default function HomePage() {
                 </div>
               ))}
             </div>
+
+            {/* 우측 스크롤 힌트 오버레이 */}
+            {showArrow && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  right: 0,
+                  bottom: 0,
+                  width: "64px",
+                  background: "linear-gradient(to right, transparent, rgba(255,255,255,0.88))",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "flex-end",
+                  paddingRight: "10px",
+                  pointerEvents: "none",
+                }}
+              >
+                <span style={{ fontSize: "28px", fontWeight: 700, color: "rgba(0,0,0,0.28)", lineHeight: 1 }}>›</span>
+              </div>
+            )}
           </section>
 
           <Divider />
