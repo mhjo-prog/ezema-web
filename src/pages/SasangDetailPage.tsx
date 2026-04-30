@@ -42,6 +42,16 @@ const CONSTITUTION_COLORS: Record<ConstitutionType, string> = {
 
 const KAKAO_APP_KEY = "fbf533c6007cf5212883947fe851e02d";
 
+declare global {
+  interface Window {
+    Kakao: {
+      isInitialized: () => boolean;
+      init: (key: string) => void;
+      Share: { sendDefault: (options: Record<string, unknown>) => void };
+    };
+  }
+}
+
 function Toast({ visible }: { visible: boolean }) {
   return (
     <motion.div
@@ -66,11 +76,17 @@ function ShareModal({ onClose }: { onClose: () => void }) {
   const shareUrl = window.location.href;
 
   const handleKakao = () => {
-    window.open(
-      `https://sharer.kakao.com/talk/friends/picker/easylink?app_key=${KAKAO_APP_KEY}&redirect_uri=${encodeURIComponent(shareUrl)}`,
-      "_blank",
-      "width=500,height=600,scrollbars=yes,resizable=yes"
-    );
+    if (!window.Kakao) return;
+    if (!window.Kakao.isInitialized()) window.Kakao.init(KAKAO_APP_KEY);
+    window.Kakao.Share.sendDefault({
+      objectType: "feed",
+      content: {
+        title: "KeepSlow - 사상체질 테스트",
+        description: "나의 체질을 알아보세요.",
+        link: { mobileWebUrl: shareUrl, webUrl: shareUrl },
+      },
+      buttons: [{ title: "결과 보기", link: { mobileWebUrl: shareUrl, webUrl: shareUrl } }],
+    });
   };
 
   const handleCopy = async () => {
