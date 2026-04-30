@@ -200,7 +200,7 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
           </nav>
 
           {/* Mypage button — desktop */}
-          <button
+          {/* <button
             className="hidden md:flex"
             onClick={() => user ? navigate("/mypage") : loginWithKakao()}
             disabled={isLoading}
@@ -224,7 +224,7 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
             }}
           >
             Mypage
-          </button>
+          </button> */}
 
           {/* Desktop login/user — hidden on mobile */}
           <div className="hidden md:flex" style={{ alignItems: "center" }}>
@@ -474,7 +474,7 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
             })}
 
             {/* Mypage — mobile */}
-            <button
+            {/* <button
               onClick={() => { setMenuOpen(false); user ? navigate("/mypage") : loginWithKakao(); }}
               disabled={isLoading}
               style={{
@@ -492,7 +492,7 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
               }}
             >
               Mypage
-            </button>
+            </button> */}
 
             {/* Mobile login/logout */}
             <div style={{ borderTop: "1px solid #f0f0f0" }}>

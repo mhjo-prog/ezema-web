@@ -39,7 +39,7 @@ function AppRoutes({ onQuizStart }: { onQuizStart: () => void }) {
         <Route path="/wellness" element={<WellnessPage />} />
         <Route path="/wellness/:id" element={<WellnessDetailPage />} />
         <Route path="/auth/kakao/callback" element={<KakaoCallbackPage />} />
-        <Route path="/mypage" element={<MyPage />} />
+        {/* <Route path="/mypage" element={<MyPage />} /> */}
       </Routes>
     </AnimatePresence>
   );
