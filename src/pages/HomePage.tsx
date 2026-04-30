@@ -571,7 +571,7 @@ export default function HomePage() {
             © 2026 KeepSlow. All rights reserved.
           </p>
         </div>
-        <p style={{ fontSize: "11px", color: "#ccc", margin: 0, textAlign: "center", lineHeight: 1.8 }}>
+        <p style={{ fontSize: "11px", color: "#ccc", margin: 0, textAlign: "center", lineHeight: 1.8, display: "none" }}>
           BigBrown, 606-87-02388<br />
           10F, 437 Teheran-ro, Gangnam-gu, Seoul (Samyoung Building)
         </p>
