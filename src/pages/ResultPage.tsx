@@ -464,16 +464,11 @@ function ShareModal({ constitutionType, scores, onClose }: { constitutionType: s
     window.Kakao.Share.sendDefault({
       objectType: "feed",
       content: {
-        title: `나는 ${constitutionType}! 당신의 체질은?`,
-        description: "사상체질 테스트로 나의 체질을 알아보세요.",
+        title: "KeepSlow - 사상체질 테스트",
+        description: "나의 체질을 알아보세요.",
         link: { mobileWebUrl: shareUrl, webUrl: shareUrl },
       },
-      buttons: [
-        {
-          title: "결과 확인하기",
-          link: { mobileWebUrl: shareUrl, webUrl: shareUrl },
-        },
-      ],
+      buttons: [{ title: "결과 보기", link: { mobileWebUrl: shareUrl, webUrl: shareUrl } }],
     });
   };
 
