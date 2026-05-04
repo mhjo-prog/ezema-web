@@ -55,7 +55,7 @@ export default function HomePage() {
       .select("id, card_image_url")
       .eq("status", "published")
       .not("card_image_url", "is", null)
-      .limit(9)
+      .order("created_at", { ascending: false })
       .then(({ data }) => {
         if (data) {
           setPosts(
