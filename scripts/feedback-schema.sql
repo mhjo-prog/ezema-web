@@ -5,6 +5,7 @@ create table if not exists post_feedback (
   constitution_type text not null,
   title             text not null,
   original_content  text not null,
+  edited_title      text,
   edited_content    text,
   feedback_score    smallint check (feedback_score between 1 and 5),
   feedback_note     text,

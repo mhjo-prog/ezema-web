@@ -723,14 +723,19 @@ export default function AdminPage() {
     if (!error) {
       setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, ...fields } : p)));
       setPreview((prev) => (prev ? { ...prev, ...fields } : null));
-      if (originalPost && fields.content !== originalPost.content) {
-        await supabase.from("post_feedback").insert({
-          post_id: postId,
-          constitution_type: originalPost.constitution_type,
-          title: fields.title || originalPost.title,
-          original_content: originalPost.content,
-          edited_content: fields.content,
-        });
+      if (originalPost) {
+        const titleChanged = fields.title !== originalPost.title;
+        const contentChanged = fields.content !== originalPost.content;
+        if (titleChanged || contentChanged) {
+          await supabase.from("post_feedback").insert({
+            post_id: postId,
+            constitution_type: originalPost.constitution_type,
+            title: originalPost.title,
+            original_content: originalPost.content,
+            ...(titleChanged && { edited_title: fields.title }),
+            ...(contentChanged && { edited_content: fields.content }),
+          });
+        }
       }
       showToast("수정되었습니다.");
     } else {
@@ -843,14 +848,19 @@ export default function AdminPage() {
     if (!error) {
       setWellnessPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, ...fields } : p)));
       setWellnessPreview((prev) => (prev ? { ...prev, ...fields } : null));
-      if (originalPost && fields.content !== originalPost.content) {
-        await supabase.from("wellness_post_feedback").insert({
-          post_id: postId,
-          wellness_category: originalPost.wellness_category,
-          title: fields.title || originalPost.title,
-          original_content: originalPost.content,
-          edited_content: fields.content,
-        });
+      if (originalPost) {
+        const titleChanged = fields.title !== originalPost.title;
+        const contentChanged = fields.content !== originalPost.content;
+        if (titleChanged || contentChanged) {
+          await supabase.from("wellness_post_feedback").insert({
+            post_id: postId,
+            wellness_category: originalPost.wellness_category,
+            title: originalPost.title,
+            original_content: originalPost.content,
+            ...(titleChanged && { edited_title: fields.title }),
+            ...(contentChanged && { edited_content: fields.content }),
+          });
+        }
       }
       showToast("수정되었습니다.");
     } else {

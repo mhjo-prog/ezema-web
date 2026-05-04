@@ -51,7 +51,7 @@ async function fetchRecentFeedback(constitutionType) {
   try {
     const { data, error } = await supabase
       .from("post_feedback")
-      .select("title, feedback_score, feedback_note, edited_content, original_content")
+      .select("title, feedback_score, feedback_note, edited_title, edited_content, original_content")
       .eq("constitution_type", constitutionType)
       .not("feedback_score", "is", null)
       .order("created_at", { ascending: false })
@@ -179,11 +179,14 @@ async function generatePostContent(constitutionType, trends, feedbacks, research
           .map((f) => {
             const score = `점수: ${f.feedback_score}/5`;
             const note = f.feedback_note ? `\n  메모: ${f.feedback_note}` : "";
-            const diff =
+            const titleDiff = f.edited_title
+              ? `\n  제목 수정 → 원본: "${f.title}" / 수정본: "${f.edited_title}"`
+              : `\n  제목: "${f.title}"`;
+            const contentDiff =
               f.edited_content && f.edited_content !== f.original_content
-                ? `\n  수정됨 (원본과 다름)`
+                ? `\n  본문 수정 →\n    [원본] ${f.original_content.slice(0, 150)}...\n    [수정본] ${f.edited_content.slice(0, 150)}...`
                 : "";
-            return `- 제목: "${f.title}"\n  ${score}${note}${diff}`;
+            return `- ${score}${titleDiff}${note}${contentDiff}`;
           })
           .join("\n") +
         `\n점수가 낮거나 수정이 많았던 글의 패턴을 피하고, 높은 평가를 받은 스타일을 참고해서 작성해주세요.\n`
