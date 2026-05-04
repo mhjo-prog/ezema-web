@@ -70,6 +70,7 @@ export default function HomePage() {
   const touchStartYRef = useRef(0);
   const touchOffsetAtStartRef = useRef(0);
   const [showArrow, setShowArrow] = useState(true);
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
 
   useEffect(() => {
     if (!posts.length) return;
@@ -87,6 +88,7 @@ export default function HomePage() {
       wheelOffsetRef.current = Math.max(maxTranslate, Math.min(0, wheelOffsetRef.current - e.deltaY * 2.5));
       track.style.transform = `translateX(${wheelOffsetRef.current}px)`;
       setShowArrow(wheelOffsetRef.current > maxTranslate + 8);
+      setShowLeftArrow(wheelOffsetRef.current < -8);
     };
     container.addEventListener("wheel", handleWheel, { passive: false });
     return () => container.removeEventListener("wheel", handleWheel);
@@ -97,6 +99,24 @@ export default function HomePage() {
     touchStartYRef.current = e.touches[0].clientY;
     touchOffsetAtStartRef.current = wheelOffsetRef.current;
   };
+
+  const SLIDE_STEP = (220 + 16) * 3;
+
+  function handleSlide(direction: "left" | "right") {
+    const track = trackRef.current;
+    const container = sectionRef.current;
+    if (!track || !container) return;
+    const maxTranslate = -(track.scrollWidth - container.clientWidth);
+    wheelOffsetRef.current = Math.max(
+      maxTranslate,
+      Math.min(0, wheelOffsetRef.current + (direction === "left" ? SLIDE_STEP : -SLIDE_STEP))
+    );
+    track.style.transition = "transform 0.35s ease-out";
+    track.style.transform = `translateX(${wheelOffsetRef.current}px)`;
+    setShowArrow(wheelOffsetRef.current > maxTranslate + 8);
+    setShowLeftArrow(wheelOffsetRef.current < -8);
+    setTimeout(() => { if (trackRef.current) trackRef.current.style.transition = "transform 0.08s ease-out"; }, 350);
+  }
 
   useEffect(() => {
     if (!posts.length) return;
@@ -114,6 +134,7 @@ export default function HomePage() {
       wheelOffsetRef.current = Math.max(maxTranslate, Math.min(0, touchOffsetAtStartRef.current + moveX));
       track.style.transform = `translateX(${wheelOffsetRef.current}px)`;
       setShowArrow(wheelOffsetRef.current > maxTranslate + 8);
+      setShowLeftArrow(wheelOffsetRef.current < -8);
     };
     container.addEventListener("touchmove", handleTouchMove, { passive: false });
     return () => container.removeEventListener("touchmove", handleTouchMove);
@@ -506,7 +527,44 @@ export default function HomePage() {
               ))}
             </div>
 
-            {/* 우측 스크롤 힌트 오버레이 */}
+            {/* 좌측 화살표 */}
+            {showLeftArrow && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  bottom: 0,
+                  width: "64px",
+                  background: "linear-gradient(to left, transparent, rgba(255,255,255,0.88))",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "flex-start",
+                  paddingLeft: "10px",
+                }}
+              >
+                <button
+                  onClick={() => handleSlide("left")}
+                  style={{
+                    width: "36px",
+                    height: "36px",
+                    borderRadius: "50%",
+                    border: "1px solid #ddd",
+                    background: "#fff",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "18px",
+                    color: "#444",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                    flexShrink: 0,
+                  }}
+                >‹</button>
+              </div>
+            )}
+
+            {/* 우측 화살표 */}
             {showArrow && (
               <div
                 style={{
@@ -520,10 +578,26 @@ export default function HomePage() {
                   alignItems: "center",
                   justifyContent: "flex-end",
                   paddingRight: "10px",
-                  pointerEvents: "none",
                 }}
               >
-                <span style={{ fontSize: "28px", fontWeight: 700, color: "rgba(0,0,0,0.28)", lineHeight: 1 }}>›</span>
+                <button
+                  onClick={() => handleSlide("right")}
+                  style={{
+                    width: "36px",
+                    height: "36px",
+                    borderRadius: "50%",
+                    border: "1px solid #ddd",
+                    background: "#fff",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "18px",
+                    color: "#444",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                    flexShrink: 0,
+                  }}
+                >›</button>
               </div>
             )}
           </section>
