@@ -76,17 +76,16 @@ async function fetchResearchDocs(constitutionType) {
     const { data, error } = await supabase
       .from("research_docs")
       .select("title, category, content")
-      .or(`constitution_type.eq.${constitutionType},constitution_type.is.null`)
-      .order("created_at", { ascending: false })
-      .limit(5);
+      .or(`constitution_type.eq.${constitutionType},constitution_type.is.null`);
 
     if (error || !data || data.length === 0) {
       console.log("리서치 문서 없음. 기본 프롬프트 사용.");
       return [];
     }
 
-    console.log(`리서치 문서 ${data.length}건 로드됨`);
-    return data;
+    const selected = data.sort(() => Math.random() - 0.5).slice(0, 5);
+    console.log(`리서치 문서 ${data.length}건 중 랜덤 ${selected.length}건 선택됨`);
+    return selected;
   } catch (err) {
     console.warn("리서치 문서 로드 오류 (무시):", err.message);
     return [];
