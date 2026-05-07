@@ -216,7 +216,7 @@ export default function MyPage() {
               아티클을 읽고 저장하면 여기에 표시됩니다.
             </p>
             <div style={{ display: "flex", gap: "8px", justifyContent: "center", flexWrap: "wrap" }}>
-              {([["사상체질 이야기", "/sasang"], ["Wellness", "/wellness"]] as const).map(([label, path]) => (
+              {([["Typology Stories", "/sasang"], ["Wellness Comics", "/wellness"]] as const).map(([label, path]) => (
                 <button
                   key={label}
                   onClick={() => navigate(path)}
