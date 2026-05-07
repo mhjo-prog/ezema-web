@@ -153,7 +153,7 @@ export default function MyPage() {
 
               <div style={{ marginTop: "24px", paddingTop: "20px", borderTop: "1px solid #f0f0f0", display: "flex", gap: "8px", flexWrap: "wrap" }}>
                 <button
-                  onClick={() => navigate("/sasang")}
+                  onClick={() => navigate(`/sasang?type=${quizResult.constitutionType}`)}
                   style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#ffffff", background: "#000000", border: "none", padding: "9px 20px", borderRadius: "50px", cursor: "pointer", letterSpacing: "0.01em" }}
                 >
                   관련 아티클 보기
