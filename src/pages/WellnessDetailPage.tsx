@@ -259,22 +259,41 @@ export default function WellnessDetailPage() {
       style={{ minHeight: "100vh", background: "#ffffff", paddingTop: "56px" }}
     >
       <div style={{ maxWidth: "720px", margin: "0 auto", padding: "48px 24px 80px" }}>
-        {/* 뒤로 가기 + 북마크 */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "32px" }}>
-          <button
-            onClick={() => navigate("/wellness")}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              fontSize: "0.8125rem",
-              color: "#888888",
-              fontWeight: 500,
-              cursor: "pointer",
-            }}
-          >
-            ← Wellness
-          </button>
+        {/* 뒤로 가기 */}
+        <button
+          onClick={() => navigate("/wellness")}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            fontSize: "0.8125rem",
+            color: "#888888",
+            fontWeight: 500,
+            cursor: "pointer",
+            marginBottom: "32px",
+          }}
+        >
+          ← Wellness
+        </button>
+
+        {/* 태그 + 날짜 + 북마크 */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <span
+              style={{
+                fontSize: "0.75rem",
+                fontWeight: 700,
+                color,
+                background: `${color}14`,
+                padding: "4px 10px",
+                borderRadius: "20px",
+                letterSpacing: "0.03em",
+              }}
+            >
+              {post.wellness_category}
+            </span>
+            <span style={{ fontSize: "0.8125rem", color: "#aaaaaa" }}>{formatDate(post.created_at)}</span>
+          </div>
           <button
             onClick={() => { if (id) setSaved(toggleSaved(id)); }}
             style={{
@@ -285,30 +304,13 @@ export default function WellnessDetailPage() {
             }}
             onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#111111"; e.currentTarget.style.color = "#111111"; }}
             onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#e8e8e8"; e.currentTarget.style.color = saved ? "#111111" : "#aaaaaa"; }}
+            aria-label={saved ? "북마크 해제" : "북마크 저장"}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill={saved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
             </svg>
             {saved ? "저장됨" : "저장"}
           </button>
-        </div>
-
-        {/* 태그 + 날짜 */}
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
-          <span
-            style={{
-              fontSize: "0.75rem",
-              fontWeight: 700,
-              color,
-              background: `${color}14`,
-              padding: "4px 10px",
-              borderRadius: "20px",
-              letterSpacing: "0.03em",
-            }}
-          >
-            {post.wellness_category}
-          </span>
-          <span style={{ fontSize: "0.8125rem", color: "#aaaaaa" }}>{formatDate(post.created_at)}</span>
         </div>
 
         {/* 제목 */}
