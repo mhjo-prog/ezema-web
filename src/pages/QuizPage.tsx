@@ -27,6 +27,7 @@ export default function QuizPage() {
   const [constitutionType, setConstitutionType] = useState("");
   const [scores, setScores] = useState<Record<string, number>>({});
   const [isShared, setIsShared] = useState(false);
+  const [isHistory, setIsHistory] = useState(false);
 
   useEffect(() => {
     // 1) URL 파라미터로 공유된 결과 (카카오 공유 등)
@@ -39,7 +40,11 @@ export default function QuizPage() {
         if (val !== null) urlScores[t] = Number(val);
       });
       if (Object.keys(urlScores).length > 0) setScores(urlScores);
-      setIsShared(true);
+      if (searchParams.get("from") === "history") {
+        setIsHistory(true);
+      } else {
+        setIsShared(true);
+      }
       setScreen("result");
       return;
     }
@@ -99,10 +104,12 @@ export default function QuizPage() {
             setConstitutionType("");
             setScores({});
             setIsShared(false);
+            setIsHistory(false);
             setSurveyKey((k) => k + 1);
             setScreen("survey");
           }}
           isShared={isShared}
+          isHistory={isHistory}
         />
       )}
     </AnimatePresence>

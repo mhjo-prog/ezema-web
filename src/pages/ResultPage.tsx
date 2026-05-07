@@ -24,6 +24,7 @@ interface Props {
   scores: Record<string, number>;
   onRetry: () => void;
   isShared?: boolean;
+  isHistory?: boolean;
 }
 
 function SectionLabel({ children }: { children: string }) {
@@ -612,7 +613,7 @@ function HistoryModal({ kakaoId, onClose }: { kakaoId: string; onClose: () => vo
   }
 
   function viewResult(entry: HistoryEntry) {
-    const params = new URLSearchParams({ type: entry.constitution_type });
+    const params = new URLSearchParams({ type: entry.constitution_type, from: "history" });
     Object.entries(entry.scores).forEach(([t, v]) => params.set(t, String(v)));
     navigate(`/quiz?${params.toString()}`);
     onClose();
@@ -671,10 +672,86 @@ function HistoryModal({ kakaoId, onClose }: { kakaoId: string; onClose: () => vo
   );
 }
 
-function Buttons({ onRetry, constitutionType, scores, isShared = false }: { onRetry: () => void; constitutionType: string; scores: Record<string, number>; isShared?: boolean }) {
+function Buttons({ onRetry, constitutionType, scores, isShared = false, isHistory = false }: { onRetry: () => void; constitutionType: string; scores: Record<string, number>; isShared?: boolean; isHistory?: boolean }) {
   const [showModal, setShowModal] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const { user } = useAuth();
+  const navigate = useNavigate();
+
+  if (isHistory) {
+    return (
+      <>
+        <motion.div
+          style={{ display: "flex", gap: "8px" }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.1, duration: 0.5 }}
+        >
+          <motion.button
+            onClick={() => navigate("/sasang")}
+            className="font-semibold transition-all duration-200"
+            style={{
+              flex: 1,
+              padding: "17px",
+              borderRadius: "50px",
+              background: "#0774C4",
+              border: "1.5px solid #0774C4",
+              color: "#ffffff",
+              fontSize: "0.95rem",
+              cursor: "pointer",
+            }}
+            whileHover={{ background: "#0560a8", borderColor: "#0560a8" }}
+            whileTap={{ scale: 0.99 }}
+          >
+            관련 아티클 보기
+          </motion.button>
+
+          <motion.button
+            onClick={onRetry}
+            className="font-semibold transition-all duration-200"
+            style={{
+              flex: 1,
+              padding: "17px",
+              borderRadius: "50px",
+              background: "#ffffff",
+              border: "1.5px solid #dddddd",
+              color: "#666666",
+              fontSize: "0.95rem",
+              cursor: "pointer",
+            }}
+            whileHover={{ borderColor: "#0774C4", color: "#0774C4" }}
+            whileTap={{ scale: 0.99 }}
+          >
+            다시 진단하기
+          </motion.button>
+        </motion.div>
+
+        {user && (
+          <motion.button
+            onClick={() => setShowHistory(true)}
+            className="font-semibold transition-all duration-200"
+            style={{ width: "100%", marginTop: "8px", padding: "14px", borderRadius: "50px", background: "transparent", border: "1.5px solid #eeeeee", color: "#888888", fontSize: "0.875rem", cursor: "pointer" }}
+            whileHover={{ borderColor: "#cccccc", color: "#555555" }}
+            whileTap={{ scale: 0.99 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.2, duration: 0.4 }}
+          >
+            지난 결과 다시 보기
+          </motion.button>
+        )}
+
+        <AnimatePresence>
+          {showHistory && user && (
+            <HistoryModal
+              kakaoId={user.kakao_id}
+              onClose={() => setShowHistory(false)}
+            />
+          )}
+        </AnimatePresence>
+      </>
+    );
+  }
 
   if (isShared) {
     return (
@@ -839,7 +916,7 @@ function CoupangBanner({ constitutionType }: { constitutionType: string }) {
   );
 }
 
-export default function ResultPage({ constitutionType, scores, onRetry, isShared = false }: Props) {
+export default function ResultPage({ constitutionType, scores, onRetry, isShared = false, isHistory = false }: Props) {
   const result = results[constitutionType];
   const constitution = constitutionInfo[constitutionType];
   const { user } = useAuth();
@@ -1170,7 +1247,7 @@ export default function ResultPage({ constitutionType, scores, onRetry, isShared
         </motion.div>
 
         {/* Buttons */}
-        <Buttons onRetry={onRetry} constitutionType={constitutionType} scores={scores} isShared={isShared} />
+        <Buttons onRetry={onRetry} constitutionType={constitutionType} scores={scores} isShared={isShared} isHistory={isHistory} />
 
         {/* Reference footer */}
         <p className="footer-text pb-6 text-xs text-gray-400 text-center px-4" style={{ lineHeight: 1.8, marginTop: '20px' }}>
