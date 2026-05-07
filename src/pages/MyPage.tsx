@@ -24,19 +24,51 @@ interface QuizResult {
   scores: Record<string, number>;
 }
 
+interface SavedItem {
+  id: string;
+  title: string;
+  card_image_url: string;
+  tag: string;
+  created_at: string;
+  path: string;
+}
+
+function SavedCard({ post, navigate }: { post: SavedItem; navigate: (path: string) => void }) {
+  return (
+    <div
+      onClick={() => navigate(post.path)}
+      style={{ display: "flex", alignItems: "center", gap: "16px", padding: "16px", border: "1px solid #e8e8e8", borderRadius: "12px", cursor: "pointer", transition: "background 0.15s" }}
+      onMouseEnter={(e) => { e.currentTarget.style.background = "#f8f8f8"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = "#ffffff"; }}
+    >
+      {post.card_image_url ? (
+        <img
+          src={post.card_image_url}
+          alt={post.title}
+          style={{ width: "64px", height: "64px", borderRadius: "8px", objectFit: "cover", flexShrink: 0 }}
+        />
+      ) : (
+        <div style={{ width: "64px", height: "64px", borderRadius: "8px", background: "#f0f0f0", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <span style={{ fontSize: "1.25rem", opacity: 0.3 }}>🌿</span>
+        </div>
+      )}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ fontSize: "0.9rem", fontWeight: 600, color: "#111111", lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+          {post.title}
+        </p>
+        <p style={{ fontSize: "0.75rem", color: "#aaaaaa", marginTop: "4px" }}>{post.tag}</p>
+      </div>
+      <span style={{ fontSize: "1rem", color: "#cccccc", flexShrink: 0 }}>›</span>
+    </div>
+  );
+}
+
 export default function MyPage() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [quizResult, setQuizResult] = useState<QuizResult | null>(null);
-  interface SavedItem {
-    id: string;
-    title: string;
-    card_image_url: string;
-    tag: string;
-    created_at: string;
-    path: string;
-  }
-  const [savedPosts, setSavedPosts] = useState<SavedItem[]>([]);
+  const [savedTypology, setSavedTypology] = useState<SavedItem[]>([]);
+  const [savedWellness, setSavedWellness] = useState<SavedItem[]>([]);
 
   useEffect(() => {
     if (!user) {
@@ -69,25 +101,26 @@ export default function MyPage() {
         .in("id", ids)
         .eq("status", "published"),
     ]).then(([{ data: posts }, { data: wellness }]) => {
-      const combined: SavedItem[] = [
-        ...(posts ?? []).map((p: any) => ({
+      setSavedTypology(
+        (posts ?? []).map((p: any) => ({
           id: p.id,
           title: p.title,
           card_image_url: p.card_image_url,
           tag: p.constitution_type,
           created_at: p.created_at,
           path: `/sasang/${p.id}`,
-        })),
-        ...(wellness ?? []).map((p: any) => ({
+        })).sort((a: SavedItem, b: SavedItem) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      );
+      setSavedWellness(
+        (wellness ?? []).map((p: any) => ({
           id: p.id,
           title: p.title,
           card_image_url: p.card_image_url,
           tag: p.wellness_category,
           created_at: p.created_at,
           path: `/wellness/${p.id}`,
-        })),
-      ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-      setSavedPosts(combined);
+        })).sort((a: SavedItem, b: SavedItem) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      );
     });
   }, []);
 
@@ -256,38 +289,7 @@ export default function MyPage() {
           <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "#999999", marginBottom: "20px" }}>
             SAVED CONTENT
           </p>
-          {savedPosts.length > 0 ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-              {savedPosts.map((post) => (
-                <div
-                  key={post.id}
-                  onClick={() => navigate(post.path)}
-                  style={{ display: "flex", alignItems: "center", gap: "16px", padding: "16px", border: "1px solid #e8e8e8", borderRadius: "12px", cursor: "pointer", transition: "background 0.15s" }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = "#f8f8f8"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = "#ffffff"; }}
-                >
-                  {post.card_image_url ? (
-                    <img
-                      src={post.card_image_url}
-                      alt={post.title}
-                      style={{ width: "64px", height: "64px", borderRadius: "8px", objectFit: "cover", flexShrink: 0 }}
-                    />
-                  ) : (
-                    <div style={{ width: "64px", height: "64px", borderRadius: "8px", background: "#f0f0f0", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <span style={{ fontSize: "1.25rem", opacity: 0.3 }}>🌿</span>
-                    </div>
-                  )}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: "0.9rem", fontWeight: 600, color: "#111111", lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
-                      {post.title}
-                    </p>
-                    <p style={{ fontSize: "0.75rem", color: "#aaaaaa", marginTop: "4px" }}>{post.tag}</p>
-                  </div>
-                  <span style={{ fontSize: "1rem", color: "#cccccc", flexShrink: 0 }}>›</span>
-                </div>
-              ))}
-            </div>
-          ) : (
+          {savedWellness.length === 0 && savedTypology.length === 0 ? (
             <div style={{ padding: "48px 28px", border: "1px solid #e8e8e8", borderRadius: "16px", background: "#f5f5f5", textAlign: "center" }}>
               <p style={{ fontSize: "1rem", fontWeight: 600, color: "#333333", marginBottom: "8px" }}>
                 저장한 콘텐츠가 없습니다.
@@ -308,6 +310,33 @@ export default function MyPage() {
                   </button>
                 ))}
               </div>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
+              {savedWellness.length > 0 && (
+                <div>
+                  <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "#bbbbbb", marginBottom: "12px" }}>
+                    Wellness Comics
+                  </p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                    {savedWellness.map((post) => (
+                      <SavedCard key={post.id} post={post} navigate={navigate} />
+                    ))}
+                  </div>
+                </div>
+              )}
+              {savedTypology.length > 0 && (
+                <div>
+                  <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "#bbbbbb", marginBottom: "12px" }}>
+                    Typology Stories
+                  </p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                    {savedTypology.map((post) => (
+                      <SavedCard key={post.id} post={post} navigate={navigate} />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </section>
