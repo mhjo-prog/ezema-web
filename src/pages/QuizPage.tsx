@@ -4,6 +4,8 @@ import { AnimatePresence } from "framer-motion";
 import SurveyPage from "./SurveyPage";
 import LoadingPage from "./LoadingPage";
 import ResultPage from "./ResultPage";
+import { useAuth } from "../context/AuthContext";
+import { supabase, isSupabaseReady } from "../lib/supabase";
 
 type QuizScreen = "survey" | "loading" | "result";
 
@@ -21,6 +23,7 @@ const SESSION_KEY = "ezema_quiz_result";
 export default function QuizPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [screen, setScreen] = useState<QuizScreen>("survey");
   const [surveyKey, setSurveyKey] = useState(0);
@@ -72,8 +75,20 @@ export default function QuizPage() {
     const result = JSON.stringify({ constitutionType: type, scores: s });
     sessionStorage.setItem(SESSION_KEY, result);
     localStorage.setItem("ezema_mypage_result", result);
+
+    // 로그인 유저면 DB에도 저장
+    if (user && isSupabaseReady) {
+      supabase.from("quiz_results").insert({
+        kakao_id: user.kakao_id,
+        constitution_type: type,
+        scores: s,
+      }).then(({ error }) => {
+        if (error) console.error("[quiz_results] insert error:", error);
+      });
+    }
+
     setScreen("loading");
-  }, []);
+  }, [user]);
 
   const handleLoadingComplete = useCallback(() => {
     setScreen("result");

@@ -75,14 +75,38 @@ export default function MyPage() {
       navigate("/");
       return;
     }
-    try {
-      const raw = localStorage.getItem("ezema_mypage_result");
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed?.constitutionType) setQuizResult(parsed);
-      }
-    } catch {
-      // ignore
+
+    // 로그인 유저: DB에서 가장 최근 퀴즈 결과 조회, 없으면 localStorage fallback
+    if (isSupabaseReady) {
+      supabase
+        .from("quiz_results")
+        .select("constitution_type, scores")
+        .eq("kakao_id", user.kakao_id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data?.constitution_type) {
+            setQuizResult({ constitutionType: data.constitution_type, scores: data.scores ?? {} });
+          } else {
+            // DB에 없으면 localStorage에서 읽기
+            try {
+              const raw = localStorage.getItem("ezema_mypage_result");
+              if (raw) {
+                const parsed = JSON.parse(raw);
+                if (parsed?.constitutionType) setQuizResult(parsed);
+              }
+            } catch { /* ignore */ }
+          }
+        });
+    } else {
+      try {
+        const raw = localStorage.getItem("ezema_mypage_result");
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed?.constitutionType) setQuizResult(parsed);
+        }
+      } catch { /* ignore */ }
     }
   }, [user, navigate]);
 
