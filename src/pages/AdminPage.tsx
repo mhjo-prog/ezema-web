@@ -918,6 +918,25 @@ export default function AdminPage() {
     setStats({ visits: visits ?? 0, quizCompletes: quizCompletes ?? 0 });
   }
 
+  async function fetchAllAnalytics(since: Date): Promise<{ event_type: string; created_at: string }[]> {
+    const PAGE = 1000;
+    const all: { event_type: string; created_at: string }[] = [];
+    let from = 0;
+    while (true) {
+      const { data } = await supabase
+        .from("analytics")
+        .select("event_type, created_at")
+        .gte("created_at", since.toISOString())
+        .order("created_at", { ascending: true })
+        .range(from, from + PAGE - 1);
+      if (!data || data.length === 0) break;
+      all.push(...data);
+      if (data.length < PAGE) break;
+      from += PAGE;
+    }
+    return all;
+  }
+
   async function fetchChartData(range: "7d" | "30d" | "monthly") {
     if (!isSupabaseReady) return;
     if (range === "7d" || range === "30d") {
@@ -932,21 +951,15 @@ export default function AdminPage() {
       const since = new Date();
       since.setDate(since.getDate() - (days - 1));
       since.setHours(0, 0, 0, 0);
-      const { data } = await supabase
-        .from("analytics")
-        .select("event_type, created_at")
-        .gte("created_at", since.toISOString())
-        .order("created_at", { ascending: true });
-      if (data) {
-        data.forEach((row) => {
-          const d = new Date(row.created_at);
-          const key = `${d.getMonth() + 1}/${d.getDate()}`;
-          if (buckets[key]) {
-            if (row.event_type === "page_visit") buckets[key].visits++;
-            else if (row.event_type === "quiz_complete") buckets[key].quizCompletes++;
-          }
-        });
-      }
+      const rows = await fetchAllAnalytics(since);
+      rows.forEach((row) => {
+        const d = new Date(row.created_at);
+        const key = `${d.getMonth() + 1}/${d.getDate()}`;
+        if (buckets[key]) {
+          if (row.event_type === "page_visit") buckets[key].visits++;
+          else if (row.event_type === "quiz_complete") buckets[key].quizCompletes++;
+        }
+      });
       setChartData(Object.entries(buckets).map(([date, v]) => ({ date, ...v })));
     } else {
       const buckets: Record<string, { visits: number; quizCompletes: number }> = {};
@@ -961,21 +974,15 @@ export default function AdminPage() {
       since.setDate(1);
       since.setMonth(since.getMonth() - 11);
       since.setHours(0, 0, 0, 0);
-      const { data } = await supabase
-        .from("analytics")
-        .select("event_type, created_at")
-        .gte("created_at", since.toISOString())
-        .order("created_at", { ascending: true });
-      if (data) {
-        data.forEach((row) => {
-          const d = new Date(row.created_at);
-          const key = `${String(d.getFullYear()).slice(2)}/${String(d.getMonth() + 1).padStart(2, "0")}`;
-          if (buckets[key]) {
-            if (row.event_type === "page_visit") buckets[key].visits++;
-            else if (row.event_type === "quiz_complete") buckets[key].quizCompletes++;
-          }
-        });
-      }
+      const rows = await fetchAllAnalytics(since);
+      rows.forEach((row) => {
+        const d = new Date(row.created_at);
+        const key = `${String(d.getFullYear()).slice(2)}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+        if (buckets[key]) {
+          if (row.event_type === "page_visit") buckets[key].visits++;
+          else if (row.event_type === "quiz_complete") buckets[key].quizCompletes++;
+        }
+      });
       setChartData(Object.entries(buckets).map(([date, v]) => ({ date, ...v })));
     }
   }
