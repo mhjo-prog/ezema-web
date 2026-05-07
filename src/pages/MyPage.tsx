@@ -152,31 +152,35 @@ export default function MyPage() {
               </div>
 
               <div style={{ marginTop: "24px", paddingTop: "20px", borderTop: "1px solid #f0f0f0", display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                <button
-                  onClick={() => navigate(`/sasang?type=${quizResult.constitutionType}`)}
-                  style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#ffffff", background: "#000000", border: "none", padding: "9px 20px", borderRadius: "50px", cursor: "pointer", letterSpacing: "0.01em" }}
-                >
-                  관련 아티클 보기
-                </button>
-                <button
-                  onClick={() => navigate("/test")}
-                  style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#666666", border: "1px solid #e8e8e8", padding: "9px 20px", borderRadius: "50px", cursor: "pointer", background: "transparent", letterSpacing: "0.01em" }}
-                >
-                  다시 진단하기
-                </button>
-                <button
-                  onClick={() => {
-                    const total = Object.values(quizResult.scores).reduce((a, b) => a + b, 0);
-                    const params = new URLSearchParams({ type: quizResult.constitutionType, from: "history" });
-                    ["태양인","소양인","태음인","소음인"].forEach(t => {
-                      params.set(t, String(total > 0 ? Math.round((quizResult.scores[t] || 0) / total * 100) : 0));
-                    });
-                    navigate(`/quiz?${params.toString()}`);
-                  }}
-                  style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#666666", border: "1px solid #e8e8e8", padding: "9px 20px", borderRadius: "50px", cursor: "pointer", background: "transparent", letterSpacing: "0.01em" }}
-                >
-                  지난 결과 다시 보기
-                </button>
+                {(["관련 아티클 보기", "다시 진단하기", "지난 결과 다시 보기"] as const).map((label) => (
+                  <button
+                    key={label}
+                    onClick={() => {
+                      if (label === "관련 아티클 보기") {
+                        navigate(`/sasang?type=${quizResult.constitutionType}`);
+                      } else if (label === "다시 진단하기") {
+                        navigate("/test");
+                      } else {
+                        const total = Object.values(quizResult.scores).reduce((a, b) => a + b, 0);
+                        const params = new URLSearchParams({ type: quizResult.constitutionType, from: "history" });
+                        ["태양인","소양인","태음인","소음인"].forEach(t => {
+                          params.set(t, String(total > 0 ? Math.round((quizResult.scores[t] || 0) / total * 100) : 0));
+                        });
+                        navigate(`/quiz?${params.toString()}`);
+                      }
+                    }}
+                    style={{
+                      fontSize: "0.8125rem", fontWeight: 600, padding: "9px 20px",
+                      borderRadius: "50px", cursor: "pointer", transition: "all 0.15s",
+                      color: "#111111", background: "#ffffff", border: "1px solid #111111",
+                      letterSpacing: "0.01em",
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "#111111"; e.currentTarget.style.color = "#ffffff"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "#ffffff"; e.currentTarget.style.color = "#111111"; }}
+                  >
+                    {label}
+                  </button>
+                ))}
               </div>
             </div>
           ) : (
