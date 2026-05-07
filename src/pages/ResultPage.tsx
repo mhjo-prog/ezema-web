@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { results } from "../data/results";
 import { supabase, isSupabaseReady } from "../lib/supabase";
-import { useAuth } from "../context/AuthContext";
 
 declare global {
   interface Window {
@@ -782,18 +781,19 @@ function CoupangBanner({ constitutionType }: { constitutionType: string }) {
 export default function ResultPage({ constitutionType, scores, onRetry, isShared = false, isHistory = false }: Props) {
   const result = results[constitutionType];
   const constitution = constitutionInfo[constitutionType];
-  const { user } = useAuth();
-
   useEffect(() => {
-    if (isSupabaseReady && constitutionType && !isShared) {
-      supabase.from("analytics").insert({ event_type: "quiz_complete", constitution_type: constitutionType })
-        .then(({ error }) => { if (error) console.log("[analytics] insert error:", error); });
-      if (user?.kakao_id) {
-        supabase.from("quiz_results").insert({
-          kakao_id: user.kakao_id,
-          constitution_type: constitutionType,
-          scores,
-        }).then(({ error }) => { if (error) console.log("[quiz_results] insert error:", error); });
+    if (constitutionType && !isShared && !isHistory) {
+      // 결과 URL을 localStorage에 저장 (마이페이지 "지난 결과 다시 보기"에서 사용)
+      const total = Object.values(scores).reduce((a, b) => a + b, 0);
+      const params = new URLSearchParams({ type: constitutionType, from: "history" });
+      ["태양인", "소양인", "태음인", "소음인"].forEach((t) => {
+        params.set(t, String(total > 0 ? Math.round((scores[t] || 0) / total * 100) : 0));
+      });
+      localStorage.setItem("ezema_last_result_url", `/quiz?${params.toString()}`);
+
+      if (isSupabaseReady) {
+        supabase.from("analytics").insert({ event_type: "quiz_complete", constitution_type: constitutionType })
+          .then(({ error }) => { if (error) console.log("[analytics] insert error:", error); });
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
