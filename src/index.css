@@ -36,6 +36,10 @@ button {
   background: none;
 }
 
+input, textarea, select {
+  font-family: inherit;
+}
+
 a,
 a:link,
 a:visited,

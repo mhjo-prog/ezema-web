@@ -1069,7 +1069,7 @@ export default function AdminPage() {
           {/* 상단 스트립 */}
           <div style={{ background: "#f5f5f5", padding: "44px 40px 36px" }}>
             <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "#999999", marginBottom: "10px" }}>KEEPSLOW</p>
-            <h1 style={{ fontSize: "2.25rem", fontWeight: 800, color: "#111111", letterSpacing: "-0.04em", lineHeight: 1.05 }}>관리자<br />페이지</h1>
+            <h1 style={{ fontSize: "2.25rem", fontWeight: 800, color: "#111111", letterSpacing: "-0.04em", lineHeight: 1.05 }}>ADMIN</h1>
           </div>
           {/* 폼 영역 */}
           <div style={{ background: "#ffffff", padding: "36px 40px 44px", display: "flex", flexDirection: "column", gap: "20px" }}>
