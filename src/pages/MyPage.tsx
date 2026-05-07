@@ -164,17 +164,19 @@ export default function MyPage() {
                 >
                   다시 진단하기
                 </button>
-                {localStorage.getItem("ezema_last_result_url") && (
-                  <button
-                    onClick={() => {
-                      const url = localStorage.getItem("ezema_last_result_url");
-                      if (url) navigate(url);
-                    }}
-                    style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#666666", border: "1px solid #e8e8e8", padding: "9px 20px", borderRadius: "50px", cursor: "pointer", background: "transparent", letterSpacing: "0.01em" }}
-                  >
-                    지난 결과 다시 보기
-                  </button>
-                )}
+                <button
+                  onClick={() => {
+                    const total = Object.values(quizResult.scores).reduce((a, b) => a + b, 0);
+                    const params = new URLSearchParams({ type: quizResult.constitutionType, from: "history" });
+                    ["태양인","소양인","태음인","소음인"].forEach(t => {
+                      params.set(t, String(total > 0 ? Math.round((quizResult.scores[t] || 0) / total * 100) : 0));
+                    });
+                    navigate(`/quiz?${params.toString()}`);
+                  }}
+                  style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#666666", border: "1px solid #e8e8e8", padding: "9px 20px", borderRadius: "50px", cursor: "pointer", background: "transparent", letterSpacing: "0.01em" }}
+                >
+                  지난 결과 다시 보기
+                </button>
               </div>
             </div>
           ) : (
