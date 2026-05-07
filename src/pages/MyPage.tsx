@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
-import { supabase, isSupabaseReady, type Post } from "../lib/supabase";
+import { supabase, isSupabaseReady } from "../lib/supabase";
 import { getSavedPostIds } from "../lib/bookmarks";
 
 const CONSTITUTION_LABELS: Record<string, string> = {
@@ -28,7 +28,15 @@ export default function MyPage() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [quizResult, setQuizResult] = useState<QuizResult | null>(null);
-  const [savedPosts, setSavedPosts] = useState<Post[]>([]);
+  interface SavedItem {
+    id: string;
+    title: string;
+    card_image_url: string;
+    tag: string;
+    created_at: string;
+    path: string;
+  }
+  const [savedPosts, setSavedPosts] = useState<SavedItem[]>([]);
 
   useEffect(() => {
     if (!user) {
@@ -49,13 +57,38 @@ export default function MyPage() {
   useEffect(() => {
     const ids = getSavedPostIds();
     if (!ids.length || !isSupabaseReady) return;
-    supabase
-      .from("posts")
-      .select("id, title, constitution_type, card_image_url, created_at")
-      .in("id", ids)
-      .eq("status", "published")
-      .order("created_at", { ascending: false })
-      .then(({ data }) => { if (data) setSavedPosts(data as Post[]); });
+    Promise.all([
+      supabase
+        .from("posts")
+        .select("id, title, constitution_type, card_image_url, created_at")
+        .in("id", ids)
+        .eq("status", "published"),
+      supabase
+        .from("wellness_posts")
+        .select("id, title, wellness_category, card_image_url, created_at")
+        .in("id", ids)
+        .eq("status", "published"),
+    ]).then(([{ data: posts }, { data: wellness }]) => {
+      const combined: SavedItem[] = [
+        ...(posts ?? []).map((p: any) => ({
+          id: p.id,
+          title: p.title,
+          card_image_url: p.card_image_url,
+          tag: p.constitution_type,
+          created_at: p.created_at,
+          path: `/sasang/${p.id}`,
+        })),
+        ...(wellness ?? []).map((p: any) => ({
+          id: p.id,
+          title: p.title,
+          card_image_url: p.card_image_url,
+          tag: p.wellness_category,
+          created_at: p.created_at,
+          path: `/wellness/${p.id}`,
+        })),
+      ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      setSavedPosts(combined);
+    });
   }, []);
 
   if (!user) return null;
@@ -228,7 +261,7 @@ export default function MyPage() {
               {savedPosts.map((post) => (
                 <div
                   key={post.id}
-                  onClick={() => navigate(`/sasang/${post.id}`)}
+                  onClick={() => navigate(post.path)}
                   style={{ display: "flex", alignItems: "center", gap: "16px", padding: "16px", border: "1px solid #e8e8e8", borderRadius: "12px", cursor: "pointer", transition: "background 0.15s" }}
                   onMouseEnter={(e) => { e.currentTarget.style.background = "#f8f8f8"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = "#ffffff"; }}
@@ -248,7 +281,7 @@ export default function MyPage() {
                     <p style={{ fontSize: "0.9rem", fontWeight: 600, color: "#111111", lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
                       {post.title}
                     </p>
-                    <p style={{ fontSize: "0.75rem", color: "#aaaaaa", marginTop: "4px" }}>{post.constitution_type}</p>
+                    <p style={{ fontSize: "0.75rem", color: "#aaaaaa", marginTop: "4px" }}>{post.tag}</p>
                   </div>
                   <span style={{ fontSize: "1rem", color: "#cccccc", flexShrink: 0 }}>›</span>
                 </div>
