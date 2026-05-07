@@ -70,45 +70,39 @@ export default function MyPage() {
   const [savedTypology, setSavedTypology] = useState<SavedItem[]>([]);
   const [savedWellness, setSavedWellness] = useState<SavedItem[]>([]);
 
+  // 비로그인 시 리다이렉트
   useEffect(() => {
-    if (!user) {
-      navigate("/");
+    if (!user) navigate("/");
+  }, [user, navigate]);
+
+  // 퀴즈 결과 로드 (로그인 시 DB만 사용)
+  useEffect(() => {
+    if (!user) return;
+
+    console.log("[MyPage] quiz_results 조회 시작 — kakao_id:", user.kakao_id, "isSupabaseReady:", isSupabaseReady);
+
+    if (!isSupabaseReady) {
+      console.warn("[MyPage] Supabase 미설정 — 퀴즈 결과 조회 불가");
       return;
     }
 
-    // 로그인 유저: DB에서 가장 최근 퀴즈 결과 조회, 없으면 localStorage fallback
-    if (isSupabaseReady) {
-      supabase
-        .from("quiz_results")
-        .select("constitution_type, scores")
-        .eq("kakao_id", user.kakao_id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle()
-        .then(({ data }) => {
-          if (data?.constitution_type) {
-            setQuizResult({ constitutionType: data.constitution_type, scores: data.scores ?? {} });
-          } else {
-            // DB에 없으면 localStorage에서 읽기
-            try {
-              const raw = localStorage.getItem("ezema_mypage_result");
-              if (raw) {
-                const parsed = JSON.parse(raw);
-                if (parsed?.constitutionType) setQuizResult(parsed);
-              }
-            } catch { /* ignore */ }
-          }
-        });
-    } else {
-      try {
-        const raw = localStorage.getItem("ezema_mypage_result");
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (parsed?.constitutionType) setQuizResult(parsed);
+    supabase
+      .from("quiz_results")
+      .select("constitution_type, scores")
+      .eq("kakao_id", user.kakao_id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        console.log("[MyPage] quiz_results 응답 — data:", data, "error:", error);
+        if (data?.constitution_type) {
+          console.log("[MyPage] DB 결과 적용:", data.constitution_type);
+          setQuizResult({ constitutionType: data.constitution_type, scores: data.scores ?? {} });
+        } else {
+          console.log("[MyPage] DB에 퀴즈 결과 없음");
         }
-      } catch { /* ignore */ }
-    }
-  }, [user, navigate]);
+      });
+  }, [user]);
 
   useEffect(() => {
     if (!isSupabaseReady) return;
