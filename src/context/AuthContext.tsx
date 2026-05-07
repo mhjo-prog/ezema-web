@@ -64,8 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       `?client_id=${KAKAO_REST_KEY}` +
       `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
       `&response_type=code` +
-      `&scope=plusfriends` +
-      `&channel_public_id=_qMwTX`;
+      `&scope=plusfriends`;
 
     const popup = window.open(
       kakaoAuthUrl,
