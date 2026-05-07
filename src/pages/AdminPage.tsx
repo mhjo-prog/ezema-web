@@ -1048,58 +1048,60 @@ export default function AdminPage() {
       <div
         style={{
           minHeight: "100vh",
-          background: "#f7f8fa",
+          background: "#ffffff",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          paddingTop: "56px",
+          fontFamily: "'Pretendard', sans-serif",
         }}
       >
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           style={{
-            background: "#ffffff",
-            borderRadius: "16px",
-            padding: "40px",
             width: "100%",
-            maxWidth: "360px",
-            border: "1px solid #eeeeee",
-            display: "flex",
-            flexDirection: "column",
-            gap: "20px",
+            maxWidth: "420px",
+            overflow: "hidden",
+            border: "1px solid #e8e8e8",
           }}
         >
-          <div>
-            <p style={{ fontSize: "0.75rem", fontWeight: 600, color: "#0774C4", letterSpacing: "0.08em", marginBottom: "6px" }}>KEEPSLOW</p>
-            <h1 style={{ fontSize: "1.375rem", fontWeight: 800, color: "#111111" }}>관리자 페이지</h1>
+          {/* 상단 yellow 스트립 */}
+          <div style={{ background: "#feff8e", padding: "44px 40px 36px" }}>
+            <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "#999999", marginBottom: "10px" }}>KEEPSLOW</p>
+            <h1 style={{ fontSize: "2.25rem", fontWeight: 800, color: "#111111", letterSpacing: "-0.04em", lineHeight: 1.05 }}>관리자<br />페이지</h1>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            <label style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#444444" }}>비밀번호</label>
-            <input
-              type="password"
-              value={pw}
-              onChange={(e) => { setPw(e.target.value); setPwError(false); }}
-              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-              placeholder="비밀번호를 입력하세요"
-              style={{
-                padding: "12px 14px",
-                border: `1.5px solid ${pwError ? "#E8460A" : "#e0e0e0"}`,
-                borderRadius: "10px",
-                fontSize: "0.9375rem",
-                outline: "none",
-                width: "100%",
-                boxSizing: "border-box",
-              }}
-            />
-            {pwError && <p style={{ fontSize: "0.8125rem", color: "#E8460A" }}>비밀번호가 올바르지 않습니다.</p>}
+          {/* 폼 영역 */}
+          <div style={{ background: "#ffffff", padding: "36px 40px 44px", display: "flex", flexDirection: "column", gap: "20px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <label style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.14em", textTransform: "uppercase", color: "#999999" }}>비밀번호</label>
+              <input
+                type="password"
+                value={pw}
+                onChange={(e) => { setPw(e.target.value); setPwError(false); }}
+                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                placeholder="비밀번호를 입력하세요"
+                style={{
+                  padding: "13px 14px",
+                  border: `1px solid ${pwError ? "#E8460A" : "#e8e8e8"}`,
+                  borderRadius: "4px",
+                  fontSize: "0.9375rem",
+                  outline: "none",
+                  width: "100%",
+                  boxSizing: "border-box",
+                  fontFamily: "'Pretendard', sans-serif",
+                  color: "#111111",
+                }}
+              />
+              {pwError && <p style={{ fontSize: "0.8125rem", color: "#E8460A" }}>비밀번호가 올바르지 않습니다.</p>}
+            </div>
+            <button
+              onClick={handleLogin}
+              style={{ width: "100%", padding: "14px", background: "#111111", color: "#ffffff", fontWeight: 600, fontSize: "0.9375rem", borderRadius: "4px", cursor: "pointer", border: "none", letterSpacing: "0.02em", fontFamily: "'Pretendard', sans-serif" }}
+            >
+              로그인
+            </button>
           </div>
-          <button
-            onClick={handleLogin}
-            style={{ width: "100%", padding: "13px", background: "#0774C4", color: "#ffffff", fontWeight: 700, fontSize: "0.9375rem", borderRadius: "10px", cursor: "pointer" }}
-          >
-            로그인
-          </button>
         </motion.div>
       </div>
     );
@@ -1126,32 +1128,34 @@ export default function AdminPage() {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      style={{ minHeight: "100vh", background: "#f7f8fa", paddingTop: "56px" }}
+      style={{ minHeight: "100vh", background: "#ffffff", paddingTop: "56px", fontFamily: "'Pretendard', sans-serif" }}
     >
-      <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "40px 24px 80px", display: "flex", gap: "32px", alignItems: "stretch" }}>
+      {/* ── 상단 히어로 스트립 ── */}
+      <div style={{ background: "#feff8e", borderBottom: "1px solid #e8e8e8" }}>
+        <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "32px 24px 24px", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+          <div>
+            <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "#999999", marginBottom: "6px" }}>ADMIN</p>
+            <h1 style={{ fontSize: "clamp(1.5rem, 3vw, 2.25rem)", fontWeight: 800, color: "#111111", letterSpacing: "-0.04em", lineHeight: 1.05 }}>콘텐츠 관리</h1>
+          </div>
+          <button
+            onClick={async () => {
+              setPostsRefreshing(true);
+              await new Promise((r) => setTimeout(r, 200));
+              await Promise.all([fetchPosts(), fetchWellnessPosts(), fetchStats(), fetchChartData(chartRange)]);
+              setPostsRefreshing(false);
+            }}
+            style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#111111", border: "1px solid #111111", padding: "9px 20px", borderRadius: "50px", cursor: "pointer", background: "transparent", flexShrink: 0, letterSpacing: "0.01em" }}
+          >
+            새로고침
+          </button>
+        </div>
+      </div>
+
+      <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "40px 24px 80px", display: "flex", gap: "48px", alignItems: "stretch" }}>
         <div style={{ flex: 1, minWidth: 0 }}>
 
-          {/* 헤더 */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-            <div>
-              <p style={{ fontSize: "0.75rem", fontWeight: 600, color: "#0774C4", letterSpacing: "0.08em", marginBottom: "4px" }}>ADMIN</p>
-              <h1 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#111111" }}>콘텐츠 관리</h1>
-            </div>
-            <button
-              onClick={async () => {
-                setPostsRefreshing(true);
-                await new Promise((r) => setTimeout(r, 200));
-                await Promise.all([fetchPosts(), fetchWellnessPosts(), fetchStats(), fetchChartData(chartRange)]);
-                setPostsRefreshing(false);
-              }}
-              style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#0774C4", border: "1.5px solid #0774C4", padding: "8px 16px", borderRadius: "50px", cursor: "pointer" }}
-            >
-              새로고침
-            </button>
-          </div>
-
           {/* 탭 스위처 */}
-          <div style={{ display: "flex", gap: "0", marginBottom: "28px", background: "#f0f0f0", borderRadius: "10px", padding: "4px" }}>
+          <div style={{ display: "flex", marginBottom: "32px", borderBottom: "1px solid #e8e8e8" }}>
             {([
               { key: "sasang", label: "사상체질 이야기" },
               { key: "wellness", label: "Wellness" },
@@ -1160,17 +1164,17 @@ export default function AdminPage() {
                 key={key}
                 onClick={() => setActiveTab(key)}
                 style={{
-                  flex: 1,
-                  padding: "9px 0",
-                  borderRadius: "8px",
+                  padding: "12px 20px 14px",
                   fontSize: "0.875rem",
-                  fontWeight: 700,
-                  background: activeTab === key ? "#ffffff" : "transparent",
-                  color: activeTab === key ? "#111111" : "#888888",
+                  fontWeight: activeTab === key ? 700 : 500,
+                  background: "transparent",
+                  color: activeTab === key ? "#111111" : "#999999",
                   border: "none",
+                  borderBottom: activeTab === key ? "2px solid #111111" : "2px solid transparent",
                   cursor: "pointer",
-                  boxShadow: activeTab === key ? "0 1px 4px rgba(0,0,0,0.08)" : "none",
+                  marginBottom: "-1px",
                   transition: "all 0.15s",
+                  letterSpacing: "0.01em",
                 }}
               >
                 {label}
@@ -1185,9 +1189,9 @@ export default function AdminPage() {
               <>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px", marginBottom: "32px" }}>
                   {[
-                    { label: "검토 대기 (Draft)", count: draftPosts.length, color: "#888888", filter: "draft" as const },
-                    { label: "승인됨 (게시 예정)", count: approvedPosts.length, color: "#1E8A4C", filter: "approved" as const },
-                    { label: "게시됨 (Published)", count: publishedPosts.length, color: "#0774C4", filter: "published" as const },
+                    { label: "Draft", count: draftPosts.length, color: "#888888", filter: "draft" as const },
+                    { label: "승인됨", count: approvedPosts.length, color: "#1E8A4C", filter: "approved" as const },
+                    { label: "게시됨", count: publishedPosts.length, color: "#0774C4", filter: "published" as const },
                   ].map((stat) => {
                     const isActive = activeFilter === stat.filter;
                     return (
@@ -1196,36 +1200,37 @@ export default function AdminPage() {
                         onClick={() => { setActiveFilter(stat.filter); setCurrentPage(1); }}
                         style={{
                           background: "#ffffff",
-                          borderRadius: "12px",
+                          borderRadius: "16px",
                           padding: "20px",
-                          border: isActive ? `2px solid ${stat.color}` : "1px solid #eeeeee",
+                          border: isActive ? "2px solid #111111" : "1px solid #e8e8e8",
                           cursor: "pointer",
-                          transition: "border-color 0.15s",
+                          transition: "all 0.15s",
+                          boxShadow: isActive ? "0 4px 20px rgba(0,0,0,0.1)" : "0 1px 4px rgba(0,0,0,0.04)",
                         }}
                       >
-                        <p style={{ fontSize: "0.8125rem", color: "#888888", marginBottom: "8px" }}>{stat.label}</p>
-                        <p style={{ fontSize: "2rem", fontWeight: 800, color: stat.color }}>{stat.count}</p>
+                        <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#999999", marginBottom: "10px" }}>{stat.label}</p>
+                        <p style={{ fontSize: "2rem", fontWeight: 800, color: isActive ? "#111111" : stat.color, letterSpacing: "-0.03em" }}>{stat.count}</p>
                       </div>
                     );
                   })}
                 </div>
 
                 {loading ? (
-                  <div style={{ textAlign: "center", padding: "40px", color: "#888888" }}>불러오는 중...</div>
+                  <div style={{ textAlign: "center", padding: "48px", color: "#999999", fontSize: "0.9rem" }}>불러오는 중...</div>
                 ) : filteredPosts.length === 0 ? (
-                  <div style={{ textAlign: "center", padding: "60px", background: "#ffffff", borderRadius: "12px", border: "1px solid #eeeeee", color: "#aaaaaa" }}>
+                  <div style={{ textAlign: "center", padding: "60px 40px", background: "#f5f4f0", border: "1px solid #e8e8e8", color: "#aaaaaa" }}>
                     {activeFilter === "draft" ? (
                       <>
-                        <p style={{ fontSize: "1rem" }}>검토할 포스트가 없습니다.</p>
-                        <p style={{ fontSize: "0.875rem", marginTop: "6px" }}>매일 15:00에 새 초안이 생성됩니다.</p>
+                        <p style={{ fontSize: "1rem", color: "#666666", fontWeight: 600 }}>검토할 포스트가 없습니다.</p>
+                        <p style={{ fontSize: "0.875rem", marginTop: "8px", color: "#aaaaaa" }}>매일 15:00에 새 초안이 생성됩니다.</p>
                       </>
                     ) : activeFilter === "approved" ? (
                       <>
-                        <p style={{ fontSize: "1rem" }}>승인된 게시물이 없습니다.</p>
-                        <p style={{ fontSize: "0.875rem", marginTop: "6px" }}>Draft 탭에서 게시물을 승인하면 여기에 표시됩니다.</p>
+                        <p style={{ fontSize: "1rem", color: "#666666", fontWeight: 600 }}>승인된 게시물이 없습니다.</p>
+                        <p style={{ fontSize: "0.875rem", marginTop: "8px", color: "#aaaaaa" }}>Draft 탭에서 게시물을 승인하면 여기에 표시됩니다.</p>
                       </>
                     ) : (
-                      <p style={{ fontSize: "1rem" }}>게시된 게시물이 없습니다.</p>
+                      <p style={{ fontSize: "1rem", color: "#666666", fontWeight: 600 }}>게시된 게시물이 없습니다.</p>
                     )}
                   </div>
                 ) : (
@@ -1237,7 +1242,7 @@ export default function AdminPage() {
                       return (
                         <div
                           key={post.id}
-                          style={{ background: "#ffffff", borderRadius: "12px", border: "1px solid #eeeeee", padding: "20px", display: "flex", flexDirection: "column", gap: "0" }}
+                          style={{ background: "#ffffff", borderRadius: "16px", border: "1px solid #e8e8e8", padding: "20px", display: "flex", flexDirection: "column", gap: "0", boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}
                         >
                           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
                             <div style={{ position: "relative", width: "80px", height: "52px", borderRadius: "8px", overflow: "hidden", background: "#f0f0f0", flexShrink: 0 }}>
@@ -1290,7 +1295,7 @@ export default function AdminPage() {
                               )}
                               <button
                                 onClick={() => setPreview(post)}
-                                style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#444444", border: "1.5px solid #e0e0e0", padding: "8px 14px", borderRadius: "8px", cursor: "pointer" }}
+                                style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#444444", border: "1px solid #e8e8e8", padding: "8px 14px", borderRadius: "50px", cursor: "pointer", background: "#ffffff", letterSpacing: "0.01em" }}
                               >
                                 미리보기
                               </button>
@@ -1298,7 +1303,7 @@ export default function AdminPage() {
                                 <button
                                   onClick={() => handleApprove(post.id)}
                                   disabled={approving === post.id}
-                                  style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#ffffff", background: approving === post.id ? "#aaaaaa" : "#0774C4", padding: "8px 14px", borderRadius: "8px", cursor: approving === post.id ? "not-allowed" : "pointer" }}
+                                  style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#ffffff", background: approving === post.id ? "#aaaaaa" : "#111111", padding: "8px 16px", borderRadius: "50px", cursor: approving === post.id ? "not-allowed" : "pointer", border: "none", letterSpacing: "0.01em" }}
                                 >
                                   {approving === post.id ? "처리 중..." : "승인"}
                                 </button>
@@ -1307,9 +1312,9 @@ export default function AdminPage() {
                           </div>
 
                           {/* 피드백 */}
-                          <div style={{ borderTop: "1px solid #f0f0f0", marginTop: "14px", paddingTop: "14px", display: "flex", gap: "12px", alignItems: "flex-end", flexWrap: "wrap" }}>
+                          <div style={{ borderTop: "1px solid #e8e8e8", marginTop: "16px", paddingTop: "16px", display: "flex", gap: "12px", alignItems: "flex-end", flexWrap: "wrap" }}>
                             <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                              <span style={{ fontSize: "0.6875rem", fontWeight: 600, color: "#888888" }}>별점</span>
+                              <span style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#999999" }}>별점</span>
                               <div style={{ display: "flex", gap: "2px" }}>
                                 {[1, 2, 3, 4, 5].map((star) => {
                                   const selected = (feedbackDrafts[post.id]?.score ?? 0) >= star;
@@ -1326,18 +1331,18 @@ export default function AdminPage() {
                               </div>
                             </div>
                             <div style={{ flex: 1, minWidth: "180px", display: "flex", flexDirection: "column", gap: "4px" }}>
-                              <span style={{ fontSize: "0.6875rem", fontWeight: 600, color: "#888888" }}>메모</span>
+                              <span style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#999999" }}>메모</span>
                               <input
                                 value={feedbackDrafts[post.id]?.note ?? ""}
                                 onChange={(e) => setFeedbackDrafts((prev) => ({ ...prev, [post.id]: { score: prev[post.id]?.score ?? null, note: e.target.value } }))}
                                 placeholder="이 게시물에 대한 메모..."
-                                style={{ padding: "7px 10px", border: "1.5px solid #e0e0e0", borderRadius: "8px", fontSize: "0.8125rem", color: "#111111", outline: "none", width: "100%", boxSizing: "border-box" as const }}
+                                style={{ padding: "7px 10px", border: "1px solid #e8e8e8", borderRadius: "4px", fontSize: "0.8125rem", color: "#111111", outline: "none", width: "100%", boxSizing: "border-box" as const, fontFamily: "'Pretendard', sans-serif" }}
                               />
                             </div>
                             <button
                               onClick={() => handleSaveFeedback(post)}
                               disabled={savingFeedback === post.id}
-                              style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#444444", background: "#ffffff", border: "1.5px solid #e0e0e0", padding: "8px 14px", borderRadius: "8px", cursor: savingFeedback === post.id ? "not-allowed" : "pointer", whiteSpace: "nowrap" as const, flexShrink: 0 }}
+                              style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#444444", background: "#ffffff", border: "1px solid #e8e8e8", padding: "8px 16px", borderRadius: "50px", cursor: savingFeedback === post.id ? "not-allowed" : "pointer", whiteSpace: "nowrap" as const, flexShrink: 0 }}
                             >
                               {savingFeedback === post.id ? "저장 중..." : "피드백 저장"}
                             </button>
@@ -1349,12 +1354,12 @@ export default function AdminPage() {
                 )}
 
                 {totalPages > 1 && (
-                  <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "8px", marginTop: "24px" }}>
-                    <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} style={{ fontSize: "0.875rem", fontWeight: 600, color: currentPage === 1 ? "#cccccc" : "#0774C4", border: `1.5px solid ${currentPage === 1 ? "#eeeeee" : "#0774C4"}`, padding: "7px 16px", borderRadius: "8px", cursor: currentPage === 1 ? "not-allowed" : "pointer", background: "#ffffff" }}>&lt;</button>
+                  <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "6px", marginTop: "28px" }}>
+                    <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} style={{ fontSize: "0.875rem", fontWeight: 600, color: currentPage === 1 ? "#cccccc" : "#111111", border: `1px solid ${currentPage === 1 ? "#eeeeee" : "#e8e8e8"}`, padding: "7px 16px", borderRadius: "50px", cursor: currentPage === 1 ? "not-allowed" : "pointer", background: "#ffffff" }}>&lt;</button>
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                      <button key={page} onClick={() => setCurrentPage(page)} style={{ fontSize: "0.875rem", fontWeight: 600, color: page === currentPage ? "#ffffff" : "#444444", background: page === currentPage ? "#0774C4" : "#ffffff", border: `1.5px solid ${page === currentPage ? "#0774C4" : "#e0e0e0"}`, padding: "7px 13px", borderRadius: "8px", cursor: "pointer", minWidth: "38px" }}>{page}</button>
+                      <button key={page} onClick={() => setCurrentPage(page)} style={{ fontSize: "0.875rem", fontWeight: 600, color: page === currentPage ? "#ffffff" : "#444444", background: page === currentPage ? "#111111" : "#ffffff", border: `1px solid ${page === currentPage ? "#111111" : "#e8e8e8"}`, padding: "7px 13px", borderRadius: "50px", cursor: "pointer", minWidth: "38px" }}>{page}</button>
                     ))}
-                    <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} style={{ fontSize: "0.875rem", fontWeight: 600, color: currentPage === totalPages ? "#cccccc" : "#0774C4", border: `1.5px solid ${currentPage === totalPages ? "#eeeeee" : "#0774C4"}`, padding: "7px 16px", borderRadius: "8px", cursor: currentPage === totalPages ? "not-allowed" : "pointer", background: "#ffffff" }}>&gt;</button>
+                    <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} style={{ fontSize: "0.875rem", fontWeight: 600, color: currentPage === totalPages ? "#cccccc" : "#111111", border: `1px solid ${currentPage === totalPages ? "#eeeeee" : "#e8e8e8"}`, padding: "7px 16px", borderRadius: "50px", cursor: currentPage === totalPages ? "not-allowed" : "pointer", background: "#ffffff" }}>&gt;</button>
                   </div>
                 )}
               </>
@@ -1365,9 +1370,9 @@ export default function AdminPage() {
               <>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px", marginBottom: "32px" }}>
                   {[
-                    { label: "검토 대기 (Draft)", count: draftWellness.length, color: "#888888", filter: "draft" as const },
-                    { label: "승인됨 (게시 예정)", count: approvedWellness.length, color: "#1E8A4C", filter: "approved" as const },
-                    { label: "게시됨 (Published)", count: publishedWellness.length, color: "#0774C4", filter: "published" as const },
+                    { label: "Draft", count: draftWellness.length, color: "#888888", filter: "draft" as const },
+                    { label: "승인됨", count: approvedWellness.length, color: "#1E8A4C", filter: "approved" as const },
+                    { label: "게시됨", count: publishedWellness.length, color: "#0774C4", filter: "published" as const },
                   ].map((stat) => {
                     const isActive = wellnessFilter === stat.filter;
                     return (
@@ -1376,36 +1381,37 @@ export default function AdminPage() {
                         onClick={() => { setWellnessFilter(stat.filter); setWellnessPage(1); }}
                         style={{
                           background: "#ffffff",
-                          borderRadius: "12px",
+                          borderRadius: "16px",
                           padding: "20px",
-                          border: isActive ? `2px solid ${stat.color}` : "1px solid #eeeeee",
+                          border: isActive ? "2px solid #111111" : "1px solid #e8e8e8",
                           cursor: "pointer",
-                          transition: "border-color 0.15s",
+                          transition: "all 0.15s",
+                          boxShadow: isActive ? "0 4px 20px rgba(0,0,0,0.1)" : "0 1px 4px rgba(0,0,0,0.04)",
                         }}
                       >
-                        <p style={{ fontSize: "0.8125rem", color: "#888888", marginBottom: "8px" }}>{stat.label}</p>
-                        <p style={{ fontSize: "2rem", fontWeight: 800, color: stat.color }}>{stat.count}</p>
+                        <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#999999", marginBottom: "10px" }}>{stat.label}</p>
+                        <p style={{ fontSize: "2rem", fontWeight: 800, color: isActive ? "#111111" : stat.color, letterSpacing: "-0.03em" }}>{stat.count}</p>
                       </div>
                     );
                   })}
                 </div>
 
                 {wellnessLoading ? (
-                  <div style={{ textAlign: "center", padding: "40px", color: "#888888" }}>불러오는 중...</div>
+                  <div style={{ textAlign: "center", padding: "48px", color: "#999999", fontSize: "0.9rem" }}>불러오는 중...</div>
                 ) : filteredWellness.length === 0 ? (
-                  <div style={{ textAlign: "center", padding: "60px", background: "#ffffff", borderRadius: "12px", border: "1px solid #eeeeee", color: "#aaaaaa" }}>
+                  <div style={{ textAlign: "center", padding: "60px 40px", background: "#f5f4f0", border: "1px solid #e8e8e8", color: "#aaaaaa" }}>
                     {wellnessFilter === "draft" ? (
                       <>
-                        <p style={{ fontSize: "1rem" }}>검토할 포스트가 없습니다.</p>
-                        <p style={{ fontSize: "0.875rem", marginTop: "6px" }}>매일 15:00에 새 초안이 생성됩니다.</p>
+                        <p style={{ fontSize: "1rem", color: "#666666", fontWeight: 600 }}>검토할 포스트가 없습니다.</p>
+                        <p style={{ fontSize: "0.875rem", marginTop: "8px", color: "#aaaaaa" }}>매일 15:00에 새 초안이 생성됩니다.</p>
                       </>
                     ) : wellnessFilter === "approved" ? (
                       <>
-                        <p style={{ fontSize: "1rem" }}>승인된 게시물이 없습니다.</p>
-                        <p style={{ fontSize: "0.875rem", marginTop: "6px" }}>Draft 탭에서 게시물을 승인하면 여기에 표시됩니다.</p>
+                        <p style={{ fontSize: "1rem", color: "#666666", fontWeight: 600 }}>승인된 게시물이 없습니다.</p>
+                        <p style={{ fontSize: "0.875rem", marginTop: "8px", color: "#aaaaaa" }}>Draft 탭에서 게시물을 승인하면 여기에 표시됩니다.</p>
                       </>
                     ) : (
-                      <p style={{ fontSize: "1rem" }}>게시된 웰니스 게시물이 없습니다.</p>
+                      <p style={{ fontSize: "1rem", color: "#666666", fontWeight: 600 }}>게시된 웰니스 게시물이 없습니다.</p>
                     )}
                   </div>
                 ) : (
@@ -1417,7 +1423,7 @@ export default function AdminPage() {
                       return (
                         <div
                           key={post.id}
-                          style={{ background: "#ffffff", borderRadius: "12px", border: "1px solid #eeeeee", padding: "20px" }}
+                          style={{ background: "#ffffff", borderRadius: "16px", border: "1px solid #e8e8e8", padding: "20px", boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}
                         >
                           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
                             <div style={{ position: "relative", width: "80px", height: "52px", borderRadius: "8px", overflow: "hidden", background: "#f5f5f5", flexShrink: 0 }}>
@@ -1470,7 +1476,7 @@ export default function AdminPage() {
                               )}
                               <button
                                 onClick={() => setWellnessPreview(post)}
-                                style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#444444", border: "1.5px solid #e0e0e0", padding: "8px 14px", borderRadius: "8px", cursor: "pointer" }}
+                                style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#444444", border: "1px solid #e8e8e8", padding: "8px 14px", borderRadius: "50px", cursor: "pointer", background: "#ffffff", letterSpacing: "0.01em" }}
                               >
                                 미리보기
                               </button>
@@ -1478,7 +1484,7 @@ export default function AdminPage() {
                                 <button
                                   onClick={() => handleWellnessApprove(post.id)}
                                   disabled={wellnessApproving === post.id}
-                                  style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#ffffff", background: wellnessApproving === post.id ? "#aaaaaa" : "#1E8A4C", padding: "8px 14px", borderRadius: "8px", cursor: wellnessApproving === post.id ? "not-allowed" : "pointer" }}
+                                  style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#ffffff", background: wellnessApproving === post.id ? "#aaaaaa" : "#111111", padding: "8px 16px", borderRadius: "50px", cursor: wellnessApproving === post.id ? "not-allowed" : "pointer", border: "none", letterSpacing: "0.01em" }}
                                 >
                                   {wellnessApproving === post.id ? "처리 중..." : "승인"}
                                 </button>
@@ -1487,9 +1493,9 @@ export default function AdminPage() {
                           </div>
 
                           {/* 피드백 */}
-                          <div style={{ borderTop: "1px solid #f0f0f0", marginTop: "14px", paddingTop: "14px", display: "flex", gap: "12px", alignItems: "flex-end", flexWrap: "wrap" }}>
+                          <div style={{ borderTop: "1px solid #e8e8e8", marginTop: "16px", paddingTop: "16px", display: "flex", gap: "12px", alignItems: "flex-end", flexWrap: "wrap" }}>
                             <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                              <span style={{ fontSize: "0.6875rem", fontWeight: 600, color: "#888888" }}>별점</span>
+                              <span style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#999999" }}>별점</span>
                               <div style={{ display: "flex", gap: "2px" }}>
                                 {[1, 2, 3, 4, 5].map((star) => {
                                   const selected = (wellnessFeedbackDrafts[post.id]?.score ?? 0) >= star;
@@ -1506,18 +1512,18 @@ export default function AdminPage() {
                               </div>
                             </div>
                             <div style={{ flex: 1, minWidth: "180px", display: "flex", flexDirection: "column", gap: "4px" }}>
-                              <span style={{ fontSize: "0.6875rem", fontWeight: 600, color: "#888888" }}>메모</span>
+                              <span style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#999999" }}>메모</span>
                               <input
                                 value={wellnessFeedbackDrafts[post.id]?.note ?? ""}
                                 onChange={(e) => setWellnessFeedbackDrafts((prev) => ({ ...prev, [post.id]: { score: prev[post.id]?.score ?? null, note: e.target.value } }))}
                                 placeholder="이 게시물에 대한 메모..."
-                                style={{ padding: "7px 10px", border: "1.5px solid #e0e0e0", borderRadius: "8px", fontSize: "0.8125rem", color: "#111111", outline: "none", width: "100%", boxSizing: "border-box" as const }}
+                                style={{ padding: "7px 10px", border: "1px solid #e8e8e8", borderRadius: "4px", fontSize: "0.8125rem", color: "#111111", outline: "none", width: "100%", boxSizing: "border-box" as const, fontFamily: "'Pretendard', sans-serif" }}
                               />
                             </div>
                             <button
                               onClick={() => handleSaveWellnessFeedback(post)}
                               disabled={savingWellnessFeedback === post.id}
-                              style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#444444", background: "#ffffff", border: "1.5px solid #e0e0e0", padding: "8px 14px", borderRadius: "8px", cursor: savingWellnessFeedback === post.id ? "not-allowed" : "pointer", whiteSpace: "nowrap" as const, flexShrink: 0 }}
+                              style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#444444", background: "#ffffff", border: "1px solid #e8e8e8", padding: "8px 16px", borderRadius: "50px", cursor: savingWellnessFeedback === post.id ? "not-allowed" : "pointer", whiteSpace: "nowrap" as const, flexShrink: 0 }}
                             >
                               {savingWellnessFeedback === post.id ? "저장 중..." : "피드백 저장"}
                             </button>
@@ -1529,12 +1535,12 @@ export default function AdminPage() {
                 )}
 
                 {wellnessTotalPages > 1 && (
-                  <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "8px", marginTop: "24px" }}>
-                    <button onClick={() => setWellnessPage((p) => Math.max(1, p - 1))} disabled={wellnessPage === 1} style={{ fontSize: "0.875rem", fontWeight: 600, color: wellnessPage === 1 ? "#cccccc" : "#0774C4", border: `1.5px solid ${wellnessPage === 1 ? "#eeeeee" : "#0774C4"}`, padding: "7px 16px", borderRadius: "8px", cursor: wellnessPage === 1 ? "not-allowed" : "pointer", background: "#ffffff" }}>&lt;</button>
+                  <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "6px", marginTop: "28px" }}>
+                    <button onClick={() => setWellnessPage((p) => Math.max(1, p - 1))} disabled={wellnessPage === 1} style={{ fontSize: "0.875rem", fontWeight: 600, color: wellnessPage === 1 ? "#cccccc" : "#111111", border: `1px solid ${wellnessPage === 1 ? "#eeeeee" : "#e8e8e8"}`, padding: "7px 16px", borderRadius: "50px", cursor: wellnessPage === 1 ? "not-allowed" : "pointer", background: "#ffffff" }}>&lt;</button>
                     {Array.from({ length: wellnessTotalPages }, (_, i) => i + 1).map((page) => (
-                      <button key={page} onClick={() => setWellnessPage(page)} style={{ fontSize: "0.875rem", fontWeight: 600, color: page === wellnessPage ? "#ffffff" : "#444444", background: page === wellnessPage ? "#0774C4" : "#ffffff", border: `1.5px solid ${page === wellnessPage ? "#0774C4" : "#e0e0e0"}`, padding: "7px 13px", borderRadius: "8px", cursor: "pointer", minWidth: "38px" }}>{page}</button>
+                      <button key={page} onClick={() => setWellnessPage(page)} style={{ fontSize: "0.875rem", fontWeight: 600, color: page === wellnessPage ? "#ffffff" : "#444444", background: page === wellnessPage ? "#111111" : "#ffffff", border: `1px solid ${page === wellnessPage ? "#111111" : "#e8e8e8"}`, padding: "7px 13px", borderRadius: "50px", cursor: "pointer", minWidth: "38px" }}>{page}</button>
                     ))}
-                    <button onClick={() => setWellnessPage((p) => Math.min(wellnessTotalPages, p + 1))} disabled={wellnessPage === wellnessTotalPages} style={{ fontSize: "0.875rem", fontWeight: 600, color: wellnessPage === wellnessTotalPages ? "#cccccc" : "#0774C4", border: `1.5px solid ${wellnessPage === wellnessTotalPages ? "#eeeeee" : "#0774C4"}`, padding: "7px 16px", borderRadius: "8px", cursor: wellnessPage === wellnessTotalPages ? "not-allowed" : "pointer", background: "#ffffff" }}>&gt;</button>
+                    <button onClick={() => setWellnessPage((p) => Math.min(wellnessTotalPages, p + 1))} disabled={wellnessPage === wellnessTotalPages} style={{ fontSize: "0.875rem", fontWeight: 600, color: wellnessPage === wellnessTotalPages ? "#cccccc" : "#111111", border: `1px solid ${wellnessPage === wellnessTotalPages ? "#eeeeee" : "#e8e8e8"}`, padding: "7px 16px", borderRadius: "50px", cursor: wellnessPage === wellnessTotalPages ? "not-allowed" : "pointer", background: "#ffffff" }}>&gt;</button>
                   </div>
                 )}
               </>
@@ -1543,14 +1549,14 @@ export default function AdminPage() {
         </div>
 
         {/* 세로 구분선 */}
-        <div style={{ width: "1px", background: "#eeeeee", alignSelf: "stretch", flexShrink: 0 }} />
+        <div style={{ width: "1px", background: "#e8e8e8", alignSelf: "stretch", flexShrink: 0 }} />
 
         {/* Analytics */}
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "32px" }}>
             <div>
-              <p style={{ fontSize: "0.75rem", fontWeight: 600, color: "#0774C4", letterSpacing: "0.08em", marginBottom: "4px" }}>ANALYTICS</p>
-              <h2 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#111111" }}>고객 방문 추이</h2>
+              <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "#999999", marginBottom: "6px" }}>ANALYTICS</p>
+              <h2 style={{ fontSize: "clamp(1.25rem, 2vw, 1.75rem)", fontWeight: 800, color: "#111111", letterSpacing: "-0.035em" }}>고객 방문 추이</h2>
             </div>
             <button
               onClick={async () => {
@@ -1559,7 +1565,7 @@ export default function AdminPage() {
                 await Promise.all([fetchStats(), fetchChartData(chartRange)]);
                 setStatsRefreshing(false);
               }}
-              style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#0774C4", border: "1.5px solid #0774C4", padding: "8px 16px", borderRadius: "50px", cursor: "pointer" }}
+              style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#111111", border: "1px solid #111111", padding: "9px 20px", borderRadius: "50px", cursor: "pointer", background: "transparent", flexShrink: 0, letterSpacing: "0.01em" }}
             >
               새로고침
             </button>
@@ -1571,24 +1577,24 @@ export default function AdminPage() {
                   { label: "총 방문자 수", value: stats.visits, color: "#0774C4" },
                   { label: "체질 진단 완료", value: stats.quizCompletes, color: "#1E8A4C" },
                 ].map((s) => (
-                  <div key={s.label} style={{ background: "#ffffff", borderRadius: "12px", padding: "20px", border: "1px solid #eeeeee" }}>
-                    <p style={{ fontSize: "0.8125rem", color: "#888888", marginBottom: "8px" }}>{s.label}</p>
-                    <p style={{ fontSize: "2rem", fontWeight: 800, color: s.color }}>{s.value.toLocaleString()}</p>
+                  <div key={s.label} style={{ background: "#ffffff", borderRadius: "16px", padding: "20px", border: "1px solid #e8e8e8", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+                    <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#999999", marginBottom: "10px" }}>{s.label}</p>
+                    <p style={{ fontSize: "2rem", fontWeight: 800, color: s.color, letterSpacing: "-0.03em" }}>{s.value.toLocaleString()}</p>
                   </div>
                 ))}
               </div>
             )}
-            <div style={{ background: "#ffffff", borderRadius: "12px", border: "1px solid #eeeeee", padding: "24px", height: "350px", display: "flex", flexDirection: "column" }}>
+            <div style={{ background: "#ffffff", borderRadius: "16px", border: "1px solid #e8e8e8", padding: "24px", height: "350px", display: "flex", flexDirection: "column", boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
-                <p style={{ fontSize: "0.875rem", fontWeight: 700, color: "#111111" }}>
+                <p style={{ fontSize: "0.875rem", fontWeight: 700, color: "#111111", letterSpacing: "-0.01em" }}>
                   {{ "7d": "최근 7일", "30d": "최근 1개월", monthly: "월별 추이" }[chartRange]}
                 </p>
                 <div style={{ display: "flex", gap: "6px" }}>
-                  {([["7d", "최근 7일"], ["30d", "최근 1개월"], ["monthly", "월별 추이"]] as const).map(([range, label]) => (
+                  {([["7d", "7일"], ["30d", "1개월"], ["monthly", "월별"]] as const).map(([range, label]) => (
                     <button
                       key={range}
                       onClick={() => setChartRange(range)}
-                      style={{ fontSize: "0.8125rem", fontWeight: 600, padding: "8px 16px", borderRadius: "50px", border: `1.5px solid #0774C4`, background: chartRange === range ? "#0774C4" : "#ffffff", color: chartRange === range ? "#ffffff" : "#0774C4", cursor: "pointer" }}
+                      style={{ fontSize: "0.8125rem", fontWeight: 600, padding: "7px 14px", borderRadius: "50px", border: `1px solid ${chartRange === range ? "#111111" : "#e8e8e8"}`, background: chartRange === range ? "#111111" : "#ffffff", color: chartRange === range ? "#ffffff" : "#666666", cursor: "pointer", letterSpacing: "0.01em" }}
                     >
                       {label}
                     </button>
@@ -1599,11 +1605,11 @@ export default function AdminPage() {
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis dataKey="date" tick={{ fontSize: 12, fill: "#888888" }} />
-                    <YAxis tick={{ fontSize: 12, fill: "#888888" }} allowDecimals={false} />
-                    <Tooltip contentStyle={{ fontSize: "0.8125rem", borderRadius: "8px", border: "1px solid #eeeeee" }} />
-                    <Legend wrapperStyle={{ fontSize: "0.8125rem" }} />
-                    <Line type="monotone" dataKey="visits" name="방문자" stroke="#0774C4" strokeWidth={2} dot={{ r: 3 }} />
+                    <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#aaaaaa" }} />
+                    <YAxis tick={{ fontSize: 11, fill: "#aaaaaa" }} allowDecimals={false} />
+                    <Tooltip contentStyle={{ fontSize: "0.8125rem", borderRadius: "8px", border: "1px solid #e8e8e8", boxShadow: "0 4px 16px rgba(0,0,0,0.08)" }} />
+                    <Legend wrapperStyle={{ fontSize: "0.8125rem", color: "#666666" }} />
+                    <Line type="monotone" dataKey="visits" name="방문자" stroke="#111111" strokeWidth={2} dot={{ r: 3 }} />
                     <Line type="monotone" dataKey="quizCompletes" name="진단완료" stroke="#1E8A4C" strokeWidth={2} dot={{ r: 3 }} />
                   </LineChart>
                 </ResponsiveContainer>
