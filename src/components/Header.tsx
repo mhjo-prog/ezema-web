@@ -290,7 +290,7 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
                 ) : (
                   <KakaoIcon />
                 )}
-                {isLoading ? "로그인 중..." : "카카오 로그인"}
+                {isLoading ? "로그인 중..." : "Mypage"}
               </button>
             )}
           </div>
@@ -459,7 +459,7 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
                   }}
                 >
                   <KakaoIcon />
-                  {isLoading ? "로그인 중..." : "카카오 로그인"}
+                  {isLoading ? "로그인 중..." : "Mypage"}
                 </button>
               )}
             </div>
