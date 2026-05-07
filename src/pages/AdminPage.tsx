@@ -598,7 +598,7 @@ export default function AdminPage() {
 
   // 공통
   const [toast, setToast] = useState<string | null>(null);
-  const [stats, setStats] = useState<{ visits: number; quizCompletes: number; userCount: number } | null>(null);
+  const [stats, setStats] = useState<{ visits: number; quizCompletes: number } | null>(null);
   const [chartData, setChartData] = useState<{ date: string; visits: number; quizCompletes: number }[]>([]);
   const [chartRange, setChartRange] = useState<"7d" | "30d" | "monthly">("7d");
   const [statsRefreshing, setStatsRefreshing] = useState(false);
@@ -899,10 +899,7 @@ export default function AdminPage() {
       .from("analytics")
       .select("*", { count: "exact", head: true })
       .eq("event_type", "quiz_complete");
-    const { count: userCount } = await supabase
-      .from("kakao_users")
-      .select("*", { count: "exact", head: true });
-    setStats({ visits: visits ?? 0, quizCompletes: quizCompletes ?? 0, userCount: userCount ?? 0 });
+    setStats({ visits: visits ?? 0, quizCompletes: quizCompletes ?? 0 });
   }
 
   async function fetchAllAnalytics(since: Date): Promise<{ event_type: string; created_at: string }[]> {
@@ -1556,11 +1553,10 @@ export default function AdminPage() {
           </div>
           <motion.div animate={{ opacity: statsRefreshing ? 0 : 1 }} transition={{ duration: 0.2 }}>
             {stats && (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px", marginBottom: "32px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px", marginBottom: "32px" }}>
                 {[
                   { label: "총 방문자 수", value: stats.visits },
                   { label: "체질 진단 완료", value: stats.quizCompletes },
-                  { label: "가입 회원 수", value: stats.userCount },
                 ].map((s) => (
                   <div key={s.label} style={{ background: "#ffffff", borderRadius: "16px", padding: "20px", border: "1px solid #e8e8e8", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
                     <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#999999", marginBottom: "10px" }}>{s.label}</p>
