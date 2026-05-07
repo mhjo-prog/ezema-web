@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { results } from "../data/results";
 import { supabase, isSupabaseReady } from "../lib/supabase";
 import { useAuth } from "../context/AuthContext";
-import HistoryModal from "../components/HistoryModal";
 
 declare global {
   interface Window {
@@ -585,8 +584,6 @@ function ShareModal({ constitutionType, scores, onClose }: { constitutionType: s
 
 function Buttons({ onRetry, constitutionType, scores, isShared = false, isHistory = false }: { onRetry: () => void; constitutionType: string; scores: Record<string, number>; isShared?: boolean; isHistory?: boolean }) {
   const [showModal, setShowModal] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
-  const { user } = useAuth();
   const navigate = useNavigate();
 
   if (isHistory) {
@@ -636,30 +633,6 @@ function Buttons({ onRetry, constitutionType, scores, isShared = false, isHistor
             다시 진단하기
           </motion.button>
         </motion.div>
-
-        {user && (
-          <motion.button
-            onClick={() => setShowHistory(true)}
-            className="font-semibold transition-all duration-200"
-            style={{ width: "100%", marginTop: "8px", padding: "14px", borderRadius: "50px", background: "transparent", border: "1.5px solid #eeeeee", color: "#888888", fontSize: "0.875rem", cursor: "pointer" }}
-            whileHover={{ borderColor: "#cccccc", color: "#555555" }}
-            whileTap={{ scale: 0.99 }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.2, duration: 0.4 }}
-          >
-            지난 결과 다시 보기
-          </motion.button>
-        )}
-
-        <AnimatePresence>
-          {showHistory && user && (
-            <HistoryModal
-              kakaoId={user.kakao_id}
-              onClose={() => setShowHistory(false)}
-            />
-          )}
-        </AnimatePresence>
       </>
     );
   }
@@ -752,33 +725,12 @@ function Buttons({ onRetry, constitutionType, scores, isShared = false, isHistor
         </motion.button>
       </motion.div>
 
-      {user && (
-        <motion.button
-          onClick={() => setShowHistory(true)}
-          className="font-semibold transition-all duration-200"
-          style={{ width: "100%", marginTop: "8px", padding: "14px", borderRadius: "50px", background: "transparent", border: "1.5px solid #eeeeee", color: "#888888", fontSize: "0.875rem", cursor: "pointer" }}
-          whileHover={{ borderColor: "#cccccc", color: "#555555" }}
-          whileTap={{ scale: 0.99 }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.2, duration: 0.4 }}
-        >
-          지난 결과 다시 보기
-        </motion.button>
-      )}
-
       <AnimatePresence>
         {showModal && (
           <ShareModal
             constitutionType={constitutionType}
             scores={scores}
             onClose={() => setShowModal(false)}
-          />
-        )}
-        {showHistory && user && (
-          <HistoryModal
-            kakaoId={user.kakao_id}
-            onClose={() => setShowHistory(false)}
           />
         )}
       </AnimatePresence>
