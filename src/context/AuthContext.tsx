@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { KAKAO_JS_KEY, KAKAO_REST_KEY, REDIRECT_URI, type KakaoUser } from "../lib/kakaoApi";
+import { migrateLocalBookmarksToDb } from "../lib/bookmarks";
 
 export type { KakaoUser };
 
@@ -89,6 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const userData: KakaoUser = event.data.user;
         setUser(userData);
         localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData));
+        migrateLocalBookmarksToDb(userData.kakao_id);
         cleanup();
       } else if (event.data?.type === "KAKAO_LOGIN_ERROR") {
         cleanup();
@@ -115,6 +117,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const setUserFromCallback = (userData: KakaoUser) => {
     setUser(userData);
     localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData));
+    migrateLocalBookmarksToDb(userData.kakao_id);
   };
 
   return (

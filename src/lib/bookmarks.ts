@@ -56,3 +56,34 @@ export async function toggleSavedDB(
     return true; // 저장됨
   }
 }
+
+// ── 로그인 시 localStorage → DB 자동 이전 ───────────────────────
+
+export async function migrateLocalBookmarksToDb(kakaoId: string): Promise<void> {
+  if (!isSupabaseReady) return;
+
+  const ids = getSavedPostIds();
+  if (!ids.length) return;
+
+  // posts/wellness_posts 중 어디에 속하는지 확인
+  const [{ data: posts }, { data: wellnessPosts }] = await Promise.all([
+    supabase.from("posts").select("id").in("id", ids),
+    supabase.from("wellness_posts").select("id").in("id", ids),
+  ]);
+
+  const rows: { kakao_id: string; post_id: string; post_type: string }[] = [];
+
+  (posts ?? []).forEach((p: any) => {
+    rows.push({ kakao_id: kakaoId, post_id: p.id, post_type: "posts" });
+  });
+  (wellnessPosts ?? []).forEach((p: any) => {
+    rows.push({ kakao_id: kakaoId, post_id: p.id, post_type: "wellness_posts" });
+  });
+
+  if (rows.length) {
+    await supabase.from("bookmarks").upsert(rows, { onConflict: "kakao_id,post_id" });
+  }
+
+  // 이전 완료 후 localStorage 초기화
+  localStorage.removeItem(SAVED_POSTS_KEY);
+}
