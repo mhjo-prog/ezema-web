@@ -63,8 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       `https://kauth.kakao.com/oauth/authorize` +
       `?client_id=${KAKAO_REST_KEY}` +
       `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
-      `&response_type=code` +
-      `&scope=profile_nickname,profile_image,plusfriends`;
+      `&response_type=code`;
 
     const popup = window.open(
       kakaoAuthUrl,
