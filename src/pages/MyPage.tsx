@@ -172,11 +172,11 @@ export default function MyPage() {
                     style={{
                       fontSize: "0.8125rem", fontWeight: 600, padding: "9px 20px",
                       borderRadius: "50px", cursor: "pointer", transition: "all 0.15s",
-                      color: "#111111", background: "#ffffff", border: "1px solid #111111",
+                      color: "#111111", background: "#ffffff", border: "1px solid #e8e8e8",
                       letterSpacing: "0.01em",
                     }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = "#111111"; e.currentTarget.style.color = "#ffffff"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = "#ffffff"; e.currentTarget.style.color = "#111111"; }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "#111111"; e.currentTarget.style.color = "#ffffff"; e.currentTarget.style.borderColor = "#111111"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "#ffffff"; e.currentTarget.style.color = "#111111"; e.currentTarget.style.borderColor = "#e8e8e8"; }}
                   >
                     {label}
                   </button>
