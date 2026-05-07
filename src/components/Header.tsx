@@ -14,7 +14,6 @@ const NAV_ITEMS = [
   { label: "Test", path: "/test", isPrimary: true },
 ];
 
-const isLocalhost = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
 
 export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
   const navigate = useNavigate();
@@ -254,7 +253,7 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
                 onClick={handleLoginClick}
                 disabled={isLoading}
                 style={{
-                  display: isLocalhost ? "flex" : "none",
+                  display: "flex",
                   alignItems: "center",
                   gap: "6px",
                   padding: "6px 14px",
@@ -447,7 +446,7 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
                     width: "100%",
                     padding: "14px 20px",
                     textAlign: "left",
-                    display: isLocalhost ? "flex" : "none",
+                    display: "flex",
                     alignItems: "center",
                     gap: "8px",
                     fontSize: "0.9375rem",
