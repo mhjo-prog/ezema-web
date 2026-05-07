@@ -595,7 +595,7 @@ function Buttons({ onRetry, constitutionType, scores, isShared = false, isHistor
           transition={{ delay: 1.1, duration: 0.5 }}
         >
           <motion.button
-            onClick={() => navigate("/sasang")}
+            onClick={() => navigate(`/sasang?type=${constitutionType}`)}
             className="font-semibold transition-all duration-200"
             style={{
               flex: 1,

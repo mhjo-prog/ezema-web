@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase, isSupabaseReady, type Post, type ConstitutionType } from "../lib/supabase";
 import { samplePosts } from "../data/samplePosts";
@@ -105,9 +105,15 @@ const PAGE_SIZE = 9;
 
 export default function SasangPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<FilterType>("전체");
+  const initialFilter = (): FilterType => {
+    const type = searchParams.get("type");
+    if (type && FILTERS.includes(type as FilterType)) return type as FilterType;
+    return "전체";
+  };
+  const [filter, setFilter] = useState<FilterType>(initialFilter);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
