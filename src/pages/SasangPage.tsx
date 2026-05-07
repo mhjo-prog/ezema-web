@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { supabase, isSupabaseReady, type Post, type ConstitutionType } from "../lib/supabase";
 import { samplePosts } from "../data/samplePosts";
 import Footer from "../components/Footer";
+import { isSaved, toggleSaved } from "../lib/bookmarks";
 
 const CONSTITUTION_COLORS: Record<ConstitutionType, string> = {
   태음인: "#1E8A4C",
@@ -20,9 +21,18 @@ function formatDate(dateStr: string) {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
 }
 
+function BookmarkIcon({ filled }: { filled: boolean }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
+    </svg>
+  );
+}
+
 function PostCard({ post, onClick }: { post: Post; onClick: () => void }) {
   const color = CONSTITUTION_COLORS[post.constitution_type];
   const [imgError, setImgError] = useState(false);
+  const [saved, setSaved] = useState(() => isSaved(post.id));
 
   return (
     <motion.div
@@ -78,24 +88,37 @@ function PostCard({ post, onClick }: { post: Post; onClick: () => void }) {
         {post.title}
       </p>
 
-      {/* 체질 태그 + 날짜 */}
-      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-        <span
+      {/* 체질 태그 + 날짜 + 북마크 */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <span
+            style={{
+              fontSize: "0.6875rem",
+              fontWeight: 600,
+              color: color,
+              background: `${color}18`,
+              padding: "3px 8px",
+              borderRadius: "20px",
+              letterSpacing: "0.02em",
+            }}
+          >
+            {post.constitution_type}
+          </span>
+          <span style={{ fontSize: "0.75rem", color: "#aaaaaa" }}>
+            {formatDate(post.created_at)}
+          </span>
+        </div>
+        <button
+          onClick={(e) => { e.stopPropagation(); setSaved(toggleSaved(post.id)); }}
           style={{
-            fontSize: "0.6875rem",
-            fontWeight: 600,
-            color: color,
-            background: `${color}18`,
-            padding: "3px 8px",
-            borderRadius: "20px",
-            letterSpacing: "0.02em",
+            background: "none", border: "none", cursor: "pointer", padding: "4px",
+            color: saved ? "#111111" : "#cccccc", display: "flex", alignItems: "center",
+            transition: "color 0.15s",
           }}
+          aria-label={saved ? "북마크 해제" : "북마크 저장"}
         >
-          {post.constitution_type}
-        </span>
-        <span style={{ fontSize: "0.75rem", color: "#aaaaaa" }}>
-          {formatDate(post.created_at)}
-        </span>
+          <BookmarkIcon filled={saved} />
+        </button>
       </div>
     </motion.div>
   );

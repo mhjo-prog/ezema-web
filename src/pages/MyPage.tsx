@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
+import { supabase, isSupabaseReady, type Post } from "../lib/supabase";
+import { getSavedPostIds } from "../lib/bookmarks";
 
 const CONSTITUTION_LABELS: Record<string, string> = {
   태양인: "태양인 (太陽人)",
@@ -26,6 +28,7 @@ export default function MyPage() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [quizResult, setQuizResult] = useState<QuizResult | null>(null);
+  const [savedPosts, setSavedPosts] = useState<Post[]>([]);
 
   useEffect(() => {
     if (!user) {
@@ -42,6 +45,18 @@ export default function MyPage() {
       // ignore
     }
   }, [user, navigate]);
+
+  useEffect(() => {
+    const ids = getSavedPostIds();
+    if (!ids.length || !isSupabaseReady) return;
+    supabase
+      .from("posts")
+      .select("id, title, constitution_type, card_image_url, created_at")
+      .in("id", ids)
+      .eq("status", "published")
+      .order("created_at", { ascending: false })
+      .then(({ data }) => { if (data) setSavedPosts(data as Post[]); });
+  }, []);
 
   if (!user) return null;
 
@@ -208,27 +223,60 @@ export default function MyPage() {
           <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "#999999", marginBottom: "20px" }}>
             SAVED CONTENT
           </p>
-          <div style={{ padding: "48px 28px", border: "1px solid #e8e8e8", borderRadius: "16px", background: "#f5f5f5", textAlign: "center" }}>
-            <p style={{ fontSize: "1rem", fontWeight: 600, color: "#333333", marginBottom: "8px" }}>
-              저장한 콘텐츠가 없습니다.
-            </p>
-            <p style={{ fontSize: "0.875rem", color: "#999999", marginBottom: "24px" }}>
-              아티클을 읽고 저장하면 여기에 표시됩니다.
-            </p>
-            <div style={{ display: "flex", gap: "8px", justifyContent: "center", flexWrap: "wrap" }}>
-              {([["Typology Stories", "/sasang"], ["Wellness Comics", "/wellness"]] as const).map(([label, path]) => (
-                <button
-                  key={label}
-                  onClick={() => navigate(path)}
-                  style={{ padding: "9px 20px", background: "#ffffff", color: "#111111", fontWeight: 600, fontSize: "0.8125rem", borderRadius: "50px", cursor: "pointer", border: "1px solid #e8e8e8", letterSpacing: "0.01em", transition: "all 0.15s" }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = "#111111"; e.currentTarget.style.color = "#ffffff"; e.currentTarget.style.borderColor = "#111111"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = "#ffffff"; e.currentTarget.style.color = "#111111"; e.currentTarget.style.borderColor = "#e8e8e8"; }}
+          {savedPosts.length > 0 ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              {savedPosts.map((post) => (
+                <div
+                  key={post.id}
+                  onClick={() => navigate(`/sasang/${post.id}`)}
+                  style={{ display: "flex", alignItems: "center", gap: "16px", padding: "16px", border: "1px solid #e8e8e8", borderRadius: "12px", cursor: "pointer", transition: "background 0.15s" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "#f8f8f8"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "#ffffff"; }}
                 >
-                  {label}
-                </button>
+                  {post.card_image_url ? (
+                    <img
+                      src={post.card_image_url}
+                      alt={post.title}
+                      style={{ width: "64px", height: "64px", borderRadius: "8px", objectFit: "cover", flexShrink: 0 }}
+                    />
+                  ) : (
+                    <div style={{ width: "64px", height: "64px", borderRadius: "8px", background: "#f0f0f0", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <span style={{ fontSize: "1.25rem", opacity: 0.3 }}>🌿</span>
+                    </div>
+                  )}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: "0.9rem", fontWeight: 600, color: "#111111", lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+                      {post.title}
+                    </p>
+                    <p style={{ fontSize: "0.75rem", color: "#aaaaaa", marginTop: "4px" }}>{post.constitution_type}</p>
+                  </div>
+                  <span style={{ fontSize: "1rem", color: "#cccccc", flexShrink: 0 }}>›</span>
+                </div>
               ))}
             </div>
-          </div>
+          ) : (
+            <div style={{ padding: "48px 28px", border: "1px solid #e8e8e8", borderRadius: "16px", background: "#f5f5f5", textAlign: "center" }}>
+              <p style={{ fontSize: "1rem", fontWeight: 600, color: "#333333", marginBottom: "8px" }}>
+                저장한 콘텐츠가 없습니다.
+              </p>
+              <p style={{ fontSize: "0.875rem", color: "#999999", marginBottom: "24px" }}>
+                아티클을 읽고 저장하면 여기에 표시됩니다.
+              </p>
+              <div style={{ display: "flex", gap: "8px", justifyContent: "center", flexWrap: "wrap" }}>
+                {([["Typology Stories", "/sasang"], ["Wellness Comics", "/wellness"]] as const).map(([label, path]) => (
+                  <button
+                    key={label}
+                    onClick={() => navigate(path)}
+                    style={{ padding: "9px 20px", background: "#ffffff", color: "#111111", fontWeight: 600, fontSize: "0.8125rem", borderRadius: "50px", cursor: "pointer", border: "1px solid #e8e8e8", letterSpacing: "0.01em", transition: "all 0.15s" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "#111111"; e.currentTarget.style.color = "#ffffff"; e.currentTarget.style.borderColor = "#111111"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "#ffffff"; e.currentTarget.style.color = "#111111"; e.currentTarget.style.borderColor = "#e8e8e8"; }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </section>
 
         <div style={{ height: "1px", background: "#e8e8e8", marginBottom: "48px" }} />

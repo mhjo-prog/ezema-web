@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { supabase, isSupabaseReady, type Post, type ConstitutionType } from "../lib/supabase";
 import { results } from "../data/results";
+import { isSaved, toggleSaved } from "../lib/bookmarks";
 
 const COUPANG_IDS: Record<string, number> = {
   태양인: 975890,
@@ -206,6 +207,7 @@ export default function SasangDetailPage() {
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [saved, setSaved] = useState(() => isSaved(id ?? ""));
 
   useEffect(() => {
     async function fetchPost() {
@@ -284,22 +286,32 @@ export default function SasangDetailPage() {
       style={{ minHeight: "100vh", background: "#ffffff", paddingTop: "56px" }}
     >
       <div style={{ maxWidth: "720px", margin: "0 auto", padding: "48px 24px 80px" }}>
-        {/* 뒤로 가기 */}
-        <button
-          onClick={() => navigate("/sasang")}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "6px",
-            fontSize: "0.8125rem",
-            color: "#888888",
-            fontWeight: 500,
-            cursor: "pointer",
-            marginBottom: "32px",
-          }}
-        >
-          ← 사상체질 이야기
-        </button>
+        {/* 뒤로 가기 + 북마크 */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "32px" }}>
+          <button
+            onClick={() => navigate("/sasang")}
+            style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "0.8125rem", color: "#888888", fontWeight: 500, cursor: "pointer" }}
+          >
+            ← 사상체질 이야기
+          </button>
+          <button
+            onClick={() => { if (id) setSaved(toggleSaved(id)); }}
+            style={{
+              display: "flex", alignItems: "center", gap: "6px",
+              background: "none", border: "1px solid #e8e8e8", borderRadius: "50px",
+              padding: "6px 12px", cursor: "pointer", transition: "all 0.15s",
+              color: saved ? "#111111" : "#aaaaaa", fontSize: "0.8125rem", fontWeight: 600,
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#111111"; e.currentTarget.style.color = "#111111"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#e8e8e8"; e.currentTarget.style.color = saved ? "#111111" : "#aaaaaa"; }}
+            aria-label={saved ? "북마크 해제" : "북마크 저장"}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill={saved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
+            </svg>
+            {saved ? "저장됨" : "저장"}
+          </button>
+        </div>
 
         {/* 태그 + 날짜 */}
         <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
