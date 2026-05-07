@@ -79,7 +79,7 @@ export default function MyPage() {
   useEffect(() => {
     if (!user) return;
 
-    console.log("[MyPage] quiz_results 조회 시작 — kakao_id:", user.kakao_id, "isSupabaseReady:", isSupabaseReady);
+    console.log("[MyPage] quiz_results 조회 시작 — kakao_id:", user.kakao_id, "(type:", typeof user.kakao_id, ")", "isSupabaseReady:", isSupabaseReady);
 
     if (!isSupabaseReady) {
       console.warn("[MyPage] Supabase 미설정 — 퀴즈 결과 조회 불가");
@@ -89,7 +89,7 @@ export default function MyPage() {
     supabase
       .from("quiz_results")
       .select("constitution_type, scores")
-      .eq("kakao_id", user.kakao_id)
+      .eq("kakao_id", String(user.kakao_id))
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle()
@@ -112,7 +112,7 @@ export default function MyPage() {
       supabase
         .from("bookmarks")
         .select("post_id, post_type, created_at")
-        .eq("kakao_id", user.kakao_id)
+        .eq("kakao_id", String(user.kakao_id))
         .then(async ({ data: bookmarks }) => {
           if (!bookmarks?.length) return;
 

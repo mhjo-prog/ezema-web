@@ -77,13 +77,18 @@ export default function QuizPage() {
     localStorage.setItem("ezema_mypage_result", result);
 
     // 로그인 유저면 DB에도 저장
+    console.log("[quiz_results] insert 시도 — user:", user ? `kakao_id=${user.kakao_id} (type: ${typeof user.kakao_id})` : "null(비로그인)", "isSupabaseReady:", isSupabaseReady);
     if (user && isSupabaseReady) {
       supabase.from("quiz_results").insert({
-        kakao_id: user.kakao_id,
+        kakao_id: String(user.kakao_id),
         constitution_type: type,
         scores: s,
-      }).then(({ error }) => {
-        if (error) console.error("[quiz_results] insert error:", error);
+      }).then(({ data, error }) => {
+        if (error) {
+          console.error("[quiz_results] insert 실패:", error);
+        } else {
+          console.log("[quiz_results] insert 성공:", data);
+        }
       });
     }
 
