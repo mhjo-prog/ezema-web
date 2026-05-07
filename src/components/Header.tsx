@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -14,16 +14,16 @@ const NAV_ITEMS = [
   { label: "Test", path: "/test", isPrimary: true },
 ];
 
+const isLocalhost = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+
 export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isLoading, loginWithKakao, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [_isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
   const [isSmallMobile, setIsSmallMobile] = useState(() => window.innerWidth <= 480);
   const [scrolled, setScrolled] = useState(false);
-  const userMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handler = () => {
@@ -38,16 +38,6 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
     const handler = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handler, { passive: true });
     return () => window.removeEventListener("scroll", handler);
-  }, []);
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
-        setUserMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const logoColor = ["/sasang", "/wellness"].some((p) =>
@@ -67,7 +57,6 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
   };
 
   const handleLogout = () => {
-    setUserMenuOpen(false);
     logout();
   };
 
@@ -229,125 +218,43 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
           {/* Desktop login/user — hidden on mobile */}
           <div className="hidden md:flex" style={{ alignItems: "center" }}>
             {user ? (
-              <div ref={userMenuRef} style={{ position: "relative" }}>
-                <button
-                  onClick={() => setUserMenuOpen((o) => !o)}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "7px",
-                    padding: "5px 10px 5px 5px",
-                    border: "1px solid #eeeeee",
-                    borderRadius: "24px",
-                    background: "white",
-                    cursor: "pointer",
-                    transition: "box-shadow 0.15s",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.08)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.boxShadow = "none";
-                  }}
-                >
-                  {user.profile_image ? (
-                    <img
-                      src={user.profile_image}
-                      alt={user.nickname}
-                      style={{ width: "26px", height: "26px", borderRadius: "50%", objectFit: "cover" }}
-                    />
-                  ) : (
-                    <div
-                      style={{
-                        width: "26px",
-                        height: "26px",
-                        borderRadius: "50%",
-                        background: "#FEE500",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "0.75rem",
-                        fontWeight: 700,
-                        color: "#3C1E1E",
-                      }}
-                    >
-                      {user.nickname.charAt(0)}
-                    </div>
-                  )}
-                  <span style={{ fontSize: "0.8125rem", fontWeight: 500, color: "#333" }}>
-                    {user.nickname}
-                  </span>
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 12 12"
-                    fill="none"
-                    style={{
-                      transform: userMenuOpen ? "rotate(180deg)" : "rotate(0deg)",
-                      transition: "transform 0.15s",
-                    }}
-                  >
-                    <path d="M2 4l4 4 4-4" stroke="#888" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </button>
-
-                <AnimatePresence>
-                  {userMenuOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95, y: -4 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95, y: -4 }}
-                      transition={{ duration: 0.12 }}
-                      style={{
-                        position: "absolute",
-                        top: "calc(100% + 8px)",
-                        right: 0,
-                        minWidth: "140px",
-                        background: "#ffffff",
-                        borderRadius: "10px",
-                        boxShadow: "0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06)",
-                        border: "1px solid #eeeeee",
-                        overflow: "hidden",
-                        transformOrigin: "top right",
-                      }}
-                    >
-                      <div
-                        style={{
-                          padding: "10px 14px",
-                          borderBottom: "1px solid #f5f5f5",
-                          fontSize: "0.75rem",
-                          color: "#999",
-                        }}
-                      >
-                        {user.email || user.nickname}
-                      </div>
-                      <button
-                        onClick={handleLogout}
-                        style={{
-                          width: "100%",
-                          padding: "11px 14px",
-                          textAlign: "left",
-                          fontSize: "0.8125rem",
-                          color: "#555",
-                          background: "none",
-                          border: "none",
-                          cursor: "pointer",
-                        }}
-                        onMouseEnter={(e) => { e.currentTarget.style.background = "#f8f8f8"; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.background = "none"; }}
-                      >
-                        로그아웃
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+              <button
+                onClick={() => navigate("/mypage")}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "7px",
+                  padding: "5px 12px 5px 5px",
+                  border: "1px solid #eeeeee",
+                  borderRadius: "24px",
+                  background: "white",
+                  cursor: "pointer",
+                  transition: "box-shadow 0.15s",
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.08)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "none"; }}
+              >
+                {user.profile_image ? (
+                  <img
+                    src={user.profile_image}
+                    alt={user.nickname}
+                    style={{ width: "26px", height: "26px", borderRadius: "50%", objectFit: "cover" }}
+                  />
+                ) : (
+                  <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: "#f5f5f5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.75rem", fontWeight: 700, color: "#000000" }}>
+                    {user.nickname.charAt(0)}
+                  </div>
+                )}
+                <span style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#000000", letterSpacing: "0.01em" }}>
+                  Mypage
+                </span>
+              </button>
             ) : (
               <button
                 onClick={handleLoginClick}
                 disabled={isLoading}
                 style={{
-                  display: "none",
+                  display: isLocalhost ? "flex" : "none",
                   alignItems: "center",
                   gap: "6px",
                   padding: "6px 14px",
@@ -498,56 +405,36 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
             <div style={{ borderTop: "1px solid #f0f0f0" }}>
               {user ? (
                 <>
-                  <div
-                    style={{
-                      padding: "12px 20px",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "10px",
-                      borderBottom: "1px solid #f5f5f5",
-                    }}
-                  >
-                    {user.profile_image ? (
-                      <img
-                        src={user.profile_image}
-                        alt={user.nickname}
-                        style={{ width: "28px", height: "28px", borderRadius: "50%", objectFit: "cover" }}
-                      />
-                    ) : (
-                      <div
-                        style={{
-                          width: "28px",
-                          height: "28px",
-                          borderRadius: "50%",
-                          background: "#FEE500",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: "0.8rem",
-                          fontWeight: 700,
-                          color: "#3C1E1E",
-                        }}
-                      >
-                        {user.nickname.charAt(0)}
-                      </div>
-                    )}
-                    <span style={{ fontSize: "0.875rem", fontWeight: 500, color: "#333" }}>
-                      {user.nickname}
-                    </span>
-                  </div>
                   <button
-                    onClick={handleLogout}
+                    onClick={() => { setMenuOpen(false); navigate("/mypage"); }}
                     style={{
                       width: "100%",
                       padding: "14px 20px",
                       textAlign: "left",
-                      fontSize: "0.875rem",
-                      fontWeight: 500,
-                      color: "#888",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                      fontSize: "0.9375rem",
+                      fontWeight: 600,
+                      color: location.pathname === "/mypage" ? "#000000" : "#333333",
                       background: "none",
                       border: "none",
+                      borderBottom: "1px solid #f5f5f5",
                       cursor: "pointer",
                     }}
+                  >
+                    {user.profile_image ? (
+                      <img src={user.profile_image} alt={user.nickname} style={{ width: "24px", height: "24px", borderRadius: "50%", objectFit: "cover" }} />
+                    ) : (
+                      <div style={{ width: "24px", height: "24px", borderRadius: "50%", background: "#f5f5f5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.75rem", fontWeight: 700, color: "#000000" }}>
+                        {user.nickname.charAt(0)}
+                      </div>
+                    )}
+                    Mypage
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    style={{ width: "100%", padding: "14px 20px", textAlign: "left", fontSize: "0.875rem", fontWeight: 500, color: "#888", background: "none", border: "none", cursor: "pointer" }}
                   >
                     로그아웃
                   </button>
@@ -560,7 +447,7 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
                     width: "100%",
                     padding: "14px 20px",
                     textAlign: "left",
-                    display: "none",
+                    display: isLocalhost ? "flex" : "none",
                     alignItems: "center",
                     gap: "8px",
                     fontSize: "0.9375rem",
