@@ -312,31 +312,10 @@ export default function MyPage() {
               </div>
             </div>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
-              {savedWellness.length > 0 && (
-                <div>
-                  <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "#bbbbbb", marginBottom: "12px" }}>
-                    Wellness Comics
-                  </p>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                    {savedWellness.map((post) => (
-                      <SavedCard key={post.id} post={post} navigate={navigate} />
-                    ))}
-                  </div>
-                </div>
-              )}
-              {savedTypology.length > 0 && (
-                <div>
-                  <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "#bbbbbb", marginBottom: "12px" }}>
-                    Typology Stories
-                  </p>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                    {savedTypology.map((post) => (
-                      <SavedCard key={post.id} post={post} navigate={navigate} />
-                    ))}
-                  </div>
-                </div>
-              )}
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              {[...savedWellness, ...savedTypology].map((post) => (
+                <SavedCard key={post.id} post={post} navigate={navigate} />
+              ))}
             </div>
           )}
         </section>
