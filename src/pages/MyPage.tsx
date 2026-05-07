@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
+import HistoryModal from "../components/HistoryModal";
 
 const CONSTITUTION_LABELS: Record<string, string> = {
   태양인: "태양인 (太陽人)",
@@ -26,6 +27,7 @@ export default function MyPage() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [quizResult, setQuizResult] = useState<QuizResult | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -164,7 +166,22 @@ export default function MyPage() {
                 >
                   다시 진단하기
                 </button>
+                <button
+                  onClick={() => setShowHistory(true)}
+                  style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#666666", border: "1px solid #e8e8e8", padding: "9px 20px", borderRadius: "50px", cursor: "pointer", background: "transparent", letterSpacing: "0.01em" }}
+                >
+                  지난 결과 다시 보기
+                </button>
               </div>
+
+              <AnimatePresence>
+                {showHistory && user && (
+                  <HistoryModal
+                    kakaoId={user.kakao_id}
+                    onClose={() => setShowHistory(false)}
+                  />
+                )}
+              </AnimatePresence>
             </div>
           ) : (
             <div style={{ padding: "48px 28px", border: "1px solid #e8e8e8", borderRadius: "16px", background: "#f5f5f5", textAlign: "center" }}>
