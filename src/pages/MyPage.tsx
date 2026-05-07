@@ -216,18 +216,17 @@ export default function MyPage() {
               아티클을 읽고 저장하면 여기에 표시됩니다.
             </p>
             <div style={{ display: "flex", gap: "8px", justifyContent: "center", flexWrap: "wrap" }}>
-              <button
-                onClick={() => navigate("/sasang")}
-                style={{ padding: "10px 22px", background: "#000000", color: "#ffffff", fontWeight: 600, fontSize: "0.875rem", borderRadius: "50px", cursor: "pointer", border: "none", letterSpacing: "0.01em" }}
-              >
-                사상체질 이야기
-              </button>
-              <button
-                onClick={() => navigate("/wellness")}
-                style={{ padding: "10px 22px", background: "transparent", color: "#000000", fontWeight: 600, fontSize: "0.875rem", borderRadius: "50px", cursor: "pointer", border: "1px solid #e8e8e8", letterSpacing: "0.01em" }}
-              >
-                Wellness
-              </button>
+              {([["사상체질 이야기", "/sasang"], ["Wellness", "/wellness"]] as const).map(([label, path]) => (
+                <button
+                  key={label}
+                  onClick={() => navigate(path)}
+                  style={{ padding: "9px 20px", background: "#ffffff", color: "#111111", fontWeight: 600, fontSize: "0.8125rem", borderRadius: "50px", cursor: "pointer", border: "1px solid #e8e8e8", letterSpacing: "0.01em", transition: "all 0.15s" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "#111111"; e.currentTarget.style.color = "#ffffff"; e.currentTarget.style.borderColor = "#111111"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "#ffffff"; e.currentTarget.style.color = "#111111"; e.currentTarget.style.borderColor = "#e8e8e8"; }}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
           </div>
         </section>
