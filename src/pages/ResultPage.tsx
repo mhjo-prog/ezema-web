@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { results } from "../data/results";
 import { supabase, isSupabaseReady } from "../lib/supabase";
+import { useAuth } from "../context/AuthContext";
 
 declare global {
   interface Window {
@@ -578,8 +580,101 @@ function ShareModal({ constitutionType, scores, onClose }: { constitutionType: s
   );
 }
 
+interface HistoryEntry {
+  id: string;
+  constitution_type: string;
+  scores: Record<string, number>;
+  created_at: string;
+}
+
+function HistoryModal({ kakaoId, onClose }: { kakaoId: string; onClose: () => void }) {
+  const navigate = useNavigate();
+  const [entries, setEntries] = useState<HistoryEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!isSupabaseReady) { setLoading(false); return; }
+    supabase
+      .from("quiz_results")
+      .select("id, constitution_type, scores, created_at")
+      .eq("kakao_id", kakaoId)
+      .order("created_at", { ascending: false })
+      .limit(10)
+      .then(({ data }) => {
+        setEntries((data as HistoryEntry[]) ?? []);
+        setLoading(false);
+      });
+  }, [kakaoId]);
+
+  function formatDate(iso: string) {
+    const d = new Date(iso);
+    return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+  }
+
+  function viewResult(entry: HistoryEntry) {
+    const params = new URLSearchParams({ type: entry.constitution_type });
+    Object.entries(entry.scores).forEach(([t, v]) => params.set(t, String(v)));
+    navigate(`/quiz?${params.toString()}`);
+    onClose();
+  }
+
+  return (
+    <div
+      onClick={onClose}
+      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 100, display: "flex", alignItems: "flex-end", justifyContent: "center", padding: "0" }}
+    >
+      <motion.div
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+        transition={{ type: "spring", damping: 30, stiffness: 300 }}
+        onClick={(e) => e.stopPropagation()}
+        style={{ background: "#ffffff", borderRadius: "20px 20px 0 0", width: "100%", maxWidth: "560px", maxHeight: "70vh", overflowY: "auto", padding: "28px 24px 40px" }}
+        onWheel={(e) => e.stopPropagation()}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+          <h3 style={{ fontSize: "1rem", fontWeight: 700, color: "#111111" }}>지난 진단 기록</h3>
+          <button onClick={onClose} style={{ color: "#888888", fontSize: "1.25rem", cursor: "pointer", background: "none", border: "none" }}>×</button>
+        </div>
+        {loading ? (
+          <p style={{ textAlign: "center", color: "#aaaaaa", padding: "32px 0" }}>불러오는 중...</p>
+        ) : entries.length === 0 ? (
+          <p style={{ textAlign: "center", color: "#aaaaaa", padding: "32px 0" }}>저장된 진단 기록이 없습니다.</p>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {entries.map((entry) => {
+              const total = Object.values(entry.scores).reduce((a, b) => a + b, 0);
+              const topPct = total > 0 ? Math.round((entry.scores[entry.constitution_type] / total) * 100) : 0;
+              return (
+                <div
+                  key={entry.id}
+                  onClick={() => viewResult(entry)}
+                  style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 16px", border: "1px solid #eeeeee", borderRadius: "12px", cursor: "pointer", transition: "background 0.15s" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "#f8f8f8"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "#ffffff"; }}
+                >
+                  <div>
+                    <p style={{ fontSize: "0.9375rem", fontWeight: 700, color: "#111111" }}>{entry.constitution_type}</p>
+                    <p style={{ fontSize: "0.8125rem", color: "#aaaaaa", marginTop: "2px" }}>{formatDate(entry.created_at)}</p>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span style={{ fontSize: "0.875rem", fontWeight: 600, color: "#0774C4" }}>{topPct}%</span>
+                    <span style={{ fontSize: "0.8125rem", color: "#cccccc" }}>›</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </motion.div>
+    </div>
+  );
+}
+
 function Buttons({ onRetry, constitutionType, scores, isShared = false }: { onRetry: () => void; constitutionType: string; scores: Record<string, number>; isShared?: boolean }) {
   const [showModal, setShowModal] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const { user } = useAuth();
 
   if (isShared) {
     return (
@@ -669,12 +764,33 @@ function Buttons({ onRetry, constitutionType, scores, isShared = false }: { onRe
         </motion.button>
       </motion.div>
 
+      {user && (
+        <motion.button
+          onClick={() => setShowHistory(true)}
+          className="font-semibold transition-all duration-200"
+          style={{ width: "100%", marginTop: "8px", padding: "14px", borderRadius: "50px", background: "transparent", border: "1.5px solid #eeeeee", color: "#888888", fontSize: "0.875rem", cursor: "pointer" }}
+          whileHover={{ borderColor: "#cccccc", color: "#555555" }}
+          whileTap={{ scale: 0.99 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.2, duration: 0.4 }}
+        >
+          지난 결과 다시 보기
+        </motion.button>
+      )}
+
       <AnimatePresence>
         {showModal && (
           <ShareModal
             constitutionType={constitutionType}
             scores={scores}
             onClose={() => setShowModal(false)}
+          />
+        )}
+        {showHistory && user && (
+          <HistoryModal
+            kakaoId={user.kakao_id}
+            onClose={() => setShowHistory(false)}
           />
         )}
       </AnimatePresence>
@@ -726,11 +842,19 @@ function CoupangBanner({ constitutionType }: { constitutionType: string }) {
 export default function ResultPage({ constitutionType, scores, onRetry, isShared = false }: Props) {
   const result = results[constitutionType];
   const constitution = constitutionInfo[constitutionType];
+  const { user } = useAuth();
 
   useEffect(() => {
     if (isSupabaseReady && constitutionType && !isShared) {
       supabase.from("analytics").insert({ event_type: "quiz_complete", constitution_type: constitutionType })
         .then(({ error }) => { if (error) console.log("[analytics] insert error:", error); });
+      if (user?.kakao_id) {
+        supabase.from("quiz_results").insert({
+          kakao_id: user.kakao_id,
+          constitution_type: constitutionType,
+          scores,
+        }).then(({ error }) => { if (error) console.log("[quiz_results] insert error:", error); });
+      }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

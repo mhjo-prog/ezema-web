@@ -48,7 +48,7 @@ export default function MyPage() {
   const scoreEntries = quizResult
     ? Object.entries(quizResult.scores).sort(([, a], [, b]) => b - a)
     : [];
-  const maxScore = scoreEntries.length > 0 ? scoreEntries[0][1] : 1;
+  const totalScore = scoreEntries.reduce((sum, [, s]) => sum + s, 0);
 
   return (
     <motion.div
@@ -131,7 +131,7 @@ export default function MyPage() {
 
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {scoreEntries.map(([type, score]) => {
-                  const pct = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
+                  const pct = totalScore > 0 ? Math.round((score / totalScore) * 100) : 0;
                   const isTop = type === quizResult.constitutionType;
                   return (
                     <div key={type}>
@@ -140,7 +140,7 @@ export default function MyPage() {
                           {type}
                         </span>
                         <span style={{ fontSize: "0.8125rem", fontWeight: isTop ? 700 : 400, color: isTop ? "#000000" : "#999999" }}>
-                          {score}점
+                          {pct}%
                         </span>
                       </div>
                       <div style={{ height: "4px", background: "#f0f0f0", borderRadius: "2px", overflow: "hidden" }}>
