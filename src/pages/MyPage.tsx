@@ -59,13 +59,12 @@ export default function MyPage() {
       style={{
         minHeight: "100vh",
         background: "#ffffff",
-        paddingTop: "56px",
         fontFamily: "'Pretendard', sans-serif",
       }}
     >
       {/* 히어로 스트립 */}
       <div style={{ background: "#feff8e", borderBottom: "1px solid #e8e8e8" }}>
-        <div style={{ maxWidth: "720px", margin: "0 auto", padding: "40px 24px 32px" }}>
+        <div style={{ maxWidth: "720px", margin: "0 auto", padding: "96px 24px 32px" }}>
           <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "#999999", marginBottom: "6px" }}>
             KEEPSLOW
           </p>
