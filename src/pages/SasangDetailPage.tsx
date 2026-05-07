@@ -5,7 +5,8 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { supabase, isSupabaseReady, type Post, type ConstitutionType } from "../lib/supabase";
 import { results } from "../data/results";
-import { isSaved, toggleSaved } from "../lib/bookmarks";
+import { isSaved, toggleSaved, isSavedDB, toggleSavedDB } from "../lib/bookmarks";
+import { useAuth } from "../context/AuthContext";
 
 const COUPANG_IDS: Record<string, number> = {
   태양인: 975890,
@@ -204,10 +205,16 @@ function formatDate(dateStr: string) {
 export default function SasangDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [saved, setSaved] = useState(() => isSaved(id ?? ""));
+  const [saved, setSaved] = useState(() => !user ? isSaved(id ?? "") : false);
+
+  useEffect(() => {
+    if (!user || !id) return;
+    isSavedDB(user.kakao_id, id).then(setSaved);
+  }, [user, id]);
 
   useEffect(() => {
     async function fetchPost() {
@@ -313,7 +320,15 @@ export default function SasangDetailPage() {
             <span style={{ fontSize: "0.8125rem", color: "#aaaaaa" }}>{formatDate(post.created_at)}</span>
           </div>
           <button
-            onClick={() => { if (id) setSaved(toggleSaved(id)); }}
+            onClick={async () => {
+              if (!id) return;
+              if (user) {
+                const newSaved = await toggleSavedDB(user.kakao_id, id, "posts");
+                setSaved(newSaved);
+              } else {
+                setSaved(toggleSaved(id));
+              }
+            }}
             style={{
               display: "flex", alignItems: "center", gap: "6px",
               background: "none", border: "1px solid #e8e8e8", borderRadius: "50px",

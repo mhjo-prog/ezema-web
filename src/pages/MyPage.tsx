@@ -87,42 +87,84 @@ export default function MyPage() {
   }, [user, navigate]);
 
   useEffect(() => {
-    const ids = getSavedPostIds();
-    if (!ids.length || !isSupabaseReady) return;
-    Promise.all([
+    if (!isSupabaseReady) return;
+
+    if (user) {
+      // 로그인 상태: DB에서 조회
       supabase
-        .from("posts")
-        .select("id, title, constitution_type, card_image_url, created_at")
-        .in("id", ids)
-        .eq("status", "published"),
-      supabase
-        .from("wellness_posts")
-        .select("id, title, wellness_category, card_image_url, created_at")
-        .in("id", ids)
-        .eq("status", "published"),
-    ]).then(([{ data: posts }, { data: wellness }]) => {
-      setSavedTypology(
-        (posts ?? []).map((p: any) => ({
-          id: p.id,
-          title: p.title,
-          card_image_url: p.card_image_url,
-          tag: p.constitution_type,
-          created_at: p.created_at,
-          path: `/sasang/${p.id}`,
-        })).sort((a: SavedItem, b: SavedItem) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-      );
-      setSavedWellness(
-        (wellness ?? []).map((p: any) => ({
-          id: p.id,
-          title: p.title,
-          card_image_url: p.card_image_url,
-          tag: p.wellness_category,
-          created_at: p.created_at,
-          path: `/wellness/${p.id}`,
-        })).sort((a: SavedItem, b: SavedItem) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-      );
-    });
-  }, []);
+        .from("bookmarks")
+        .select("post_id, post_type, created_at")
+        .eq("kakao_id", user.kakao_id)
+        .then(async ({ data: bookmarks }) => {
+          if (!bookmarks?.length) return;
+
+          const bookmarkCreatedAt: Record<string, string> = {};
+          bookmarks.forEach((b: any) => { bookmarkCreatedAt[b.post_id] = b.created_at; });
+
+          const postIds = bookmarks.filter((b: any) => b.post_type === "posts").map((b: any) => b.post_id);
+          const wellnessIds = bookmarks.filter((b: any) => b.post_type === "wellness_posts").map((b: any) => b.post_id);
+
+          const [{ data: posts }, { data: wellness }] = await Promise.all([
+            postIds.length
+              ? supabase.from("posts").select("id, title, constitution_type, card_image_url, created_at").in("id", postIds).eq("status", "published")
+              : Promise.resolve({ data: [] }),
+            wellnessIds.length
+              ? supabase.from("wellness_posts").select("id, title, wellness_category, card_image_url, created_at").in("id", wellnessIds).eq("status", "published")
+              : Promise.resolve({ data: [] }),
+          ]);
+
+          setSavedTypology(
+            (posts ?? []).map((p: any) => ({
+              id: p.id,
+              title: p.title,
+              card_image_url: p.card_image_url,
+              tag: p.constitution_type,
+              created_at: bookmarkCreatedAt[p.id] ?? p.created_at,
+              path: `/sasang/${p.id}`,
+            })).sort((a: SavedItem, b: SavedItem) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+          );
+          setSavedWellness(
+            (wellness ?? []).map((p: any) => ({
+              id: p.id,
+              title: p.title,
+              card_image_url: p.card_image_url,
+              tag: p.wellness_category,
+              created_at: bookmarkCreatedAt[p.id] ?? p.created_at,
+              path: `/wellness/${p.id}`,
+            })).sort((a: SavedItem, b: SavedItem) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+          );
+        });
+    } else {
+      // 비로그인 상태: localStorage에서 조회
+      const ids = getSavedPostIds();
+      if (!ids.length) return;
+      Promise.all([
+        supabase.from("posts").select("id, title, constitution_type, card_image_url, created_at").in("id", ids).eq("status", "published"),
+        supabase.from("wellness_posts").select("id, title, wellness_category, card_image_url, created_at").in("id", ids).eq("status", "published"),
+      ]).then(([{ data: posts }, { data: wellness }]) => {
+        setSavedTypology(
+          (posts ?? []).map((p: any) => ({
+            id: p.id,
+            title: p.title,
+            card_image_url: p.card_image_url,
+            tag: p.constitution_type,
+            created_at: p.created_at,
+            path: `/sasang/${p.id}`,
+          })).sort((a: SavedItem, b: SavedItem) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        );
+        setSavedWellness(
+          (wellness ?? []).map((p: any) => ({
+            id: p.id,
+            title: p.title,
+            card_image_url: p.card_image_url,
+            tag: p.wellness_category,
+            created_at: p.created_at,
+            path: `/wellness/${p.id}`,
+          })).sort((a: SavedItem, b: SavedItem) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        );
+      });
+    }
+  }, [user]);
 
   if (!user) return null;
 
