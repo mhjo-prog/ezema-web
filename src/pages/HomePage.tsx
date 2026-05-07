@@ -50,6 +50,12 @@ export default function HomePage() {
   const trackRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!isSupabaseReady) return;
+    supabase.from("analytics").insert({ event_type: "page_visit" })
+      .then(({ error }) => { if (error) console.log("[analytics] insert error:", error); });
+  }, []);
+
+  useEffect(() => {
+    if (!isSupabaseReady) return;
     supabase
       .from("wellness_posts")
       .select("id, card_image_url")
