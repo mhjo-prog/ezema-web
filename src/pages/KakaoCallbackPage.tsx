@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { KAKAO_REST_KEY, REDIRECT_URI, upsertKakaoUser, type KakaoUser } from "../lib/kakaoApi";
 import { useAuth, KAKAO_BROADCAST_CHANNEL } from "../context/AuthContext";
@@ -10,8 +10,14 @@ export default function KakaoCallbackPage() {
   const { setUserFromCallback } = useAuth();
   const [status, setStatus] = useState<Status>("processing");
   const [errorMsg, setErrorMsg] = useState("");
+  const hasProcessed = useRef(false);
 
   useEffect(() => {
+    // React StrictMode에서 effect가 두 번 실행되는 것 방지
+    // (카카오 auth code는 1회용이므로 두 번째 요청 시 KOE320 에러 발생)
+    if (hasProcessed.current) return;
+    hasProcessed.current = true;
+
     const params = new URLSearchParams(window.location.search);
     const code = params.get("code");
     const error = params.get("error");
