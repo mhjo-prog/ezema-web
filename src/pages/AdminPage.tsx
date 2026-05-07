@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { supabase, adminSupabase, isSupabaseReady, type Post, type ConstitutionType, type WellnessPost, type WellnessCategory } from "../lib/supabase";
+import { supabase, adminSupabase, isSupabaseReady, type Post, type WellnessPost } from "../lib/supabase";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from "recharts";
 import ReactMarkdown from "react-markdown";
 import { useEditor, EditorContent } from "@tiptap/react";
@@ -9,20 +9,6 @@ import Underline from "@tiptap/extension-underline";
 import { marked } from "marked";
 import TurndownService from "turndown";
 
-const CONSTITUTION_COLORS: Record<ConstitutionType, string> = {
-  태음인: "#666666",
-  소음인: "#666666",
-  태양인: "#666666",
-  소양인: "#666666",
-};
-
-const WELLNESS_CATEGORY_COLORS: Record<WellnessCategory, string> = {
-  수면: "#666666",
-  식단: "#666666",
-  운동: "#666666",
-  명상: "#666666",
-  스트레스: "#666666",
-};
 
 const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD as string;
 
@@ -158,7 +144,6 @@ function PostPreviewModal({
   onSave: (fields: { title: string; content: string; card_image_url: string }) => Promise<void>;
   onError: (msg: string) => void;
 }) {
-  const color = CONSTITUTION_COLORS[post.constitution_type];
   const [editMode, setEditMode] = useState(false);
   const [title, setTitle] = useState(post.title);
   const [content, setContent] = useState(post.content);
@@ -359,7 +344,6 @@ function WellnessPostPreviewModal({
   onSave: (fields: { title: string; content: string; card_image_url: string; content_image_url: string }) => Promise<void>;
   onError: (msg: string) => void;
 }) {
-  const color = WELLNESS_CATEGORY_COLORS[post.wellness_category];
   const [editMode, setEditMode] = useState(false);
   const [title, setTitle] = useState(post.title);
   const [content, setContent] = useState(post.content);
@@ -1235,7 +1219,6 @@ export default function AdminPage() {
                 ) : (
                   <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                     {pagedPosts.map((post) => {
-                      const color = CONSTITUTION_COLORS[post.constitution_type];
                       const isDraft = post.status === "draft";
                       const isPublished = post.status === "published";
                       return (
@@ -1416,7 +1399,6 @@ export default function AdminPage() {
                 ) : (
                   <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                     {pagedWellness.map((post) => {
-                      const color = WELLNESS_CATEGORY_COLORS[post.wellness_category];
                       const isDraft = post.status === "draft";
                       const isPublished = post.status === "published";
                       return (
