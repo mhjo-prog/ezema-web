@@ -977,7 +977,7 @@ export default function AdminPage() {
   async function fetchKakaoUsers() {
     if (!isSupabaseReady) return;
     setUsersLoading(true);
-    const { data, error } = await supabase
+    const { data, error } = await adminSupabase
       .from("kakao_users")
       .select("kakao_id, nickname, profile_image, updated_at")
       .order("updated_at", { ascending: false });
