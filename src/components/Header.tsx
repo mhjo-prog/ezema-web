@@ -21,6 +21,7 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
   const location = useLocation();
   const { user, isLoading, loginWithKakao, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mobileLangOpen, setMobileLangOpen] = useState(false);
   const [_isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
   const [isSmallMobile, setIsSmallMobile] = useState(() => window.innerWidth <= 480);
   const [scrolled, setScrolled] = useState(false);
@@ -406,44 +407,97 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
               Mypage
             </button> */}
 
-            {/* Mobile translate */}
-            <div style={{ borderTop: "1px solid #f5f5f5", padding: "8px 12px" }}>
-              <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
-                {LANGUAGES.map((lang) => {
-                  const isActive = lang.code === getCurrentLang();
-                  return (
+            {/* Mobile translate — 지구본 버튼 + 드롭다운 */}
+            <div style={{ borderTop: "1px solid #f5f5f5", position: "relative" }}>
+              {(() => {
+                const currentLang = getCurrentLang();
+                const isTranslated = currentLang !== "ko";
+                return (
+                  <>
                     <button
-                      key={lang.code}
-                      onClick={() => {
-                        setMenuOpen(false);
-                        if (lang.code === getCurrentLang()) return;
-                        const expired = "expires=Thu, 01 Jan 1970 00:00:00 UTC";
-                        document.cookie = `googtrans=; ${expired}; path=/`;
-                        document.cookie = `googtrans=; ${expired}; path=/; domain=.${window.location.hostname}`;
-                        document.cookie = `googtrans=; ${expired}; path=/; domain=${window.location.hostname}`;
-                        if (lang.code === "ko") {
-                          window.location.reload();
-                        } else {
-                          sessionStorage.setItem(PENDING_LANG_KEY, lang.code);
-                          window.location.reload();
-                        }
-                      }}
+                      onClick={() => setMobileLangOpen((o) => !o)}
                       style={{
-                        padding: "5px 12px",
-                        borderRadius: "20px",
-                        border: `1px solid ${isActive ? "#111111" : "#e8e8e8"}`,
-                        background: isActive ? "#111111" : "#ffffff",
-                        color: isActive ? "#ffffff" : "#444444",
-                        fontSize: "0.75rem",
-                        fontWeight: isActive ? 700 : 500,
+                        width: "100%",
+                        padding: "12px 20px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        background: "none",
+                        border: "none",
                         cursor: "pointer",
                       }}
                     >
-                      {lang.label}
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <GlobeIcon color={isTranslated ? "#111111" : "#444444"} />
+                        <span style={{ fontSize: "0.9375rem", fontWeight: isTranslated ? 700 : 500, color: isTranslated ? "#111111" : "#333333" }}>
+                          {isTranslated ? LANGUAGES.find((l) => l.code === currentLang)?.label : "언어"}
+                        </span>
+                      </div>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#aaaaaa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                        style={{ transform: mobileLangOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.15s" }}>
+                        <polyline points="6 9 12 15 18 9" />
+                      </svg>
                     </button>
-                  );
-                })}
-              </div>
+                    <AnimatePresence>
+                      {mobileLangOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.15 }}
+                          style={{ overflow: "hidden", borderTop: "1px solid #f5f5f5" }}
+                        >
+                          {LANGUAGES.map((lang, i) => {
+                            const isActive = lang.code === currentLang;
+                            return (
+                              <button
+                                key={lang.code}
+                                onClick={() => {
+                                  setMenuOpen(false);
+                                  setMobileLangOpen(false);
+                                  if (lang.code === currentLang) return;
+                                  const expired = "expires=Thu, 01 Jan 1970 00:00:00 UTC";
+                                  document.cookie = `googtrans=; ${expired}; path=/`;
+                                  document.cookie = `googtrans=; ${expired}; path=/; domain=.${window.location.hostname}`;
+                                  document.cookie = `googtrans=; ${expired}; path=/; domain=${window.location.hostname}`;
+                                  if (lang.code === "ko") {
+                                    window.location.reload();
+                                  } else {
+                                    sessionStorage.setItem(PENDING_LANG_KEY, lang.code);
+                                    window.location.reload();
+                                  }
+                                }}
+                                style={{
+                                  width: "100%",
+                                  padding: "11px 20px 11px 48px",
+                                  textAlign: "left",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                  fontSize: "0.875rem",
+                                  fontWeight: isActive ? 700 : 500,
+                                  color: "#111111",
+                                  background: isActive ? "#f5f5f5" : "none",
+                                  border: "none",
+                                  borderBottom: i < LANGUAGES.length - 1 ? "1px solid #f5f5f5" : "none",
+                                  cursor: "pointer",
+                                }}
+                              >
+                                {lang.label}
+                                {isActive && (
+                                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ marginRight: "4px" }}>
+                                    <path d="M2 6l3 3 5-5" stroke="#111" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                  </svg>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </>
+                );
+              })()}
             </div>
 
             {/* Mobile login/logout */}
