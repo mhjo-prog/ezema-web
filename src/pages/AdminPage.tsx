@@ -602,6 +602,9 @@ export default function AdminPage() {
   const [chartData, setChartData] = useState<{ date: string; visits: number; quizCompletes: number }[]>([]);
   const [chartRange, setChartRange] = useState<"7d" | "30d" | "monthly">("7d");
   const [statsRefreshing, setStatsRefreshing] = useState(false);
+  const [customersTab, setCustomersTab] = useState<"visits" | "members">("visits");
+  const [kakaoUsers, setKakaoUsers] = useState<Array<{ kakao_id: string; nickname: string; profile_image?: string | null; created_at?: string }>>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
 
   function showToast(msg: string) {
     setToast(msg);
@@ -971,6 +974,17 @@ export default function AdminPage() {
     }
   }
 
+  async function fetchKakaoUsers() {
+    if (!isSupabaseReady) return;
+    setUsersLoading(true);
+    const { data } = await supabase
+      .from("kakao_users")
+      .select("kakao_id, nickname, profile_image, created_at")
+      .order("created_at", { ascending: false });
+    setKakaoUsers(data ?? []);
+    setUsersLoading(false);
+  }
+
   function handleLogin() {
     if (pw === ADMIN_PASSWORD) {
       setAuthed(true);
@@ -986,6 +1000,7 @@ export default function AdminPage() {
       fetchWellnessPosts();
       fetchStats();
       fetchChartData("7d");
+      fetchKakaoUsers();
     }
   }, [authed]);
 
@@ -1531,18 +1546,19 @@ export default function AdminPage() {
         {/* 세로 구분선 */}
         <div style={{ width: "1px", background: "#e8e8e8", alignSelf: "stretch", flexShrink: 0 }} />
 
-        {/* Analytics */}
+        {/* Customers */}
         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
+          {/* 헤더 */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "32px" }}>
             <div>
-              <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "#999999", marginBottom: "6px" }}>ANALYTICS</p>
-              <h2 style={{ fontSize: "clamp(1.25rem, 2vw, 1.75rem)", fontWeight: 800, color: "#111111", letterSpacing: "-0.035em" }}>고객 방문 추이</h2>
+              <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "#999999", marginBottom: "6px" }}>CUSTOMERS</p>
+              <h2 style={{ fontSize: "clamp(1.25rem, 2vw, 1.75rem)", fontWeight: 800, color: "#111111", letterSpacing: "-0.035em" }}>고객 관리</h2>
             </div>
             <button
               onClick={async () => {
                 setStatsRefreshing(true);
                 await new Promise((r) => setTimeout(r, 200));
-                await Promise.all([fetchStats(), fetchChartData(chartRange)]);
+                await Promise.all([fetchStats(), fetchChartData(chartRange), fetchKakaoUsers()]);
                 setStatsRefreshing(false);
               }}
               style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#111111", border: "1px solid #111111", padding: "9px 20px", borderRadius: "50px", cursor: "pointer", background: "transparent", flexShrink: 0, letterSpacing: "0.01em" }}
@@ -1550,51 +1566,135 @@ export default function AdminPage() {
               새로고침
             </button>
           </div>
+
+          {/* 탭 스위처 */}
+          <div style={{ display: "flex", alignItems: "center", marginBottom: "32px", borderBottom: "1px solid #e8e8e8" }}>
+            {([
+              { key: "visits", label: "방문 추이" },
+              { key: "members", label: "회원가입" },
+            ] as const).map(({ key, label }) => (
+              <button
+                key={key}
+                onClick={() => setCustomersTab(key)}
+                style={{
+                  padding: "12px 20px 14px",
+                  fontSize: "0.875rem",
+                  fontWeight: customersTab === key ? 700 : 500,
+                  background: "transparent",
+                  color: customersTab === key ? "#111111" : "#999999",
+                  border: "none",
+                  borderBottom: customersTab === key ? "2px solid #111111" : "2px solid transparent",
+                  cursor: "pointer",
+                  marginBottom: "-1px",
+                  transition: "all 0.15s",
+                  letterSpacing: "0.01em",
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {/* 탭 컨텐츠 */}
           <motion.div animate={{ opacity: statsRefreshing ? 0 : 1 }} transition={{ duration: 0.2 }}>
-            {stats && (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px", marginBottom: "32px" }}>
-                {[
-                  { label: "총 방문자 수", value: stats.visits },
-                  { label: "체질 진단 완료", value: stats.quizCompletes },
-                ].map((s) => (
-                  <div key={s.label} style={{ background: "#ffffff", borderRadius: "16px", padding: "20px", border: "1px solid #e8e8e8", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
-                    <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#999999", marginBottom: "10px" }}>{s.label}</p>
-                    <p style={{ fontSize: "2rem", fontWeight: 800, color: "#000000", letterSpacing: "-0.03em" }}>{s.value.toLocaleString()}</p>
+            {customersTab === "visits" && (
+              <>
+                {stats && (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px", marginBottom: "32px" }}>
+                    {[
+                      { label: "총 방문자 수", value: stats.visits },
+                      { label: "체질 진단 완료", value: stats.quizCompletes },
+                    ].map((s) => (
+                      <div key={s.label} style={{ background: "#ffffff", borderRadius: "16px", padding: "20px", border: "1px solid #e8e8e8", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+                        <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#999999", marginBottom: "10px" }}>{s.label}</p>
+                        <p style={{ fontSize: "2rem", fontWeight: 800, color: "#000000", letterSpacing: "-0.03em" }}>{s.value.toLocaleString()}</p>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            )}
-            <div style={{ background: "#ffffff", borderRadius: "16px", border: "1px solid #e8e8e8", padding: "24px", height: "350px", display: "flex", flexDirection: "column", boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
-                <p style={{ fontSize: "0.875rem", fontWeight: 700, color: "#111111", letterSpacing: "-0.01em" }}>
-                  {{ "7d": "최근 7일", "30d": "최근 1개월", monthly: "월별 추이" }[chartRange]}
-                </p>
-                <div style={{ display: "flex", gap: "6px" }}>
-                  {([["7d", "7일"], ["30d", "1개월"], ["monthly", "월별"]] as const).map(([range, label]) => (
-                    <button
-                      key={range}
-                      onClick={() => setChartRange(range)}
-                      style={{ fontSize: "0.8125rem", fontWeight: 600, padding: "7px 14px", borderRadius: "50px", border: `1px solid ${chartRange === range ? "#111111" : "#e8e8e8"}`, background: chartRange === range ? "#111111" : "#ffffff", color: chartRange === range ? "#ffffff" : "#666666", cursor: "pointer", letterSpacing: "0.01em" }}
-                    >
-                      {label}
-                    </button>
-                  ))}
+                )}
+                <div style={{ background: "#ffffff", borderRadius: "16px", border: "1px solid #e8e8e8", padding: "24px", height: "350px", display: "flex", flexDirection: "column", boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
+                    <p style={{ fontSize: "0.875rem", fontWeight: 700, color: "#111111", letterSpacing: "-0.01em" }}>
+                      {{ "7d": "최근 7일", "30d": "최근 1개월", monthly: "월별 추이" }[chartRange]}
+                    </p>
+                    <div style={{ display: "flex", gap: "6px" }}>
+                      {([["7d", "7일"], ["30d", "1개월"], ["monthly", "월별"]] as const).map(([range, label]) => (
+                        <button
+                          key={range}
+                          onClick={() => setChartRange(range)}
+                          style={{ fontSize: "0.8125rem", fontWeight: 600, padding: "7px 14px", borderRadius: "50px", border: `1px solid ${chartRange === range ? "#111111" : "#e8e8e8"}`, background: chartRange === range ? "#111111" : "#ffffff", color: chartRange === range ? "#ffffff" : "#666666", cursor: "pointer", letterSpacing: "0.01em" }}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div style={{ flex: 1, minHeight: 0 }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={chartData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                        <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#aaaaaa" }} />
+                        <YAxis tick={{ fontSize: 11, fill: "#aaaaaa" }} allowDecimals={false} />
+                        <Tooltip contentStyle={{ fontSize: "0.8125rem", borderRadius: "8px", border: "1px solid #e8e8e8", boxShadow: "0 4px 16px rgba(0,0,0,0.08)" }} />
+                        <Legend wrapperStyle={{ fontSize: "0.8125rem", color: "#666666" }} />
+                        <Line type="monotone" dataKey="visits" name="방문자" stroke="#000000" strokeWidth={2} dot={{ r: 3 }} />
+                        <Line type="monotone" dataKey="quizCompletes" name="진단완료" stroke="#999999" strokeWidth={2} dot={{ r: 3 }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
-              </div>
-              <div style={{ flex: 1, minHeight: 0 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#aaaaaa" }} />
-                    <YAxis tick={{ fontSize: 11, fill: "#aaaaaa" }} allowDecimals={false} />
-                    <Tooltip contentStyle={{ fontSize: "0.8125rem", borderRadius: "8px", border: "1px solid #e8e8e8", boxShadow: "0 4px 16px rgba(0,0,0,0.08)" }} />
-                    <Legend wrapperStyle={{ fontSize: "0.8125rem", color: "#666666" }} />
-                    <Line type="monotone" dataKey="visits" name="방문자" stroke="#000000" strokeWidth={2} dot={{ r: 3 }} />
-                    <Line type="monotone" dataKey="quizCompletes" name="진단완료" stroke="#999999" strokeWidth={2} dot={{ r: 3 }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
+              </>
+            )}
+
+            {customersTab === "members" && (
+              <>
+                {/* 총 가입자 수 */}
+                <div style={{ background: "#ffffff", borderRadius: "16px", padding: "20px", border: "1px solid #e8e8e8", boxShadow: "0 1px 4px rgba(0,0,0,0.04)", marginBottom: "24px" }}>
+                  <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#999999", marginBottom: "10px" }}>총 가입자 수</p>
+                  <p style={{ fontSize: "2rem", fontWeight: 800, color: "#000000", letterSpacing: "-0.03em" }}>{kakaoUsers.length.toLocaleString()}</p>
+                </div>
+
+                {/* 가입자 목록 */}
+                <div style={{ background: "#ffffff", borderRadius: "16px", border: "1px solid #e8e8e8", boxShadow: "0 1px 8px rgba(0,0,0,0.05)", overflow: "hidden" }}>
+                  {usersLoading ? (
+                    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "120px" }}>
+                      <div style={{ width: "24px", height: "24px", border: "2px solid #e8e8e8", borderTopColor: "#111", borderRadius: "50%", animation: "ks-spin 0.75s linear infinite" }} />
+                    </div>
+                  ) : kakaoUsers.length === 0 ? (
+                    <div style={{ padding: "48px", textAlign: "center", color: "#aaaaaa", fontSize: "0.875rem" }}>가입자가 없습니다</div>
+                  ) : (
+                    <div style={{ maxHeight: "420px", overflowY: "auto" }}>
+                      {kakaoUsers.map((u, i) => (
+                        <div
+                          key={u.kakao_id}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "12px",
+                            padding: "14px 20px",
+                            borderBottom: i < kakaoUsers.length - 1 ? "1px solid #f5f5f5" : "none",
+                          }}
+                        >
+                          {u.profile_image ? (
+                            <img src={u.profile_image} alt={u.nickname} style={{ width: "36px", height: "36px", borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+                          ) : (
+                            <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "#f0f0f0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.875rem", fontWeight: 700, color: "#666", flexShrink: 0 }}>
+                              {u.nickname.charAt(0)}
+                            </div>
+                          )}
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <p style={{ fontSize: "0.875rem", fontWeight: 600, color: "#111111", marginBottom: "2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.nickname}</p>
+                            <p style={{ fontSize: "0.75rem", color: "#aaaaaa" }}>
+                              {u.created_at ? new Date(u.created_at).toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" }) : "-"}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </motion.div>
         </div>
       </div>
