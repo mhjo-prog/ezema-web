@@ -603,7 +603,7 @@ export default function AdminPage() {
   const [chartRange, setChartRange] = useState<"7d" | "30d" | "monthly">("7d");
   const [statsRefreshing, setStatsRefreshing] = useState(false);
   const [customersTab, setCustomersTab] = useState<"visits" | "members">("visits");
-  const [kakaoUsers, setKakaoUsers] = useState<Array<{ kakao_id: string; nickname: string; profile_image?: string | null; created_at?: string }>>([]);
+  const [kakaoUsers, setKakaoUsers] = useState<Array<{ kakao_id: string; nickname: string | null; profile_image?: string | null; updated_at?: string }>>([]);
   const [usersLoading, setUsersLoading] = useState(false);
 
   function showToast(msg: string) {
@@ -977,10 +977,11 @@ export default function AdminPage() {
   async function fetchKakaoUsers() {
     if (!isSupabaseReady) return;
     setUsersLoading(true);
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("kakao_users")
-      .select("kakao_id, nickname, profile_image, created_at")
-      .order("created_at", { ascending: false });
+      .select("kakao_id, nickname, profile_image, updated_at")
+      .order("updated_at", { ascending: false });
+    if (error) console.error("[fetchKakaoUsers]", error);
     setKakaoUsers(data ?? []);
     setUsersLoading(false);
   }
@@ -1664,32 +1665,35 @@ export default function AdminPage() {
                     <div style={{ padding: "48px", textAlign: "center", color: "#aaaaaa", fontSize: "0.875rem" }}>가입자가 없습니다</div>
                   ) : (
                     <div style={{ maxHeight: "420px", overflowY: "auto" }}>
-                      {kakaoUsers.map((u, i) => (
-                        <div
-                          key={u.kakao_id}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "12px",
-                            padding: "14px 20px",
-                            borderBottom: i < kakaoUsers.length - 1 ? "1px solid #f5f5f5" : "none",
-                          }}
-                        >
-                          {u.profile_image ? (
-                            <img src={u.profile_image} alt={u.nickname} style={{ width: "36px", height: "36px", borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
-                          ) : (
-                            <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "#f0f0f0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.875rem", fontWeight: 700, color: "#666", flexShrink: 0 }}>
-                              {u.nickname.charAt(0)}
+                      {kakaoUsers.map((u, i) => {
+                        const displayName = u.nickname || `가입자${i + 1}`;
+                        return (
+                          <div
+                            key={u.kakao_id}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "12px",
+                              padding: "14px 20px",
+                              borderBottom: i < kakaoUsers.length - 1 ? "1px solid #f5f5f5" : "none",
+                            }}
+                          >
+                            {u.profile_image ? (
+                              <img src={u.profile_image} alt={displayName} style={{ width: "36px", height: "36px", borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+                            ) : (
+                              <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "#e8e8e8", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.875rem", fontWeight: 700, color: "#999999", flexShrink: 0 }}>
+                                {displayName.charAt(0)}
+                              </div>
+                            )}
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <p style={{ fontSize: "0.875rem", fontWeight: 600, color: "#111111", marginBottom: "2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{displayName}</p>
+                              <p style={{ fontSize: "0.75rem", color: "#aaaaaa" }}>
+                                {u.updated_at ? new Date(u.updated_at).toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" }) : "-"}
+                              </p>
                             </div>
-                          )}
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <p style={{ fontSize: "0.875rem", fontWeight: 600, color: "#111111", marginBottom: "2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.nickname}</p>
-                            <p style={{ fontSize: "0.75rem", color: "#aaaaaa" }}>
-                              {u.created_at ? new Date(u.created_at).toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" }) : "-"}
-                            </p>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
