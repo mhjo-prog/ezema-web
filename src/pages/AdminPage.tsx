@@ -1114,16 +1114,27 @@ export default function AdminPage() {
       animate={{ opacity: 1 }}
       style={{ minHeight: "100vh", background: "#ffffff", paddingTop: "56px", fontFamily: "'Pretendard', sans-serif" }}
     >
-      {/* ── 상단 히어로 스트립 ── */}
-      <div style={{ background: "#f5f5f5", borderBottom: "1px solid #e8e8e8" }}>
-        <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "32px 24px 24px" }}>
-          <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "#999999", marginBottom: "6px" }}>ADMIN</p>
-          <h1 style={{ fontSize: "clamp(1.5rem, 3vw, 2.25rem)", fontWeight: 800, color: "#111111", letterSpacing: "-0.04em", lineHeight: 1.05 }}>콘텐츠 관리</h1>
-        </div>
-      </div>
-
       <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "40px 24px 80px", display: "flex", gap: "48px", alignItems: "stretch" }}>
         <div style={{ flex: 1, minWidth: 0 }}>
+
+          {/* 헤더 — Analytics와 동일한 구조 */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "32px" }}>
+            <div>
+              <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "#999999", marginBottom: "6px" }}>ADMIN</p>
+              <h2 style={{ fontSize: "clamp(1.25rem, 2vw, 1.75rem)", fontWeight: 800, color: "#111111", letterSpacing: "-0.035em" }}>콘텐츠 관리</h2>
+            </div>
+            <button
+              onClick={async () => {
+                setPostsRefreshing(true);
+                await new Promise((r) => setTimeout(r, 200));
+                await Promise.all([fetchPosts(), fetchWellnessPosts(), fetchStats(), fetchChartData(chartRange)]);
+                setPostsRefreshing(false);
+              }}
+              style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#111111", border: "1px solid #111111", padding: "9px 20px", borderRadius: "50px", cursor: "pointer", background: "transparent", flexShrink: 0, letterSpacing: "0.01em" }}
+            >
+              새로고침
+            </button>
+          </div>
 
           {/* 탭 스위처 */}
           <div style={{ display: "flex", alignItems: "center", marginBottom: "32px", borderBottom: "1px solid #e8e8e8" }}>
@@ -1151,18 +1162,6 @@ export default function AdminPage() {
                 {label}
               </button>
             ))}
-            <div style={{ flex: 1 }} />
-            <button
-              onClick={async () => {
-                setPostsRefreshing(true);
-                await new Promise((r) => setTimeout(r, 200));
-                await Promise.all([fetchPosts(), fetchWellnessPosts(), fetchStats(), fetchChartData(chartRange)]);
-                setPostsRefreshing(false);
-              }}
-              style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#111111", border: "1px solid #111111", padding: "7px 18px", borderRadius: "50px", cursor: "pointer", background: "transparent", flexShrink: 0, letterSpacing: "0.01em", marginBottom: "8px" }}
-            >
-              새로고침
-            </button>
           </div>
 
           <motion.div animate={{ opacity: postsRefreshing ? 0 : 1 }} transition={{ duration: 0.2 }}>
