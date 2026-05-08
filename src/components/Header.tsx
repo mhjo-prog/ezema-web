@@ -430,7 +430,7 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
                       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                         <GlobeIcon color={isTranslated ? "#111111" : "#444444"} />
                         <span style={{ fontSize: "0.9375rem", fontWeight: isTranslated ? 700 : 500, color: isTranslated ? "#111111" : "#333333" }}>
-                          {isTranslated ? LANGUAGES.find((l) => l.code === currentLang)?.label : "언어"}
+                          {isTranslated ? LANGUAGES.find((l) => l.code === currentLang)?.label : "Language"}
                         </span>
                       </div>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#aaaaaa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
