@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { PENDING_LANG_KEY } from "../App";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -420,11 +421,12 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
                         document.cookie = `googtrans=; ${expired}; path=/`;
                         document.cookie = `googtrans=; ${expired}; path=/; domain=.${window.location.hostname}`;
                         document.cookie = `googtrans=; ${expired}; path=/; domain=${window.location.hostname}`;
-                        if (lang.code !== "ko") {
-                          document.cookie = `googtrans=/ko/${lang.code}; path=/`;
-                          document.cookie = `googtrans=/ko/${lang.code}; path=/; domain=.${window.location.hostname}`;
+                        if (lang.code === "ko") {
+                          window.location.reload();
+                        } else {
+                          sessionStorage.setItem(PENDING_LANG_KEY, lang.code);
+                          window.location.reload();
                         }
-                        window.location.reload();
                       }}
                       style={{
                         padding: "5px 12px",
@@ -548,17 +550,21 @@ function TranslateWidget() {
   const changeLanguage = (code: string) => {
     setOpen(false);
     if (code === currentLang) return;
-    // 기존 쿠키를 경로/도메인 모든 변형으로 먼저 삭제
     const expired = "expires=Thu, 01 Jan 1970 00:00:00 UTC";
+    // 기존 쿠키를 모든 도메인 변형으로 삭제
     document.cookie = `googtrans=; ${expired}; path=/`;
     document.cookie = `googtrans=; ${expired}; path=/; domain=.${window.location.hostname}`;
     document.cookie = `googtrans=; ${expired}; path=/; domain=${window.location.hostname}`;
-    if (code !== "ko") {
-      document.cookie = `googtrans=/ko/${code}; path=/`;
-      document.cookie = `googtrans=/ko/${code}; path=/; domain=.${window.location.hostname}`;
+    if (code === "ko") {
+      // 한국어는 쿠키 삭제 후 바로 리로드
+      setCurrentLang(code);
+      window.location.reload();
+    } else {
+      // 비한국어: sessionStorage에 목표 언어 저장 → 한국어로 리셋 리로드 →
+      // App.tsx useEffect가 감지해 목표 언어 쿠키 설정 후 재리로드
+      sessionStorage.setItem(PENDING_LANG_KEY, code);
+      window.location.reload();
     }
-    setCurrentLang(code);
-    window.location.reload();
   };
 
   const isTranslated = currentLang !== "ko";

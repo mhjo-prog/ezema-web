@@ -45,9 +45,21 @@ function AppRoutes({ onQuizStart }: { onQuizStart: () => void }) {
   );
 }
 
+export const PENDING_LANG_KEY = "keepslow_pending_lang";
+
 export default function App() {
   const navigate = useNavigate();
   const quizStarted = useRef(false);
+
+  // 비한국어→비한국어 전환 2단계: 한국어로 리셋된 뒤 대기 중인 언어를 적용
+  useEffect(() => {
+    const pending = sessionStorage.getItem(PENDING_LANG_KEY);
+    if (!pending) return;
+    sessionStorage.removeItem(PENDING_LANG_KEY);
+    document.cookie = `googtrans=/ko/${pending}; path=/`;
+    document.cookie = `googtrans=/ko/${pending}; path=/; domain=.${window.location.hostname}`;
+    window.location.reload();
+  }, []);
 
   useEffect(() => {
     const lenis = new Lenis({
