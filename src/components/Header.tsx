@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -214,6 +214,11 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
             Mypage
           </button> */}
 
+          {/* Translate — desktop */}
+          <div className="hidden md:flex" style={{ alignItems: "center" }}>
+            <TranslateWidget />
+          </div>
+
           {/* Desktop login/user — hidden on mobile */}
           <div className="hidden md:flex" style={{ alignItems: "center" }}>
             {user ? (
@@ -400,6 +405,43 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
               Mypage
             </button> */}
 
+            {/* Mobile translate */}
+            <div style={{ borderTop: "1px solid #f5f5f5", padding: "8px 12px" }}>
+              <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                {LANGUAGES.map((lang) => {
+                  const isActive = lang.code === getCurrentLang();
+                  return (
+                    <button
+                      key={lang.code}
+                      onClick={() => {
+                        setMenuOpen(false);
+                        if (lang.code === getCurrentLang()) return;
+                        if (lang.code === "ko") {
+                          document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+                          document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${window.location.hostname}`;
+                        } else {
+                          document.cookie = `googtrans=/ko/${lang.code}; path=/`;
+                        }
+                        window.location.reload();
+                      }}
+                      style={{
+                        padding: "5px 12px",
+                        borderRadius: "20px",
+                        border: `1px solid ${isActive ? "#111111" : "#e8e8e8"}`,
+                        background: isActive ? "#111111" : "#ffffff",
+                        color: isActive ? "#ffffff" : "#444444",
+                        fontSize: "0.75rem",
+                        fontWeight: isActive ? 700 : 500,
+                        cursor: "pointer",
+                      }}
+                    >
+                      {lang.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Mobile login/logout */}
             <div style={{ borderTop: "1px solid #f0f0f0" }}>
               {user ? (
@@ -469,6 +511,153 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
 
       <style>{`@keyframes ks-spin { to { transform: rotate(360deg); } }`}</style>
     </>
+  );
+}
+
+const LANGUAGES = [
+  { code: "ko", label: "한국어" },
+  { code: "en", label: "English" },
+  { code: "ja", label: "日本語" },
+  { code: "zh-CN", label: "中文" },
+  { code: "th", label: "ภาษาไทย" },
+  { code: "vi", label: "Tiếng Việt" },
+];
+
+function getCurrentLang(): string {
+  const match = document.cookie.match(/googtrans=\/ko\/([^;]+)/);
+  return match ? match[1] : "ko";
+}
+
+function TranslateWidget() {
+  const [open, setOpen] = useState(false);
+  const [currentLang, setCurrentLang] = useState(getCurrentLang);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // 외부 클릭 시 닫기
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  const changeLanguage = (code: string) => {
+    setOpen(false);
+    if (code === currentLang) return;
+    if (code === "ko") {
+      document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${window.location.hostname}`;
+    } else {
+      document.cookie = `googtrans=/ko/${code}; path=/`;
+    }
+    setCurrentLang(code);
+    window.location.reload();
+  };
+
+  const isTranslated = currentLang !== "ko";
+
+  return (
+    <div ref={ref} style={{ position: "relative" }}>
+      <button
+        onClick={() => setOpen((o) => !o)}
+        aria-label="언어 선택"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "4px",
+          padding: "6px 10px",
+          background: isTranslated ? "#111111" : "none",
+          border: isTranslated ? "none" : "none",
+          borderRadius: "20px",
+          cursor: "pointer",
+          color: isTranslated ? "#ffffff" : "#444444",
+          fontSize: "0.8125rem",
+          fontWeight: isTranslated ? 600 : 500,
+          transition: "color 0.15s",
+        }}
+        onMouseEnter={(e) => {
+          if (!isTranslated) e.currentTarget.style.color = "#000000";
+        }}
+        onMouseLeave={(e) => {
+          if (!isTranslated) e.currentTarget.style.color = "#444444";
+        }}
+      >
+        <GlobeIcon color={isTranslated ? "#ffffff" : "currentColor"} />
+        {isTranslated && (
+          <span>{LANGUAGES.find((l) => l.code === currentLang)?.label}</span>
+        )}
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: -4 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -4 }}
+            transition={{ duration: 0.12 }}
+            style={{
+              position: "absolute",
+              top: "calc(100% + 6px)",
+              right: 0,
+              background: "#ffffff",
+              border: "1px solid #e8e8e8",
+              borderRadius: "12px",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.10)",
+              overflow: "hidden",
+              minWidth: "120px",
+              zIndex: 200,
+              transformOrigin: "top right",
+            }}
+          >
+            {LANGUAGES.map((lang, i) => {
+              const isActive = lang.code === currentLang;
+              return (
+                <button
+                  key={lang.code}
+                  onClick={() => changeLanguage(lang.code)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    width: "100%",
+                    padding: "11px 16px",
+                    background: isActive ? "#f5f5f5" : "none",
+                    border: "none",
+                    borderBottom: i < LANGUAGES.length - 1 ? "1px solid #f5f5f5" : "none",
+                    fontSize: "0.8125rem",
+                    fontWeight: isActive ? 700 : 500,
+                    color: "#111111",
+                    cursor: "pointer",
+                    textAlign: "left",
+                    whiteSpace: "nowrap",
+                  }}
+                  onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = "#f9f9f9"; }}
+                  onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = "none"; }}
+                >
+                  {lang.label}
+                  {isActive && (
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ marginLeft: "8px", flexShrink: 0 }}>
+                      <path d="M2 6l3 3 5-5" stroke="#111" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  )}
+                </button>
+              );
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function GlobeIcon({ color = "currentColor" }: { color?: string }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+    </svg>
   );
 }
 

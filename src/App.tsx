@@ -63,9 +63,16 @@ export default function App() {
     }
     rafId = requestAnimationFrame(raf);
 
+    // Google Translate가 DOM을 수정하면 body 높이가 바뀌므로 Lenis 스크롤 범위를 재계산
+    const resizeObserver = new ResizeObserver(() => {
+      lenis.resize();
+    });
+    resizeObserver.observe(document.body);
+
     return () => {
       cancelAnimationFrame(rafId);
       lenis.destroy();
+      resizeObserver.disconnect();
     };
   }, []);
 
