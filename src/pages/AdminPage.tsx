@@ -1155,8 +1155,8 @@ export default function AdminPage() {
           {/* 탭 스위처 */}
           <div style={{ display: "flex", alignItems: "center", marginBottom: "32px", borderBottom: "1px solid #e8e8e8" }}>
             {([
-              { key: "sasang", label: "사상체질 이야기" },
-              { key: "wellness", label: "Wellness" },
+              { key: "sasang", label: "TYPOLOGY STORIES" },
+              { key: "wellness", label: "Wellness Comics" },
             ] as const).map(({ key, label }) => (
               <button
                 key={key}
