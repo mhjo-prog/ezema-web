@@ -416,11 +416,13 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
                       onClick={() => {
                         setMenuOpen(false);
                         if (lang.code === getCurrentLang()) return;
-                        if (lang.code === "ko") {
-                          document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
-                          document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${window.location.hostname}`;
-                        } else {
+                        const expired = "expires=Thu, 01 Jan 1970 00:00:00 UTC";
+                        document.cookie = `googtrans=; ${expired}; path=/`;
+                        document.cookie = `googtrans=; ${expired}; path=/; domain=.${window.location.hostname}`;
+                        document.cookie = `googtrans=; ${expired}; path=/; domain=${window.location.hostname}`;
+                        if (lang.code !== "ko") {
                           document.cookie = `googtrans=/ko/${lang.code}; path=/`;
+                          document.cookie = `googtrans=/ko/${lang.code}; path=/; domain=.${window.location.hostname}`;
                         }
                         window.location.reload();
                       }}
@@ -546,11 +548,14 @@ function TranslateWidget() {
   const changeLanguage = (code: string) => {
     setOpen(false);
     if (code === currentLang) return;
-    if (code === "ko") {
-      document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
-      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${window.location.hostname}`;
-    } else {
+    // 기존 쿠키를 경로/도메인 모든 변형으로 먼저 삭제
+    const expired = "expires=Thu, 01 Jan 1970 00:00:00 UTC";
+    document.cookie = `googtrans=; ${expired}; path=/`;
+    document.cookie = `googtrans=; ${expired}; path=/; domain=.${window.location.hostname}`;
+    document.cookie = `googtrans=; ${expired}; path=/; domain=${window.location.hostname}`;
+    if (code !== "ko") {
       document.cookie = `googtrans=/ko/${code}; path=/`;
+      document.cookie = `googtrans=/ko/${code}; path=/; domain=.${window.location.hostname}`;
     }
     setCurrentLang(code);
     window.location.reload();

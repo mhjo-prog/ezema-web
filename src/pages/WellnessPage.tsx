@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { supabase, isSupabaseReady, type WellnessPost, type WellnessCategory } from "../lib/supabase";
 import { wellnessSamplePosts } from "../data/wellnessSamplePosts";
 import Footer from "../components/Footer";
-import { isSaved, toggleSaved } from "../lib/bookmarks";
+import { useBookmarks } from "../context/BookmarkContext";
 
 const CATEGORY_COLORS: Record<WellnessCategory, string> = {
   수면: "#0774C4",
@@ -33,7 +33,8 @@ function BookmarkIcon({ filled }: { filled: boolean }) {
 function WellnessCard({ post, onClick }: { post: WellnessPost; onClick: () => void }) {
   const color = CATEGORY_COLORS[post.wellness_category];
   const [imgError, setImgError] = useState(false);
-  const [saved, setSaved] = useState(() => isSaved(post.id));
+  const { isSavedGlobal, toggleBookmark } = useBookmarks();
+  const saved = isSavedGlobal(post.id);
 
   return (
     <motion.div
@@ -105,7 +106,7 @@ function WellnessCard({ post, onClick }: { post: WellnessPost; onClick: () => vo
           </span>
         </div>
         <button
-          onClick={(e) => { e.stopPropagation(); setSaved(toggleSaved(post.id)); }}
+          onClick={(e) => { e.stopPropagation(); toggleBookmark(post.id, "wellness_posts"); }}
           style={{
             background: "none", border: "none", cursor: "pointer", padding: "4px",
             color: saved ? "#111111" : "#cccccc", display: "flex", alignItems: "center",

@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { supabase, isSupabaseReady, type Post, type ConstitutionType } from "../lib/supabase";
 import { samplePosts } from "../data/samplePosts";
 import Footer from "../components/Footer";
-import { isSaved, toggleSaved } from "../lib/bookmarks";
+import { useBookmarks } from "../context/BookmarkContext";
 
 const CONSTITUTION_COLORS: Record<ConstitutionType, string> = {
   태음인: "#1E8A4C",
@@ -32,7 +32,8 @@ function BookmarkIcon({ filled }: { filled: boolean }) {
 function PostCard({ post, onClick }: { post: Post; onClick: () => void }) {
   const color = CONSTITUTION_COLORS[post.constitution_type];
   const [imgError, setImgError] = useState(false);
-  const [saved, setSaved] = useState(() => isSaved(post.id));
+  const { isSavedGlobal, toggleBookmark } = useBookmarks();
+  const saved = isSavedGlobal(post.id);
 
   return (
     <motion.div
@@ -109,7 +110,7 @@ function PostCard({ post, onClick }: { post: Post; onClick: () => void }) {
           </span>
         </div>
         <button
-          onClick={(e) => { e.stopPropagation(); setSaved(toggleSaved(post.id)); }}
+          onClick={(e) => { e.stopPropagation(); toggleBookmark(post.id, "posts"); }}
           style={{
             background: "none", border: "none", cursor: "pointer", padding: "4px",
             color: saved ? "#111111" : "#cccccc", display: "flex", alignItems: "center",
