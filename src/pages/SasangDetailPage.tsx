@@ -6,7 +6,6 @@ import remarkGfm from "remark-gfm";
 import { supabase, isSupabaseReady, type Post, type ConstitutionType } from "../lib/supabase";
 import { results } from "../data/results";
 import { useBookmarks } from "../context/BookmarkContext";
-import { useAuth } from "../context/AuthContext";
 
 const COUPANG_IDS: Record<string, number> = {
   태양인: 975890,
@@ -205,7 +204,7 @@ function formatDate(dateStr: string) {
 export default function SasangDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);

@@ -5,7 +5,6 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { supabase, isSupabaseReady, type WellnessPost } from "../lib/supabase";
 import { useBookmarks } from "../context/BookmarkContext";
-import { useAuth } from "../context/AuthContext";
 
 const WELLNESS_CATEGORY_COLORS: Record<string, string> = {
   수면: "#6B3FA0",
@@ -178,7 +177,7 @@ function formatDate(dateStr: string) {
 export default function WellnessDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+
   const [post, setPost] = useState<WellnessPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
