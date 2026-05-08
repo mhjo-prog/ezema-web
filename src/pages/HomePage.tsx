@@ -295,6 +295,7 @@ export default function HomePage() {
               >
                 <div style={{ display: "flex", flexDirection: "column", gap: "4px", minWidth: 0 }}>
                   <span
+                    lang="en"
                     style={{
                       fontSize: "clamp(1rem, 3vw, 1.6rem)",
                       fontWeight: 700,
@@ -311,6 +312,7 @@ export default function HomePage() {
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "12px", flexShrink: 0 }}>
                   <span
+                    lang="en"
                     style={{
                       fontSize: "clamp(11px, 1.5vw, 13px)",
                       color: "#999",
