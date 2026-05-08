@@ -17,7 +17,9 @@ export const supabase: SupabaseClient = isConfigured
 // RLS를 우회하는 서버용 클라이언트 (service_role key 필요)
 // VITE_SUPABASE_SERVICE_ROLE_KEY가 없으면 anon 클라이언트로 fallback
 export const adminSupabase: SupabaseClient = isConfigured && supabaseServiceKey
-  ? createClient(supabaseUrl, supabaseServiceKey, { auth: { persistSession: false } })
+  ? createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+    })
   : supabase;
 
 export const isSupabaseReady = isConfigured;

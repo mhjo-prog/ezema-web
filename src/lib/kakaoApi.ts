@@ -1,4 +1,4 @@
-import { supabase, isSupabaseReady } from "./supabase";
+import { adminSupabase, isSupabaseReady } from "./supabase";
 
 export const KAKAO_REST_KEY = "ef0141cd1ed5cf2e0e3e2b231fc3f16c";
 export const KAKAO_JS_KEY = "fbf533c6007cf5212883947fe851e02d";
@@ -16,7 +16,7 @@ export interface KakaoUser {
 
 export async function upsertKakaoUser(user: KakaoUser): Promise<void> {
   if (!isSupabaseReady) return;
-  await supabase
+  const { error } = await adminSupabase
     .from("kakao_users")
     .upsert(
       {
@@ -28,4 +28,5 @@ export async function upsertKakaoUser(user: KakaoUser): Promise<void> {
       },
       { onConflict: "kakao_id" }
     );
+  if (error) console.error("[upsertKakaoUser]", error);
 }
