@@ -429,7 +429,7 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
                     >
                       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                         <GlobeIcon color={isTranslated ? "#111111" : "#444444"} />
-                        <span style={{ fontSize: "0.9375rem", fontWeight: isTranslated ? 700 : 500, color: isTranslated ? "#111111" : "#333333" }}>
+                        <span className="notranslate" style={{ fontSize: "0.9375rem", fontWeight: isTranslated ? 700 : 500, color: isTranslated ? "#111111" : "#333333" }}>
                           {isTranslated ? LANGUAGES.find((l) => l.code === currentLang)?.label : "Language"}
                         </span>
                       </div>
@@ -452,6 +452,7 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
                             return (
                               <button
                                 key={lang.code}
+                                className="notranslate"
                                 onClick={() => {
                                   setMenuOpen(false);
                                   setMobileLangOpen(false);
@@ -651,7 +652,7 @@ function TranslateWidget() {
       >
         <GlobeIcon color={isTranslated ? "#ffffff" : "currentColor"} />
         {isTranslated && (
-          <span>{LANGUAGES.find((l) => l.code === currentLang)?.label}</span>
+          <span className="notranslate">{LANGUAGES.find((l) => l.code === currentLang)?.label}</span>
         )}
       </button>
 
@@ -681,6 +682,7 @@ function TranslateWidget() {
               return (
                 <button
                   key={lang.code}
+                  className="notranslate"
                   onClick={() => changeLanguage(lang.code)}
                   style={{
                     display: "flex",

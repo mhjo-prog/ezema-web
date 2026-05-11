@@ -4,6 +4,20 @@ import { useNavigate } from "react-router-dom";
 import { supabase, isSupabaseReady, type WellnessPost } from "../lib/supabase";
 import Footer from "../components/Footer";
 
+const HERO_TITLES: Record<string, { line1: string; line2: string }> = {
+  ko: { line1: "Selfless Wellness", line2: "이기적이지 않은 건강함" },
+  en: { line1: "Selfless Wellness", line2: "Non-selfish Health" },
+  ja: { line1: "セルフレス・ウェルネス", line2: "利己的でない健康" },
+  "zh-CN": { line1: "无私的健康", line2: "不自私的健康" },
+  th: { line1: "เซลฟ์เลส เวลเนส", line2: "สุขภาพที่ไม่เห็นแก่ตัว" },
+  vi: { line1: "Sức khỏe vị tha", line2: "Không ích kỷ vì sức khỏe" },
+};
+
+function getCurrentLang(): string {
+  const match = document.cookie.match(/googtrans=\/ko\/([^;]+)/);
+  return match ? match[1] : "ko";
+}
+
 // ── Scroll-triggered fade-up wrapper ─────────────────────────────────
 function FadeUp({
   children,
@@ -45,6 +59,11 @@ function Divider() {
 export default function HomePage() {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<Pick<WellnessPost, "id" | "card_image_url">[]>([]);
+  const [currentLang, setCurrentLang] = useState(getCurrentLang);
+
+  useEffect(() => {
+    setCurrentLang(getCurrentLang());
+  }, []);
   const pageRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -180,7 +199,11 @@ export default function HomePage() {
             marginBottom: "80px",
           }}
         >
-          Selfless Wellness<br /><span style={{ fontSize: "0.88em" }}>이기적이지 않은 건강함</span>
+          {(HERO_TITLES[currentLang] ?? HERO_TITLES.ko).line1}
+          <br />
+          <span style={{ fontSize: "0.88em" }}>
+            {(HERO_TITLES[currentLang] ?? HERO_TITLES.ko).line2}
+          </span>
         </motion.h1>
 
         <motion.div
