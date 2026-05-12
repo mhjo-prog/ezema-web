@@ -199,6 +199,9 @@ export default function HomePage() {
             marginBottom: "80px",
           }}
         >
+          <span style={{ position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0,0,0,0)", whiteSpace: "nowrap", border: 0 }}>
+            사상체질 자가진단 · 사상체질 테스트
+          </span>
           {(HERO_TITLES[currentLang] ?? HERO_TITLES.ko).line1}
           <br />
           <span style={{ fontSize: "0.88em" }}>
