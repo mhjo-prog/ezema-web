@@ -1,3 +1,10 @@
+export const CONSTITUTION_COLORS: Record<string, string> = {
+  태양인: "#E8460A",
+  소양인: "#0774C4",
+  태음인: "#1E8A4C",
+  소음인: "#6B3FA0",
+};
+
 export interface ConstitutionResult {
   type: string;
   subtitle: string;

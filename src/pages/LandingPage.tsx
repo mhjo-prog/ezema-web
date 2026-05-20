@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { supabase, isSupabaseReady } from "../lib/supabase";
 import Footer from "../components/Footer";
+import { CONSTITUTION_COLORS } from "../data/results";
 
 interface Props {
   onStart: () => void;
@@ -20,28 +21,28 @@ const constitutions = [
     hanja: "太陽人",
     keyword: "창의 · 진취",
     desc: "폐(肺)가 강하고 간(肝)이 약합니다.\n독창적이고 사회적 영향력을 중시합니다.",
-    color: "#E8460A",
+    color: CONSTITUTION_COLORS["태양인"],
   },
   {
     name: "소양인",
     hanja: "少陽人",
     keyword: "활동 · 외향",
     desc: "비(脾)가 강하고 신(腎)이 약합니다.\n활발하고 추진력이 넘칩니다.",
-    color: "#0774C4",
+    color: CONSTITUTION_COLORS["소양인"],
   },
   {
     name: "태음인",
     hanja: "太陰人",
     keyword: "신중 · 끈기",
     desc: "간(肝)이 강하고 폐(肺)가 약합니다.\n묵직하고 목표 지향적입니다.",
-    color: "#1E8A4C",
+    color: CONSTITUTION_COLORS["태음인"],
   },
   {
     name: "소음인",
     hanja: "少陰人",
     keyword: "섬세 · 배려",
     desc: "신(腎)이 강하고 비(脾)가 약합니다.\n치밀하고 내면이 풍부합니다.",
-    color: "#6B3FA0",
+    color: CONSTITUTION_COLORS["소음인"],
   },
 ];
 

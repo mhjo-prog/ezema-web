@@ -3,6 +3,7 @@ import { motion, useInView } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { supabase, isSupabaseReady, type WellnessPost } from "../lib/supabase";
 import Footer from "../components/Footer";
+import { CONSTITUTION_COLORS } from "../data/results";
 
 const HERO_TITLES: Record<string, { line1: string; line2: string }> = {
   ko: { line1: "Selfless Wellness", line2: "이기적이지 않은 건강함" },
@@ -367,10 +368,9 @@ export default function HomePage() {
       >
         <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
           <div
+            className="preview-grid"
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-              gap: "clamp(32px, 5vw, 64px)",
               alignItems: "center",
             }}
           >
@@ -503,6 +503,101 @@ export default function HomePage() {
                       </span>
                     ))}
                   </div>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Mind & Body 카드 */}
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.25, ease: "easeOut" }}
+                style={{
+                  width: "100%",
+                  maxWidth: "300px",
+                  background: "#ffffff",
+                  borderRadius: "20px",
+                  padding: "24px 22px",
+                  boxShadow: "0 8px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)",
+                  transform: "rotate(-2deg)",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "10px",
+                }}
+              >
+                {/* 배지 */}
+                <div>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#111111", color: "#ffffff", fontWeight: 700, fontSize: "0.875rem", padding: "6px 14px", borderRadius: "50px" }}>
+                    성정과 심리
+                    <span style={{ fontWeight: 400, fontSize: "0.7rem", opacity: 0.85 }}>Personality &amp; Traits</span>
+                  </span>
+                </div>
+
+                {/* 섹션 키워드 버튼 */}
+                <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
+                  {["MIND", "BODY"].map((kw) => (
+                    <span key={kw} style={{ fontSize: "11px", fontWeight: 600, color: "#111111", background: "none", border: "1px solid #666", padding: "3px 9px", borderRadius: "50px" }}>
+                      {kw}
+                    </span>
+                  ))}
+                </div>
+
+                {/* 6축 레이더 차트 */}
+                <div style={{ display: "flex", justifyContent: "center" }}>
+                  <svg width="130" height="130" viewBox="-18 -16 136 136">
+                    {/* 그리드 헥사곤 */}
+                    <polygon points="50,6 88.1,28 88.1,72 50,94 11.9,72 11.9,28" fill="none" stroke="#eeeeee" strokeWidth="1.2" />
+                    <polygon points="50,21 75.1,35.5 75.1,64.5 50,79 24.9,64.5 24.9,35.5" fill="none" stroke="#eeeeee" strokeWidth="1.2" />
+                    <polygon points="50,35.5 62.6,42.7 62.6,57.3 50,64.5 37.4,57.3 37.4,42.7" fill="none" stroke="#eeeeee" strokeWidth="1.2" />
+                    {/* 축 라인 */}
+                    <line x1="50" y1="50" x2="50" y2="6" stroke="#e8e8e8" strokeWidth="1" />
+                    <line x1="50" y1="50" x2="88.1" y2="28" stroke="#e8e8e8" strokeWidth="1" />
+                    <line x1="50" y1="50" x2="88.1" y2="72" stroke="#e8e8e8" strokeWidth="1" />
+                    <line x1="50" y1="50" x2="50" y2="94" stroke="#e8e8e8" strokeWidth="1" />
+                    <line x1="50" y1="50" x2="11.9" y2="72" stroke="#e8e8e8" strokeWidth="1" />
+                    <line x1="50" y1="50" x2="11.9" y2="28" stroke="#e8e8e8" strokeWidth="1" />
+                    {/* 데이터 폴리곤 */}
+                    <polygon
+                      points="50,32.4 69.1,39 67.1,59.9 50,87.4 29.1,62.1 31,39"
+                      fill="rgba(0,0,0,0.08)"
+                      stroke="#111111"
+                      strokeWidth="1.8"
+                      strokeLinejoin="round"
+                    />
+                    <circle cx="50" cy="32.4" r="2.5" fill="#111111" />
+                    <circle cx="69.1" cy="39" r="2.5" fill="#111111" />
+                    <circle cx="67.1" cy="59.9" r="2.5" fill="#111111" />
+                    <circle cx="50" cy="87.4" r="2.5" fill="#111111" />
+                    <circle cx="29.1" cy="62.1" r="2.5" fill="#111111" />
+                    <circle cx="31" cy="39" r="2.5" fill="#111111" />
+                    {/* 축 라벨 */}
+                    <text x="50" y="-6" textAnchor="middle" fontSize="7.5" fontWeight="600" fill="#bbbbbb">외향성</text>
+                    <text x="98.5" y="22" textAnchor="start" fontSize="7.5" fontWeight="600" fill="#bbbbbb">추진력</text>
+                    <text x="98.5" y="78" textAnchor="start" fontSize="7.5" fontWeight="600" fill="#bbbbbb">창의성</text>
+                    <text x="50" y="106" textAnchor="middle" fontSize="7.5" fontWeight="600" fill="#bbbbbb">인내심</text>
+                    <text x="1.5" y="78" textAnchor="end" fontSize="7.5" fontWeight="600" fill="#bbbbbb">분석력</text>
+                    <text x="1.5" y="22" textAnchor="end" fontSize="7.5" fontWeight="600" fill="#bbbbbb">감수성</text>
+                  </svg>
+                </div>
+
+                {/* 체질 설명 */}
+                <p style={{ fontSize: "0.75rem", color: "#555555", lineHeight: 1.6, margin: 0, textAlign: "center" }}>
+                  인내심이 강하고 꾸준하나,<br />변화를 싫어하고 욕심이 많을 수 있음.
+                </p>
+
+                {/* 주의사항 박스 */}
+                <div style={{
+                  background: "#f5f5f5",
+                  border: "1px solid #e0e0e0",
+                  borderRadius: "10px",
+                  padding: "10px 14px",
+                  textAlign: "center",
+                }}>
+                  <p style={{ fontSize: "0.75rem", color: "#555555", fontWeight: 600, margin: 0, lineHeight: 1.5, whiteSpace: "nowrap" }}>
+                    ▲ 쾌락과 탐욕을 조절해야 함
+                  </p>
                 </div>
               </motion.div>
             </div>
@@ -644,6 +739,10 @@ export default function HomePage() {
       <Footer />
 
       <style>{`
+        .preview-grid { grid-template-columns: 1fr; gap: 32px; }
+        @media (min-width: 1024px) {
+          .preview-grid { grid-template-columns: 1fr 300px 300px; gap: 32px; }
+        }
         @media (max-width: 480px) {
           .hero-inner { padding-top: 80px !important; padding-bottom: 28px !important; }
           .hero-title { margin-bottom: 52px !important; font-size: 1.5rem !important; }

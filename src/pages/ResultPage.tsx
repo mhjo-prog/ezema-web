@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, createContext, useContext } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { results } from "../data/results";
+import { results, CONSTITUTION_COLORS } from "../data/results";
 import { supabase, isSupabaseReady } from "../lib/supabase";
 
 declare global {
@@ -18,6 +18,15 @@ declare global {
 
 const KAKAO_APP_KEY = "fbf533c6007cf5212883947fe851e02d";
 
+const ThemeContext = createContext("#0774C4");
+
+function hexToRgba(hex: string, alpha: number): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
 interface Props {
   constitutionType: string;
   scores: Record<string, number>;
@@ -27,12 +36,13 @@ interface Props {
 }
 
 function SectionLabel({ children }: { children: string }) {
+  const color = useContext(ThemeContext);
   return (
     <div className="flex items-center gap-3 mb-0">
       <div className="h-px flex-1" style={{ background: "#eeeeee" }} />
       <span
         className="font-semibold uppercase flex-shrink-0"
-        style={{ fontSize: "10px", letterSpacing: "0.28em", color: "#0774C4" }}
+        style={{ fontSize: "10px", letterSpacing: "0.28em", color }}
       >
         {children}
       </span>
@@ -43,6 +53,7 @@ function SectionLabel({ children }: { children: string }) {
 
 
 function ScoreGauge({ scores }: { scores: Record<string, number> }) {
+  const color = useContext(ThemeContext);
   const total = Object.values(scores).reduce((a, b) => a + b, 0);
   const pct = (type: string) => (total > 0 ? ((scores[type] || 0) / total) * 100 : 0);
 
@@ -113,15 +124,15 @@ function ScoreGauge({ scores }: { scores: Record<string, number> }) {
         >
           <polygon
             points={polygon}
-            fill="rgba(7,116,196,0.10)"
-            stroke="#0774C4"
+            fill={hexToRgba(color, 0.10)}
+            stroke={color}
             strokeWidth="2"
             strokeLinejoin="round"
           />
-          <circle cx={cx}      cy={topY}    r="4" fill="#0774C4" />
-          <circle cx={rightX}  cy={cy}      r="4" fill="#0774C4" />
-          <circle cx={cx}      cy={bottomY} r="4" fill="#0774C4" />
-          <circle cx={leftX}   cy={cy}      r="4" fill="#0774C4" />
+          <circle cx={cx}      cy={topY}    r="4" fill={color} />
+          <circle cx={rightX}  cy={cy}      r="4" fill={color} />
+          <circle cx={cx}      cy={bottomY} r="4" fill={color} />
+          <circle cx={leftX}   cy={cy}      r="4" fill={color} />
         </motion.g>
 
         {/* 축 라벨 */}
@@ -131,19 +142,19 @@ function ScoreGauge({ scores }: { scores: Record<string, number> }) {
         <text x={cx - r - 16} y={cy + 5}   textAnchor="end"    fontSize="12" fontWeight="700" fill="#555">음</text>
 
         {/* 퍼센트 값 라벨 */}
-        <motion.text x={cx} y={topY - 9} textAnchor="middle" fontSize="10" fontWeight="600" fill="#0774C4"
+        <motion.text x={cx} y={topY - 9} textAnchor="middle" fontSize="10" fontWeight="600" fill={color}
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.3, duration: 0.3 }}>
           {Math.round(태)}%
         </motion.text>
-        <motion.text x={rightX + 7} y={cy - 6} textAnchor="start" fontSize="10" fontWeight="600" fill="#0774C4"
+        <motion.text x={rightX + 7} y={cy - 6} textAnchor="start" fontSize="10" fontWeight="600" fill={color}
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.3, duration: 0.3 }}>
           {Math.round(양)}%
         </motion.text>
-        <motion.text x={cx} y={bottomY + 17} textAnchor="middle" fontSize="10" fontWeight="600" fill="#0774C4"
+        <motion.text x={cx} y={bottomY + 17} textAnchor="middle" fontSize="10" fontWeight="600" fill={color}
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.3, duration: 0.3 }}>
           {Math.round(소)}%
         </motion.text>
-        <motion.text x={leftX - 7} y={cy - 6} textAnchor="end" fontSize="10" fontWeight="600" fill="#0774C4"
+        <motion.text x={leftX - 7} y={cy - 6} textAnchor="end" fontSize="10" fontWeight="600" fill={color}
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.3, duration: 0.3 }}>
           {Math.round(음)}%
         </motion.text>
@@ -152,12 +163,7 @@ function ScoreGauge({ scores }: { scores: Record<string, number> }) {
   );
 }
 
-const constitutionColors: Record<string, string> = {
-  태양인: "#9333ea",
-  소양인: "#0ea5e9",
-  태음인: "#22c55e",
-  소음인: "#f97316",
-};
+const constitutionColors = CONSTITUTION_COLORS;
 
 function BarGauge({ scores }: { scores: Record<string, number> }) {
   const total = Object.values(scores).reduce((a, b) => a + b, 0);
@@ -414,11 +420,307 @@ function OrganIllustration({ constitutionType }: { constitutionType: string }) {
   );
 }
 
+const personalityData: Record<string, {
+  values: number[];
+  emoji: string;
+  subtitle: string;
+  desc: string;
+  emotion: string;
+}> = {
+  소음인: { values: [20, 25, 30, 60, 80, 70], emoji: "👾", subtitle: "The Analyst", desc: "세심하고 논리적이며 침착하나, 소심하고 질투가 많을 수 있음.", emotion: "불안한 마음을 다스려야 함." },
+  태음인: { values: [40, 50, 45, 85, 55, 50], emoji: "🌳", subtitle: "The Preserver", desc: "인내심이 강하고 꾸준하나, 변화를 싫어하고 욕심이 많을 수 있음.", emotion: "쾌락과 탐욕을 조절해야 함." },
+  소양인: { values: [85, 80, 70, 30, 40, 60], emoji: "🌀", subtitle: "The Activist", desc: "솔직하고 열정적이며 빠르지만, 마무리가 약하고 경솔할 수 있음.", emotion: "슬픔에 빠지는 것을 경계해야 함." },
+  태양인: { values: [75, 70, 90, 40, 50, 55], emoji: "🌞", subtitle: "The Leader", desc: "창의적이고 과단성이 있으나, 독선적이거나 현실 감각이 부족할 수 있음.", emotion: "분노를 조심해야 함." },
+};
+
+const AXIS_LABELS = ["외향성", "추진력", "창의성", "인내심", "분석력", "감수성"];
+
+function PersonalitySection({ constitutionType }: { constitutionType: string }) {
+  const data = personalityData[constitutionType];
+  const color = constitutionColors[constitutionType] ?? "#0774C4";
+  if (!data) return null;
+
+  const SIZE = 190;
+  const cx = SIZE / 2;
+  const cy = SIZE / 2;
+  const r = 62;
+  const numAxes = 6;
+  const gridLevels = [0.25, 0.5, 0.75, 1.0];
+
+  const axisPoint = (i: number, value: number) => {
+    const angle = (-90 + (360 / numAxes) * i) * (Math.PI / 180);
+    return {
+      x: cx + (value / 100) * r * Math.cos(angle),
+      y: cy + (value / 100) * r * Math.sin(angle),
+    };
+  };
+
+  const dataPoints = data.values.map((v, i) => axisPoint(i, v));
+  const dataPolygon = dataPoints.map(p => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(" ");
+
+  const gridPolygon = (level: number) =>
+    Array.from({ length: numAxes }, (_, i) => axisPoint(i, level * 100))
+      .map(p => `${p.x.toFixed(2)},${p.y.toFixed(2)}`)
+      .join(" ");
+
+  const axisEnds = Array.from({ length: numAxes }, (_, i) => axisPoint(i, 100));
+
+  const labelPoint = (i: number) => {
+    const angle = (-90 + (360 / numAxes) * i) * (Math.PI / 180);
+    const dist = r + 20;
+    return { x: cx + dist * Math.cos(angle), y: cy + dist * Math.sin(angle) };
+  };
+
+  return (
+    <motion.div
+      style={{
+        background: "#ffffff",
+        border: "1px solid #eeeeee",
+        borderRadius: "16px",
+        padding: "1.5rem 2rem",
+        marginBottom: "0.75rem",
+        boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
+      }}
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.68, duration: 0.5 }}
+    >
+      <SectionLabel>Mind & Body</SectionLabel>
+
+      <div style={{ marginTop: "12px", marginBottom: "16px", textAlign: "center" }}>
+        <p className="font-extrabold" style={{ fontSize: "1.05rem", color: "#111", letterSpacing: "-0.02em" }}>
+          성정과 심리{" "}
+          <span style={{ fontWeight: 400, color: "#aaa", fontSize: "0.85rem" }}>(Personality & Traits)</span>
+        </p>
+        <p style={{ fontSize: "0.78rem", color: "#bbb", marginTop: "4px" }}>
+          사상의학은 신체뿐만 아니라 마음도 중요하게 다룹니다.
+        </p>
+      </div>
+
+      <div className="flex flex-col gap-4 min-[480px]:flex-row min-[480px]:items-center min-[480px]:gap-3">
+        {/* Radar Chart */}
+        <div className="flex justify-center min-[480px]:flex-shrink-0 min-[480px]:block">
+          <svg
+            width={SIZE}
+            height={SIZE}
+            viewBox={`0 0 ${SIZE} ${SIZE}`}
+            style={{ display: "block", overflow: "visible" }}
+          >
+            {gridLevels.map((level) => (
+              <polygon key={level} points={gridPolygon(level)} fill="none" stroke="#eeeeee" strokeWidth="1" />
+            ))}
+            {axisEnds.map((end, i) => (
+              <line key={i} x1={cx} y1={cy} x2={end.x} y2={end.y} stroke="#e8e8e8" strokeWidth="1" />
+            ))}
+            <motion.g
+              style={{ transformOrigin: `${cx}px ${cy}px` }}
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.72, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <polygon
+                points={dataPolygon}
+                fill={`${color}22`}
+                stroke={color}
+                strokeWidth="2"
+                strokeLinejoin="round"
+              />
+              {dataPoints.map((p, i) => (
+                <circle key={i} cx={p.x} cy={p.y} r="3.5" fill={color} />
+              ))}
+            </motion.g>
+            {AXIS_LABELS.map((label, i) => {
+              const lp = labelPoint(i);
+              return (
+                <text
+                  key={i}
+                  x={lp.x}
+                  y={lp.y}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fontSize="7.5"
+                  fontWeight="600"
+                  fill="#666"
+                >
+                  {label}
+                </text>
+              );
+            })}
+          </svg>
+        </div>
+
+        {/* Description Card */}
+        <div
+          style={{
+            flex: 1,
+            width: "100%",
+            background: `${color}0d`,
+            border: `1px solid ${color}33`,
+            borderRadius: "12px",
+            padding: "16px 18px",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "10px" }}>
+            <span style={{ fontSize: "1.5rem", lineHeight: 1 }}>{data.emoji}</span>
+            <div>
+              <p className="font-extrabold" style={{ fontSize: "0.95rem", color: "#111", lineHeight: 1.2 }}>
+                {constitutionType}
+              </p>
+              <p style={{ fontSize: "0.75rem", color: color, fontWeight: 700 }}>{data.subtitle}</p>
+            </div>
+          </div>
+          <p style={{ fontSize: "0.85rem", color: "#555", lineHeight: 1.75, marginBottom: "10px" }}>
+            {data.desc}
+          </p>
+          <div style={{ background: `${color}1a`, borderRadius: "8px", padding: "8px 12px" }}>
+            <p style={{ fontSize: "0.8rem", color: color, fontWeight: 700, lineHeight: 1.5, textAlign: "center" }}>
+              ⚠ {data.emotion}
+            </p>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+const organEnergyData: Record<string, { values: number[]; desc: string }> = {
+  태양인: { values: [90, 30, 60, 60], desc: "폐의 기운이 강해 진취적이나, 간의 기능이 약해 상체가 발달하고 하체가 약함." },
+  태음인: { values: [30, 90, 60, 60], desc: "간의 저장 기능이 좋아 체격이 크고 지구력이 좋으나, 폐와 호흡기가 약할 수 있음." },
+  소양인: { values: [60, 60, 90, 30], desc: "비위(소화기)가 강해 잘 먹으나, 신장(배설/생식) 기능이 약해 허리가 약할 수 있음." },
+  소음인: { values: [60, 60, 30, 90], desc: "신장 기능이 좋아 꼼꼼하나, 비위가 차고 약해 소화 장애가 잦음." },
+};
+
+const ORGAN_LABELS = [
+  { ko: "폐", en: "Lungs" },
+  { ko: "간", en: "Liver" },
+  { ko: "비", en: "Spleen" },
+  { ko: "신", en: "Kidneys" },
+];
+
+function OrganBarChart({ constitutionType, hanja, meaning }: { constitutionType: string; hanja?: string; meaning?: string }) {
+  const color = useContext(ThemeContext);
+  const data = organEnergyData[constitutionType];
+  if (!data) return null;
+
+  const MAX_H = 110;
+  const [animated, setAnimated] = useState(false);
+
+  useEffect(() => {
+    const id = setTimeout(() => setAnimated(true), 500);
+    return () => clearTimeout(id);
+  }, []);
+
+  return (
+    <motion.div
+      style={{
+        background: "#ffffff",
+        border: "1px solid #eeeeee",
+        borderRadius: "16px",
+        padding: "1.5rem 2rem",
+        marginBottom: "0.75rem",
+        boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
+      }}
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.6, duration: 0.5 }}
+    >
+      <SectionLabel>Organ Energy</SectionLabel>
+
+      {/* 한자 이름 + 부제 */}
+      <div style={{ marginTop: "20px", marginBottom: "6px", textAlign: "center" }}>
+        <p className="font-extrabold" style={{ fontSize: "clamp(1.1rem, 4vw, 1.5rem)", color: "#111111", letterSpacing: "-0.02em", lineHeight: 1.2 }}>
+          {hanja}
+        </p>
+        <p className="text-sm text-gray-400 mt-2">{meaning}</p>
+      </div>
+
+      {/* 장부론 부제 */}
+      <div style={{ marginTop: "16px", marginBottom: "20px" }}>
+        <p style={{ fontSize: "0.78rem", color: "#bbb", textAlign: "center" }}>
+          장부론: 각 체질은 특정 장기가 크고(강하고), 다른 장기가 작게(약하게) 태어납니다.
+        </p>
+      </div>
+
+      {/* Bar Chart */}
+      <div style={{ display: "flex", gap: "8px" }}>
+        {ORGAN_LABELS.map((organ, i) => {
+          const val = data.values[i];
+          const barH = animated ? Math.round((val / 100) * MAX_H) : 0;
+          const isStrong = val >= 80;
+          return (
+            <div key={organ.ko} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
+              {/* Bar area */}
+              <div
+                style={{
+                  height: `${MAX_H + 20}px`,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "flex-end",
+                  alignItems: "center",
+                  width: "100%",
+                  position: "relative",
+                }}
+              >
+                {/* Animated value label */}
+                <span
+                  style={{
+                    position: "absolute",
+                    bottom: `${barH + 5}px`,
+                    fontSize: "0.72rem",
+                    fontWeight: 700,
+                    color: isStrong ? color : "#bbb",
+                    transition: `bottom 0.9s cubic-bezier(0.16,1,0.3,1) ${i * 0.1}s`,
+                  }}
+                >
+                  {val}
+                </span>
+                {/* Bar */}
+                <div
+                  style={{
+                    width: "100%",
+                    maxWidth: "52px",
+                    height: `${barH}px`,
+                    background: isStrong ? color : hexToRgba(color, 0.28),
+                    borderRadius: "5px 5px 0 0",
+                    transition: `height 0.9s cubic-bezier(0.16,1,0.3,1) ${i * 0.1}s`,
+                  }}
+                />
+              </div>
+              {/* Baseline */}
+              <div style={{ width: "100%", height: "1px", background: "#e8e8e8" }} />
+              {/* X-axis label */}
+              <div style={{ marginTop: "8px", textAlign: "center" }}>
+                <p style={{ fontSize: "0.82rem", fontWeight: 700, color: "#333" }}>{organ.ko}</p>
+                <p style={{ fontSize: "0.62rem", color: "#aaa", marginTop: "1px" }}>{organ.en}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Description */}
+      <div
+        style={{
+          background: hexToRgba(color, 0.07),
+          border: `1px solid ${hexToRgba(color, 0.2)}`,
+          borderRadius: "10px",
+          padding: "12px 14px",
+          marginTop: "16px",
+        }}
+      >
+        <p style={{ fontSize: "0.82rem", color: "#444", lineHeight: 1.75, textAlign: "center" }}>
+          {data.desc}
+        </p>
+      </div>
+    </motion.div>
+  );
+}
+
 const constitutionInfo: Record<string, { hanja: string; meaning: string }> = {
-  태양인: { hanja: "폐대이간소(肺大而肝小)", meaning: "폐가 크고, 간이 작음" },
-  소양인: { hanja: "비대이신소(脾大而腎小)", meaning: "췌장이 크고, 신장이 작음" },
-  태음인: { hanja: "간대이폐소(肝大而肺小)", meaning: "간이 크고, 폐가 작음" },
-  소음인: { hanja: "신대이비소(腎大而脾小)", meaning: "신장이 크고, 췌장이 작음" },
+  태양인: { hanja: "폐대간소(肺大肝小)", meaning: "폐가 크고, 간이 작음" },
+  소양인: { hanja: "비대신소(脾大腎小)", meaning: "췌장이 크고, 신장이 작음" },
+  태음인: { hanja: "간대폐소(肝大肺小)", meaning: "간이 크고, 폐가 작음" },
+  소음인: { hanja: "신대비소(腎大脾小)", meaning: "신장이 크고, 췌장이 작음" },
 };
 
 function Toast({ visible }: { visible: boolean }) {
@@ -584,6 +886,7 @@ function ShareModal({ constitutionType, scores, onClose }: { constitutionType: s
 function Buttons({ onRetry, constitutionType, scores, isShared = false, isHistory = false }: { onRetry: () => void; constitutionType: string; scores: Record<string, number>; isShared?: boolean; isHistory?: boolean }) {
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
+  const color = useContext(ThemeContext);
 
   if (isHistory) {
     return (
@@ -601,13 +904,12 @@ function Buttons({ onRetry, constitutionType, scores, isShared = false, isHistor
               flex: 1,
               padding: "17px",
               borderRadius: "50px",
-              background: "#0774C4",
-              border: "1.5px solid #0774C4",
+              background: color,
+              border: `1.5px solid ${color}`,
               color: "#ffffff",
               fontSize: "0.95rem",
               cursor: "pointer",
             }}
-            whileHover={{ background: "#0560a8", borderColor: "#0560a8" }}
             whileTap={{ scale: 0.99 }}
           >
             관련 아티클 보기
@@ -626,7 +928,7 @@ function Buttons({ onRetry, constitutionType, scores, isShared = false, isHistor
               fontSize: "0.95rem",
               cursor: "pointer",
             }}
-            whileHover={{ borderColor: "#0774C4", color: "#0774C4" }}
+            whileHover={{ borderColor: color, color }}
             whileTap={{ scale: 0.99 }}
           >
             다시 진단하기
@@ -656,13 +958,12 @@ function Buttons({ onRetry, constitutionType, scores, isShared = false, isHistor
               width: "100%",
               padding: "17px",
               borderRadius: "50px",
-              background: "#0774C4",
-              border: "1.5px solid #0774C4",
+              background: color,
+              border: `1.5px solid ${color}`,
               color: "#ffffff",
               fontSize: "0.95rem",
               cursor: "pointer",
             }}
-            whileHover={{ background: "#0560a8", borderColor: "#0560a8" }}
             whileTap={{ scale: 0.99 }}
           >
             내 체질도 알아보기
@@ -698,7 +999,7 @@ function Buttons({ onRetry, constitutionType, scores, isShared = false, isHistor
             fontSize: "0.95rem",
             cursor: "pointer",
           }}
-          whileHover={{ borderColor: "#0774C4", color: "#0774C4" }}
+          whileHover={{ borderColor: color, color }}
           whileTap={{ scale: 0.99 }}
         >
           다시 테스트하기
@@ -711,13 +1012,12 @@ function Buttons({ onRetry, constitutionType, scores, isShared = false, isHistor
             flex: 1,
             padding: "17px",
             borderRadius: "50px",
-            background: "#0774C4",
-            border: "1.5px solid #0774C4",
+            background: color,
+            border: `1.5px solid ${color}`,
             color: "#ffffff",
             fontSize: "0.95rem",
             cursor: "pointer",
           }}
-          whileHover={{ background: "#0560a8", borderColor: "#0560a8" }}
           whileTap={{ scale: 0.99 }}
         >
           친구에게 공유하기
@@ -781,6 +1081,8 @@ function CoupangBanner({ constitutionType }: { constitutionType: string }) {
 export default function ResultPage({ constitutionType, scores, onRetry, isShared = false, isHistory = false }: Props) {
   const result = results[constitutionType];
   const constitution = constitutionInfo[constitutionType];
+  const themeColor = CONSTITUTION_COLORS[constitutionType] ?? "#0774C4";
+
   useEffect(() => {
     if (isSupabaseReady && constitutionType && !isShared && !isHistory) {
       supabase.from("analytics").insert({ event_type: "quiz_complete", constitution_type: constitutionType })
@@ -797,6 +1099,7 @@ export default function ResultPage({ constitutionType, scores, onRetry, isShared
   const result2 = results[secondType];
 
   return (
+    <ThemeContext.Provider value={themeColor}>
     <motion.div
       style={{ paddingTop: "56px", background: "#f8f8f8" }}
       initial={{ opacity: 0 }}
@@ -805,7 +1108,7 @@ export default function ResultPage({ constitutionType, scores, onRetry, isShared
       transition={{ duration: 0.5 }}
     >
       {/* Top accent bar */}
-      <div style={{ height: "3px", background: "linear-gradient(90deg, #0774C4, #8EBEF9)" }} />
+      <div style={{ height: "3px", background: `linear-gradient(90deg, ${themeColor}, ${themeColor}99)` }} />
 
       {/* ── Hero ── */}
       <div style={{ background: "#ffffff", borderBottom: "1px solid #eeeeee" }}>
@@ -825,14 +1128,14 @@ export default function ResultPage({ constitutionType, scores, onRetry, isShared
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.5 }}
         >
-          <div className="h-px w-8" style={{ background: "#0774C4" }} />
+          <div className="h-px w-8" style={{ background: themeColor }} />
           <span
             className="font-semibold uppercase"
-            style={{ fontSize: "10px", letterSpacing: "0.28em", color: "#0774C4" }}
+            style={{ fontSize: "10px", letterSpacing: "0.28em", color: themeColor }}
           >
             Your Result
           </span>
-          <div className="h-px w-8" style={{ background: "#0774C4" }} />
+          <div className="h-px w-8" style={{ background: themeColor }} />
         </motion.div>
 
         {/* Constitution type */}
@@ -853,12 +1156,12 @@ export default function ResultPage({ constitutionType, scores, onRetry, isShared
           {result.type}
         </motion.h1>
 
-        {/* Blue accent under title */}
+        {/* Accent under title */}
         <motion.div
           style={{
             width: "48px",
             height: "3px",
-            background: "#0774C4",
+            background: themeColor,
             borderRadius: "2px",
             marginBottom: "0.75rem",
           }}
@@ -915,31 +1218,11 @@ export default function ResultPage({ constitutionType, scores, onRetry, isShared
           </>
         )}
 
-        {/* CONSTITUTION */}
-        <motion.div
-          className="rounded-2xl text-center"
-          style={{
-            background: "#ffffff",
-            border: "1px solid #eeeeee",
-            padding: "2rem",
-            marginBottom: "0.75rem",
-            boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
-          }}
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6, duration: 0.5 }}
-        >
-          <SectionLabel>Constitution</SectionLabel>
-          <div className="mt-6" style={{ marginTop: "24px" }}>
-            <p
-              className="font-extrabold"
-              style={{ fontSize: "clamp(1.1rem, 4vw, 1.5rem)", color: "#111111", letterSpacing: "-0.02em", lineHeight: 1.2 }}
-            >
-              {constitution?.hanja}
-            </p>
-            <p className="text-sm text-gray-400 mt-2">{constitution?.meaning}</p>
-          </div>
-        </motion.div>
+        {/* PERSONALITY & TRAITS */}
+        <PersonalitySection constitutionType={constitutionType} />
+
+        {/* CONSTITUTION + ORGAN BAR CHART */}
+        <OrganBarChart constitutionType={constitutionType} hanja={constitution?.hanja} meaning={constitution?.meaning} />
 
         {/* ORGAN ILLUSTRATION */}
         <OrganIllustration constitutionType={constitutionType} />
@@ -961,7 +1244,7 @@ export default function ResultPage({ constitutionType, scores, onRetry, isShared
           <SectionLabel>Recommended Drinks</SectionLabel>
 
           {/* 1위 체질 추천 */}
-          <p style={{ fontSize: "0.8rem", fontWeight: 700, color: "#0774C4", marginTop: "20px", marginBottom: "10px", letterSpacing: "0.04em" }}>
+          <p style={{ fontSize: "0.8rem", fontWeight: 700, color: themeColor, marginTop: "20px", marginBottom: "10px", letterSpacing: "0.04em" }}>
             1위 체질 추천 · {result.type}
           </p>
           <div className="flex flex-col gap-3">
@@ -1035,9 +1318,9 @@ export default function ResultPage({ constitutionType, scores, onRetry, isShared
                   fontSize: "0.875rem",
                   padding: "5px 14px",
                   borderRadius: "50px",
-                  background: "#f0f7ff",
-                  color: "#0774C4",
-                  border: "1px solid #c8e0f8",
+                  background: hexToRgba(themeColor, 0.07),
+                  color: themeColor,
+                  border: `1px solid ${hexToRgba(themeColor, 0.25)}`,
                 }}
               >
                 {trait}
@@ -1076,7 +1359,7 @@ export default function ResultPage({ constitutionType, scores, onRetry, isShared
                   style={{
                     fontSize: "1.5rem",
                     lineHeight: 1,
-                    color: "#ddeeff",
+                    color: hexToRgba(themeColor, 0.22),
                     letterSpacing: "-0.04em",
                     paddingTop: "1px",
                     minWidth: "32px",
@@ -1109,5 +1392,6 @@ export default function ResultPage({ constitutionType, scores, onRetry, isShared
         </p>
       </div>
     </motion.div>
+    </ThemeContext.Provider>
   );
 }
