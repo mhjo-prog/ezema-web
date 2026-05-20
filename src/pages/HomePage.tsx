@@ -3,7 +3,6 @@ import { motion, useInView } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { supabase, isSupabaseReady, type WellnessPost } from "../lib/supabase";
 import Footer from "../components/Footer";
-import { CONSTITUTION_COLORS } from "../data/results";
 
 const HERO_TITLES: Record<string, { line1: string; line2: string }> = {
   ko: { line1: "Selfless Wellness", line2: "이기적이지 않은 건강함" },
