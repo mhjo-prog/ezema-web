@@ -598,8 +598,7 @@ export default function AdminPage() {
 
   // 공통
   const [toast, setToast] = useState<string | null>(null);
-  const [stats, setStats] = useState<{ visits: number; quizCompletes: number } | null>(null);
-  const [chartData, setChartData] = useState<{ date: string; visits: number; quizCompletes: number }[]>([]);
+const [chartData, setChartData] = useState<{ date: string; visits: number; quizCompletes: number }[]>([]);
   const [chartRange, setChartRange] = useState<"7d" | "30d" | "monthly" | "all">("7d");
   const [statsRefreshing, setStatsRefreshing] = useState(false);
   const [customersTab, setCustomersTab] = useState<"visits" | "members">("visits");
@@ -914,20 +913,7 @@ export default function AdminPage() {
   }
 
   // ── Analytics ────────────────────────────────────────────────────
-  async function fetchStats() {
-    if (!isSupabaseReady) return;
-    const { count: visits } = await supabase
-      .from("analytics")
-      .select("*", { count: "exact", head: true })
-      .eq("event_type", "page_visit");
-    const { count: quizCompletes } = await supabase
-      .from("analytics")
-      .select("*", { count: "exact", head: true })
-      .eq("event_type", "quiz_complete");
-    setStats({ visits: visits ?? 0, quizCompletes: quizCompletes ?? 0 });
-  }
-
-  async function fetchAllAnalytics(since: Date): Promise<{ event_type: string; created_at: string }[]> {
+async function fetchAllAnalytics(since: Date): Promise<{ event_type: string; created_at: string }[]> {
     const PAGE = 1000;
     const all: { event_type: string; created_at: string }[] = [];
     let from = 0;
@@ -1051,7 +1037,6 @@ export default function AdminPage() {
     if (authed) {
       fetchPosts();
       fetchWellnessPosts();
-      fetchStats();
       fetchChartData("7d");
       fetchKakaoUsers();
     }
@@ -1195,7 +1180,7 @@ export default function AdminPage() {
               onClick={async () => {
                 setPostsRefreshing(true);
                 await new Promise((r) => setTimeout(r, 200));
-                await Promise.all([fetchPosts(), fetchWellnessPosts(), fetchStats(), fetchChartData(chartRange)]);
+                await Promise.all([fetchPosts(), fetchWellnessPosts(), fetchChartData(chartRange)]);
                 setPostsRefreshing(false);
               }}
               style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#111111", border: "1px solid #111111", padding: "9px 20px", borderRadius: "50px", cursor: "pointer", background: "transparent", flexShrink: 0, letterSpacing: "0.01em" }}
@@ -1611,7 +1596,7 @@ export default function AdminPage() {
               onClick={async () => {
                 setStatsRefreshing(true);
                 await new Promise((r) => setTimeout(r, 200));
-                await Promise.all([fetchStats(), fetchChartData(chartRange), fetchKakaoUsers()]);
+                await Promise.all([fetchChartData(chartRange), fetchKakaoUsers()]);
                 setStatsRefreshing(false);
               }}
               style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#111111", border: "1px solid #111111", padding: "9px 20px", borderRadius: "50px", cursor: "pointer", background: "transparent", flexShrink: 0, letterSpacing: "0.01em" }}
