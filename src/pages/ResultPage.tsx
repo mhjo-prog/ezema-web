@@ -427,18 +427,41 @@ const personalityData: Record<string, {
   desc: string;
   emotion: string;
 }> = {
-  소음인: { values: [20, 25, 30, 60, 80, 70], emoji: "👾", subtitle: "The Analyst", desc: "세심하고 논리적이며 침착하나, 소심하고 질투가 많을 수 있음.", emotion: "불안한 마음을 다스려야 함." },
-  태음인: { values: [40, 50, 45, 85, 55, 50], emoji: "🌳", subtitle: "The Preserver", desc: "인내심이 강하고 꾸준하나, 변화를 싫어하고 욕심이 많을 수 있음.", emotion: "쾌락과 탐욕을 조절해야 함." },
-  소양인: { values: [85, 80, 70, 30, 40, 60], emoji: "🌀", subtitle: "The Activist", desc: "솔직하고 열정적이며 빠르지만, 마무리가 약하고 경솔할 수 있음.", emotion: "슬픔에 빠지는 것을 경계해야 함." },
-  태양인: { values: [75, 70, 90, 40, 50, 55], emoji: "🌞", subtitle: "The Leader", desc: "창의적이고 과단성이 있으나, 독선적이거나 현실 감각이 부족할 수 있음.", emotion: "분노를 조심해야 함." },
+  소음인: { values: [25, 15, 80, 75, 85, 25], emoji: "👾", subtitle: "The Analyst", desc: "세심하고 논리적이며 침착하나, 소심하고 질투가 많을 수 있음.", emotion: "불안한 마음을 다스려야 함." },
+  태음인: { values: [15, 40, 85, 85, 60, 20], emoji: "🌳", subtitle: "The Preserver", desc: "인내심이 강하고 꾸준하나, 변화를 싫어하고 욕심이 많을 수 있음.", emotion: "쾌락과 탐욕을 조절해야 함." },
+  소양인: { values: [85, 20, 25, 15, 80, 80], emoji: "🌀", subtitle: "The Activist", desc: "솔직하고 열정적이며 빠르지만, 마무리가 약하고 경솔할 수 있음.", emotion: "슬픔에 빠지는 것을 경계해야 함." },
+  태양인: { values: [75, 85, 20, 25, 15, 85], emoji: "🌞", subtitle: "The Leader", desc: "창의적이고 과단성이 있으나, 독선적이거나 현실 감각이 부족할 수 있음.", emotion: "분노를 조심해야 함." },
 };
 
-const AXIS_LABELS = ["외향성", "추진력", "창의성", "인내심", "분석력", "감수성"];
+const AXIS_LABELS = ["도전", "독립", "신중", "안정", "협력", "직관"];
 
-function PersonalitySection({ constitutionType }: { constitutionType: string }) {
+// 체질별 기준 수치 [도전, 독립, 신중, 안정, 협력, 직관]
+const PERSONALITY_BASE: Record<string, number[]> = {
+  태양인: [80, 80, 20, 20, 20, 80],
+  태음인: [20, 50, 80, 80, 50, 20],
+  소양인: [80, 20, 20, 20, 80, 80],
+  소음인: [20, 20, 80, 80, 80, 20],
+};
+
+function calcWeightedValues(scores: Record<string, number>): number[] {
+  const total = Object.values(scores).reduce((a, b) => a + b, 0);
+  if (total === 0) return [0, 0, 0, 0, 0, 0];
+  return Array.from({ length: 6 }, (_, i) =>
+    Math.round(
+      Object.entries(scores).reduce((sum, [type, score]) => {
+        const base = PERSONALITY_BASE[type];
+        return base ? sum + (base[i] * score) / total : sum;
+      }, 0)
+    )
+  );
+}
+
+function PersonalitySection({ constitutionType, scores }: { constitutionType: string; scores: Record<string, number> }) {
   const data = personalityData[constitutionType];
   const color = constitutionColors[constitutionType] ?? "#0774C4";
   if (!data) return null;
+
+  const weightedValues = calcWeightedValues(scores);
 
   const SIZE = 190;
   const cx = SIZE / 2;
@@ -455,7 +478,7 @@ function PersonalitySection({ constitutionType }: { constitutionType: string }) 
     };
   };
 
-  const dataPoints = data.values.map((v, i) => axisPoint(i, v));
+  const dataPoints = weightedValues.map((v, i) => axisPoint(i, v));
   const dataPolygon = dataPoints.map(p => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(" ");
 
   const gridPolygon = (level: number) =>
@@ -489,8 +512,8 @@ function PersonalitySection({ constitutionType }: { constitutionType: string }) 
 
       <div style={{ marginTop: "12px", marginBottom: "16px", textAlign: "center" }}>
         <p className="font-extrabold" style={{ fontSize: "1.05rem", color: "#111", letterSpacing: "-0.02em" }}>
-          성정과 심리{" "}
-          <span style={{ fontWeight: 400, color: "#aaa", fontSize: "0.85rem" }}>(Personality & Traits)</span>
+          본성과 심리{" "}
+          <span style={{ fontWeight: 400, color: "#aaa", fontSize: "0.85rem" }}>(Nature & Psychology)</span>
         </p>
         <p style={{ fontSize: "0.78rem", color: "#bbb", marginTop: "4px" }}>
           사상의학은 신체뿐만 아니라 마음도 중요하게 다룹니다.
@@ -672,7 +695,7 @@ function OrganBarChart({ constitutionType, hanja, meaning }: { constitutionType:
                     transition: `bottom 0.9s cubic-bezier(0.16,1,0.3,1) ${i * 0.1}s`,
                   }}
                 >
-                  {val}
+                  {val >= 80 ? "大" : val >= 50 ? "中" : "小"}
                 </span>
                 {/* Bar */}
                 <div
@@ -1219,7 +1242,7 @@ export default function ResultPage({ constitutionType, scores, onRetry, isShared
         )}
 
         {/* PERSONALITY & TRAITS */}
-        <PersonalitySection constitutionType={constitutionType} />
+        <PersonalitySection constitutionType={constitutionType} scores={scores ?? {}} />
 
         {/* CONSTITUTION + ORGAN BAR CHART */}
         <OrganBarChart constitutionType={constitutionType} hanja={constitution?.hanja} meaning={constitution?.meaning} />

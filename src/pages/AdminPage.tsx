@@ -600,7 +600,7 @@ export default function AdminPage() {
   const [toast, setToast] = useState<string | null>(null);
   const [stats, setStats] = useState<{ visits: number; quizCompletes: number } | null>(null);
   const [chartData, setChartData] = useState<{ date: string; visits: number; quizCompletes: number }[]>([]);
-  const [chartRange, setChartRange] = useState<"7d" | "30d" | "monthly">("7d");
+  const [chartRange, setChartRange] = useState<"7d" | "30d" | "monthly" | "all">("7d");
   const [statsRefreshing, setStatsRefreshing] = useState(false);
   const [customersTab, setCustomersTab] = useState<"visits" | "members">("visits");
   const [kakaoUsers, setKakaoUsers] = useState<Array<{ kakao_id: string; nickname: string | null; profile_image?: string | null; updated_at?: string }>>([]);
@@ -760,6 +760,17 @@ export default function AdminPage() {
       setPreview(null);
       const scheduledTime = new Date(scheduledAt).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" });
       showToast(`승인 완료! ${scheduledTime}에 자동 게시됩니다.`);
+
+      try {
+        const post = posts.find((p) => p.id === postId);
+        await fetch("http://localhost:8765/generate-image", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ post_id: postId, content: post?.content ?? "", type: "sasang" }),
+        });
+      } catch {
+        // 이미지 생성 요청 실패해도 승인은 정상 처리됨
+      }
     } else {
       showToast("오류가 발생했습니다.");
     }
@@ -885,6 +896,17 @@ export default function AdminPage() {
       setWellnessPreview(null);
       const scheduledTime = new Date(scheduledAt).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" });
       showToast(`승인 완료! ${scheduledTime}에 자동 게시됩니다.`);
+
+      try {
+        const post = wellnessPosts.find((p) => p.id === postId);
+        await fetch("http://localhost:8765/generate-image", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ post_id: postId, content: post?.content ?? "", type: "wellness" }),
+        });
+      } catch {
+        // 이미지 생성 요청 실패해도 승인은 정상 처리됨
+      }
     } else {
       showToast("오류가 발생했습니다.");
     }
@@ -924,8 +946,38 @@ export default function AdminPage() {
     return all;
   }
 
-  async function fetchChartData(range: "7d" | "30d" | "monthly") {
+  async function fetchChartData(range: "7d" | "30d" | "monthly" | "all") {
     if (!isSupabaseReady) return;
+    if (range === "all") {
+      const PAGE = 1000;
+      const all: { event_type: string; created_at: string }[] = [];
+      let from = 0;
+      while (true) {
+        const { data } = await supabase
+          .from("analytics")
+          .select("event_type, created_at")
+          .order("created_at", { ascending: true })
+          .range(from, from + PAGE - 1);
+        if (!data || data.length === 0) break;
+        all.push(...data);
+        if (data.length < PAGE) break;
+        from += PAGE;
+      }
+      const buckets: Record<string, { visits: number; quizCompletes: number }> = {};
+      all.forEach((row) => {
+        const d = new Date(row.created_at);
+        const key = `${String(d.getFullYear()).slice(2)}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+        if (!buckets[key]) buckets[key] = { visits: 0, quizCompletes: 0 };
+        if (row.event_type === "page_visit") buckets[key].visits++;
+        else if (row.event_type === "quiz_complete") buckets[key].quizCompletes++;
+      });
+      setChartData(
+        Object.entries(buckets)
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([date, v]) => ({ date, ...v }))
+      );
+      return;
+    }
     if (range === "7d" || range === "30d") {
       const days = range === "7d" ? 7 : 30;
       const buckets: Record<string, { visits: number; quizCompletes: number }> = {};
@@ -1600,11 +1652,16 @@ export default function AdminPage() {
           <motion.div animate={{ opacity: statsRefreshing ? 0 : 1 }} transition={{ duration: 0.2 }}>
             {customersTab === "visits" && (
               <>
-                {stats && (
+                {chartData.length > 0 && (() => {
+                  const periodStats = chartData.reduce(
+                    (acc, d) => ({ visits: acc.visits + d.visits, quizCompletes: acc.quizCompletes + d.quizCompletes }),
+                    { visits: 0, quizCompletes: 0 }
+                  );
+                  return (
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px", marginBottom: "32px" }}>
                     {[
-                      { label: "총 방문자 수", value: stats.visits },
-                      { label: "체질 진단 완료", value: stats.quizCompletes },
+                      { label: "총 방문자 수", value: periodStats.visits },
+                      { label: "체질 진단 완료", value: periodStats.quizCompletes },
                     ].map((s) => (
                       <div key={s.label} style={{ background: "#ffffff", borderRadius: "16px", padding: "20px", border: "1px solid #e8e8e8", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
                         <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#999999", marginBottom: "10px" }}>{s.label}</p>
@@ -1612,14 +1669,15 @@ export default function AdminPage() {
                       </div>
                     ))}
                   </div>
-                )}
+                  );
+                })()}
                 <div style={{ background: "#ffffff", borderRadius: "16px", border: "1px solid #e8e8e8", padding: "24px", height: "350px", display: "flex", flexDirection: "column", boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
                     <p style={{ fontSize: "0.875rem", fontWeight: 700, color: "#111111", letterSpacing: "-0.01em" }}>
-                      {{ "7d": "최근 7일", "30d": "최근 1개월", monthly: "월별 추이" }[chartRange]}
+                      {{ "7d": "최근 7일", "30d": "최근 1개월", monthly: "월별 추이", all: "전체" }[chartRange]}
                     </p>
                     <div style={{ display: "flex", gap: "6px" }}>
-                      {([["7d", "7일"], ["30d", "1개월"], ["monthly", "월별"]] as const).map(([range, label]) => (
+                      {([["7d", "7일"], ["30d", "1개월"], ["monthly", "월별"], ["all", "전체"]] as const).map(([range, label]) => (
                         <button
                           key={range}
                           onClick={() => setChartRange(range)}

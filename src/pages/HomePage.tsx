@@ -529,8 +529,8 @@ export default function HomePage() {
                 {/* 배지 */}
                 <div>
                   <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#111111", color: "#ffffff", fontWeight: 700, fontSize: "0.875rem", padding: "6px 14px", borderRadius: "50px" }}>
-                    성정과 심리
-                    <span style={{ fontWeight: 400, fontSize: "0.7rem", opacity: 0.85 }}>Personality &amp; Traits</span>
+                    본성과 심리
+                    <span style={{ fontWeight: 400, fontSize: "0.7rem", opacity: 0.85 }}>Nature &amp; Psychology</span>
                   </span>
                 </div>
 
@@ -559,25 +559,25 @@ export default function HomePage() {
                     <line x1="50" y1="50" x2="11.9" y2="28" stroke="#e8e8e8" strokeWidth="1" />
                     {/* 데이터 폴리곤 */}
                     <polygon
-                      points="50,32.4 69.1,39 67.1,59.9 50,87.4 29.1,62.1 31,39"
+                      points="50,43.4 65.2,41.2 82.4,68.7 50,87.4 27.1,63.2 42.4,45.6"
                       fill="rgba(0,0,0,0.08)"
                       stroke="#111111"
                       strokeWidth="1.8"
                       strokeLinejoin="round"
                     />
-                    <circle cx="50" cy="32.4" r="2.5" fill="#111111" />
-                    <circle cx="69.1" cy="39" r="2.5" fill="#111111" />
-                    <circle cx="67.1" cy="59.9" r="2.5" fill="#111111" />
+                    <circle cx="50" cy="43.4" r="2.5" fill="#111111" />
+                    <circle cx="65.2" cy="41.2" r="2.5" fill="#111111" />
+                    <circle cx="82.4" cy="68.7" r="2.5" fill="#111111" />
                     <circle cx="50" cy="87.4" r="2.5" fill="#111111" />
-                    <circle cx="29.1" cy="62.1" r="2.5" fill="#111111" />
-                    <circle cx="31" cy="39" r="2.5" fill="#111111" />
+                    <circle cx="27.1" cy="63.2" r="2.5" fill="#111111" />
+                    <circle cx="42.4" cy="45.6" r="2.5" fill="#111111" />
                     {/* 축 라벨 */}
-                    <text x="50" y="-6" textAnchor="middle" fontSize="7.5" fontWeight="600" fill="#bbbbbb">외향성</text>
-                    <text x="98.5" y="22" textAnchor="start" fontSize="7.5" fontWeight="600" fill="#bbbbbb">추진력</text>
-                    <text x="98.5" y="78" textAnchor="start" fontSize="7.5" fontWeight="600" fill="#bbbbbb">창의성</text>
-                    <text x="50" y="106" textAnchor="middle" fontSize="7.5" fontWeight="600" fill="#bbbbbb">인내심</text>
-                    <text x="1.5" y="78" textAnchor="end" fontSize="7.5" fontWeight="600" fill="#bbbbbb">분석력</text>
-                    <text x="1.5" y="22" textAnchor="end" fontSize="7.5" fontWeight="600" fill="#bbbbbb">감수성</text>
+                    <text x="50" y="-6" textAnchor="middle" fontSize="7.5" fontWeight="600" fill="#bbbbbb">도전</text>
+                    <text x="98.5" y="22" textAnchor="start" fontSize="7.5" fontWeight="600" fill="#bbbbbb">독립</text>
+                    <text x="98.5" y="78" textAnchor="start" fontSize="7.5" fontWeight="600" fill="#bbbbbb">신중</text>
+                    <text x="50" y="106" textAnchor="middle" fontSize="7.5" fontWeight="600" fill="#bbbbbb">안정</text>
+                    <text x="1.5" y="78" textAnchor="end" fontSize="7.5" fontWeight="600" fill="#bbbbbb">협력</text>
+                    <text x="1.5" y="22" textAnchor="end" fontSize="7.5" fontWeight="600" fill="#bbbbbb">직관</text>
                   </svg>
                 </div>
 
