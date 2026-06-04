@@ -1113,13 +1113,12 @@ function Buttons({ onRetry, constitutionType, scores, isShared = false, isHistor
             flex: 1,
             padding: "17px",
             borderRadius: "50px",
-            background: "#ffffff",
-            border: "1.5px solid #dddddd",
-            color: "#666666",
+            background: "#111111",
+            border: "none",
+            color: "#ffffff",
             fontSize: "0.95rem",
             cursor: "pointer",
           }}
-          whileHover={{ borderColor: color, color }}
           whileTap={{ scale: 0.99 }}
         >
           결과 저장하기
