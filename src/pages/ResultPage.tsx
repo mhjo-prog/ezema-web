@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, createContext, useContext } from "react";
+import { useState, useEffect, createContext, useContext } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { results, CONSTITUTION_COLORS } from "../data/results";
@@ -911,7 +911,9 @@ function SaveResultModal({ constitutionType, scores, onClose }: { constitutionTy
   const { loginWithKakao, isLoading } = useAuth();
 
   const handleKakaoLogin = () => {
-    localStorage.setItem(PENDING_RESULT_KEY, JSON.stringify({ constitutionType, scores }));
+    const payload = JSON.stringify({ constitutionType, scores });
+    localStorage.setItem(PENDING_RESULT_KEY, payload);
+    console.log("[SaveResultModal] localStorage에 저장:", localStorage.getItem(PENDING_RESULT_KEY));
     loginWithKakao();
   };
 

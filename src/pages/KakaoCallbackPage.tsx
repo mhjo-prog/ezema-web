@@ -18,6 +18,10 @@ export default function KakaoCallbackPage() {
     if (hasProcessed.current) return;
     hasProcessed.current = true;
 
+    const pendingRaw = localStorage.getItem(PENDING_RESULT_KEY);
+    console.log("[KakaoCallback] 페이지 로드 시 pending_result:", pendingRaw);
+    console.log("[KakaoCallback] window.opener:", window.opener, "| window.name:", window.name);
+
     const params = new URLSearchParams(window.location.search);
     const code = params.get("code");
     const error = params.get("error");
