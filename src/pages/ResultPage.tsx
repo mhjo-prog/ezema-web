@@ -1113,13 +1113,12 @@ function Buttons({ onRetry, constitutionType, scores, isShared = false, isHistor
             flex: 1,
             padding: "17px",
             borderRadius: "50px",
-            background: "#ffffff",
-            border: "1.5px solid #dddddd",
-            color: "#666666",
+            background: color,
+            border: `1.5px solid ${color}`,
+            color: "#ffffff",
             fontSize: "0.95rem",
             cursor: "pointer",
           }}
-          whileHover={{ borderColor: color, color }}
           whileTap={{ scale: 0.99 }}
         >
           결과 저장하기
@@ -1132,12 +1131,13 @@ function Buttons({ onRetry, constitutionType, scores, isShared = false, isHistor
             flex: 1,
             padding: "17px",
             borderRadius: "50px",
-            background: color,
-            border: `1.5px solid ${color}`,
-            color: "#ffffff",
+            background: "#ffffff",
+            border: "1.5px solid #dddddd",
+            color: "#666666",
             fontSize: "0.95rem",
             cursor: "pointer",
           }}
+          whileHover={{ borderColor: color, color }}
           whileTap={{ scale: 0.99 }}
         >
           친구에게 공유하기
