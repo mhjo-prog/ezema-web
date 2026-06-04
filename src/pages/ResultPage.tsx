@@ -949,7 +949,7 @@ function SaveResultModal({ constitutionType, scores, onClose }: { constitutionTy
         <p className="font-bold" style={{ fontSize: "1.15rem", color: "#111", textAlign: "center", marginBottom: "8px" }}>
           결과를 저장할게요
         </p>
-        <ul style={{ fontSize: "0.875rem", color: "#888", marginBottom: "28px", lineHeight: 1.7, paddingLeft: "1.2rem" }}>
+        <ul style={{ fontSize: "0.875rem", color: "#888", marginBottom: "28px", lineHeight: 1.7, paddingLeft: "1.2rem", textAlign: "center", listStyle: "none", padding: 0 }}>
           <li>로그인하면 내 체질 결과를 언제든 확인할 수 있어요</li>
           <li>마이페이지에서 나만의 콘텐츠를 저장해보세요</li>
         </ul>
