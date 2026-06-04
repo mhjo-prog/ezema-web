@@ -949,9 +949,10 @@ function SaveResultModal({ constitutionType, scores, onClose }: { constitutionTy
         <p className="font-bold" style={{ fontSize: "1.15rem", color: "#111", textAlign: "center", marginBottom: "8px" }}>
           결과를 저장할게요
         </p>
-        <p style={{ fontSize: "0.875rem", color: "#888", textAlign: "center", marginBottom: "28px", lineHeight: 1.6 }}>
-          가입하면 내 체질 결과와 맞춤 건강 루틴을<br />언제든 다시 볼 수 있어요
-        </p>
+        <ul style={{ fontSize: "0.875rem", color: "#888", marginBottom: "28px", lineHeight: 1.7, paddingLeft: "1.2rem" }}>
+          <li>로그인하면 내 체질 결과를 언제든 확인할 수 있어요</li>
+          <li>마이페이지에서 나만의 콘텐츠를 저장해보세요</li>
+        </ul>
 
         <motion.button
           onClick={handleKakaoLogin}
@@ -977,7 +978,7 @@ function SaveResultModal({ constitutionType, scores, onClose }: { constitutionTy
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <path d="M12 3C6.477 3 2 6.477 2 10.909c0 2.756 1.528 5.19 3.878 6.702l-.99 3.697 4.27-2.817A11.64 11.64 0 0012 18.818c5.523 0 10-3.476 10-7.909C22 6.477 17.523 3 12 3z" fill="#3C1E1E"/>
           </svg>
-          {isLoading ? "로그인 중..." : "카카오로 저장하기"}
+          {isLoading ? "로그인 중..." : "카카오로 저장하기(로그인)"}
         </motion.button>
 
         <button
@@ -994,7 +995,7 @@ function SaveResultModal({ constitutionType, scores, onClose }: { constitutionTy
             textAlign: "center",
           }}
         >
-          나중에 할게요 (결과는 사라져요)
+          나중에 할게요(결과는 사라져요)
         </button>
       </motion.div>
     </>
