@@ -72,6 +72,7 @@ export default function MyPage() {
 
   // 비로그인 시 리다이렉트
   useEffect(() => {
+    console.log("[MyPage] redirect effect — user:", user?.kakao_id ?? "null");
     if (!user) navigate("/");
   }, [user, navigate]);
 
@@ -96,10 +97,12 @@ export default function MyPage() {
       .then(({ data, error }) => {
         console.log("[MyPage] quiz_results 응답 — data:", data, "error:", error);
         if (data?.constitution_type) {
-          console.log("[MyPage] DB 결과 적용:", data.constitution_type);
-          setQuizResult({ constitutionType: data.constitution_type, scores: data.scores ?? {} });
+          console.log("[MyPage] DB 결과 적용:", data.constitution_type, "scores:", data.scores);
+          const result = { constitutionType: data.constitution_type, scores: data.scores ?? {} };
+          setQuizResult(result);
+          console.log("[MyPage] setQuizResult 호출 완료 — 값:", result);
         } else {
-          console.log("[MyPage] DB에 퀴즈 결과 없음");
+          console.log("[MyPage] DB에 퀴즈 결과 없음 — data:", data);
         }
       });
   }, [user]);
@@ -185,6 +188,8 @@ export default function MyPage() {
   }, [user]);
 
   if (!user) return null;
+
+  console.log("[MyPage render] quizResult state:", quizResult, "| user.kakao_id:", user.kakao_id);
 
   const scoreEntries = quizResult
     ? Object.entries(quizResult.scores).sort(([, a], [, b]) => b - a)

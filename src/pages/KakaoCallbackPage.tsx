@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { KAKAO_REST_KEY, REDIRECT_URI, upsertKakaoUser, type KakaoUser } from "../lib/kakaoApi";
-import { useAuth, KAKAO_BROADCAST_CHANNEL } from "../context/AuthContext";
+import { useAuth, KAKAO_BROADCAST_CHANNEL, PENDING_RESULT_KEY } from "../context/AuthContext";
 
 type Status = "processing" | "error";
 
@@ -120,8 +120,14 @@ export default function KakaoCallbackPage() {
         // 메시지 전달 보장 후 팝업 닫기
         setTimeout(() => window.close(), 300);
       } else {
+        // pending_result 여부를 setUserFromCallback 호출 전에 확인
+        // (setUserFromCallback 내부에서 localStorage를 지우기 전에 체크해야 함)
+        const hasPendingResult = !!localStorage.getItem(PENDING_RESULT_KEY);
         setUserFromCallback(user);
-        navigate("/", { replace: true });
+        if (!hasPendingResult) {
+          navigate("/", { replace: true });
+        }
+        // hasPendingResult가 true면 savePendingResult가 /mypage로 이동시킴
       }
     } catch (err) {
       handleError(

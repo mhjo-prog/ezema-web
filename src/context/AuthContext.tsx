@@ -1,6 +1,39 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { KAKAO_JS_KEY, KAKAO_REST_KEY, REDIRECT_URI, type KakaoUser } from "../lib/kakaoApi";
 import { migrateLocalBookmarksToDb } from "../lib/bookmarks";
+import { supabase, isSupabaseReady } from "../lib/supabase";
+
+export const PENDING_RESULT_KEY = "pending_result";
+
+async function savePendingResult(kakaoId: string) {
+  console.log("[savePendingResult] 호출됨 — kakao_id:", kakaoId);
+  try {
+    const raw = localStorage.getItem(PENDING_RESULT_KEY);
+    console.log("[savePendingResult] localStorage raw:", raw);
+    if (!raw) {
+      console.log("[savePendingResult] pending_result 없음 — 저장 건너뜀");
+      return;
+    }
+    const { constitutionType, scores } = JSON.parse(raw);
+    console.log("[savePendingResult] 파싱 결과 — constitutionType:", constitutionType, "scores:", scores);
+    localStorage.removeItem(PENDING_RESULT_KEY);
+    console.log("[savePendingResult] localStorage 삭제 완료. isSupabaseReady:", isSupabaseReady);
+    if (isSupabaseReady && constitutionType) {
+      console.log("[savePendingResult] supabase upsert 시작 — payload:", { kakao_id: kakaoId, constitution_type: constitutionType, scores });
+      const { data, error } = await supabase
+        .from("quiz_results")
+        .upsert({ kakao_id: kakaoId, constitution_type: constitutionType, scores }, { onConflict: "kakao_id" })
+        .select();
+      console.log("[savePendingResult] upsert 결과 — data:", data, "error:", error);
+    } else {
+      console.warn("[savePendingResult] upsert 건너뜀 — isSupabaseReady:", isSupabaseReady, "constitutionType:", constitutionType);
+    }
+    console.log("[savePendingResult] /mypage 로 이동");
+    window.location.href = "/mypage";
+  } catch (e) {
+    console.error("[savePendingResult] 오류:", e);
+  }
+}
 
 export type { KakaoUser };
 
@@ -88,10 +121,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     channel.onmessage = (event: MessageEvent) => {
       if (event.data?.type === "KAKAO_LOGIN_SUCCESS") {
         const userData: KakaoUser = event.data.user;
+        console.log("[AuthContext] KAKAO_LOGIN_SUCCESS — kakao_id:", userData.kakao_id);
         setUser(userData);
         localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData));
         migrateLocalBookmarksToDb(userData.kakao_id);
         cleanup();
+        savePendingResult(userData.kakao_id);
       } else if (event.data?.type === "KAKAO_LOGIN_ERROR") {
         cleanup();
       }
@@ -115,9 +150,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const setUserFromCallback = (userData: KakaoUser) => {
+    console.log("[AuthContext] setUserFromCallback — kakao_id:", userData.kakao_id);
     setUser(userData);
     localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData));
     migrateLocalBookmarksToDb(userData.kakao_id);
+    savePendingResult(userData.kakao_id);
   };
 
   return (

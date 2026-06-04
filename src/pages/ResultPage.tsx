@@ -1,8 +1,9 @@
-import { useState, useEffect, createContext, useContext } from "react";
+import { useState, useEffect, useRef, createContext, useContext } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { results, CONSTITUTION_COLORS } from "../data/results";
 import { supabase, isSupabaseReady } from "../lib/supabase";
+import { useAuth, PENDING_RESULT_KEY } from "../context/AuthContext";
 
 declare global {
   interface Window {
@@ -906,8 +907,101 @@ function ShareModal({ constitutionType, scores, onClose }: { constitutionType: s
 }
 
 
+function SaveResultModal({ constitutionType, scores, onClose }: { constitutionType: string; scores: Record<string, number>; onClose: () => void }) {
+  const { loginWithKakao, isLoading } = useAuth();
+
+  const handleKakaoLogin = () => {
+    localStorage.setItem(PENDING_RESULT_KEY, JSON.stringify({ constitutionType, scores }));
+    loginWithKakao();
+  };
+
+  return (
+    <>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 500 }}
+      />
+      <motion.div
+        initial={{ opacity: 0, y: 60 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 60 }}
+        transition={{ type: "spring", damping: 28, stiffness: 320 }}
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          background: "#ffffff",
+          borderRadius: "20px 20px 0 0",
+          padding: "20px 24px 40px",
+          zIndex: 501,
+          maxWidth: "560px",
+          margin: "0 auto",
+        }}
+      >
+        <div style={{ width: "40px", height: "4px", background: "#e0e0e0", borderRadius: "2px", margin: "0 auto 24px" }} />
+
+        <p className="font-bold" style={{ fontSize: "1.15rem", color: "#111", textAlign: "center", marginBottom: "8px" }}>
+          결과를 저장할게요
+        </p>
+        <p style={{ fontSize: "0.875rem", color: "#888", textAlign: "center", marginBottom: "28px", lineHeight: 1.6 }}>
+          가입하면 내 체질 결과와 맞춤 건강 루틴을<br />언제든 다시 볼 수 있어요
+        </p>
+
+        <motion.button
+          onClick={handleKakaoLogin}
+          disabled={isLoading}
+          whileTap={{ scale: 0.98 }}
+          className="font-semibold"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "10px",
+            width: "100%",
+            padding: "16px",
+            borderRadius: "14px",
+            background: "#FEE500",
+            border: "none",
+            color: "#3C1E1E",
+            fontSize: "0.975rem",
+            cursor: "pointer",
+            opacity: isLoading ? 0.7 : 1,
+          }}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M12 3C6.477 3 2 6.477 2 10.909c0 2.756 1.528 5.19 3.878 6.702l-.99 3.697 4.27-2.817A11.64 11.64 0 0012 18.818c5.523 0 10-3.476 10-7.909C22 6.477 17.523 3 12 3z" fill="#3C1E1E"/>
+          </svg>
+          {isLoading ? "로그인 중..." : "카카오로 저장하기"}
+        </motion.button>
+
+        <button
+          onClick={onClose}
+          style={{
+            display: "block",
+            width: "100%",
+            marginTop: "20px",
+            background: "none",
+            border: "none",
+            fontSize: "0.85rem",
+            color: "#aaa",
+            cursor: "pointer",
+            textAlign: "center",
+          }}
+        >
+          나중에 할게요 (결과는 사라져요)
+        </button>
+      </motion.div>
+    </>
+  );
+}
+
 function Buttons({ onRetry, constitutionType, scores, isShared = false, isHistory = false }: { onRetry: () => void; constitutionType: string; scores: Record<string, number>; isShared?: boolean; isHistory?: boolean }) {
   const [showModal, setShowModal] = useState(false);
+  const [showSaveModal, setShowSaveModal] = useState(false);
   const navigate = useNavigate();
   const color = useContext(ThemeContext);
 
@@ -1010,7 +1104,7 @@ function Buttons({ onRetry, constitutionType, scores, isShared = false, isHistor
         transition={{ delay: 1.1, duration: 0.5 }}
       >
         <motion.button
-          onClick={onRetry}
+          onClick={() => setShowSaveModal(true)}
           className="font-semibold transition-all duration-200"
           style={{
             flex: 1,
@@ -1025,7 +1119,7 @@ function Buttons({ onRetry, constitutionType, scores, isShared = false, isHistor
           whileHover={{ borderColor: color, color }}
           whileTap={{ scale: 0.99 }}
         >
-          다시 테스트하기
+          결과 저장하기
         </motion.button>
 
         <motion.button
@@ -1053,6 +1147,16 @@ function Buttons({ onRetry, constitutionType, scores, isShared = false, isHistor
             constitutionType={constitutionType}
             scores={scores}
             onClose={() => setShowModal(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showSaveModal && (
+          <SaveResultModal
+            constitutionType={constitutionType}
+            scores={scores}
+            onClose={() => setShowSaveModal(false)}
           />
         )}
       </AnimatePresence>
