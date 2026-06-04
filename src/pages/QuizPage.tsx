@@ -76,19 +76,14 @@ export default function QuizPage() {
     sessionStorage.setItem(SESSION_KEY, result);
     localStorage.setItem("ezema_mypage_result", result);
 
-    // 로그인 유저면 DB에도 저장
-    console.log("[quiz_results] insert 시도 — user:", user ? `kakao_id=${user.kakao_id} (type: ${typeof user.kakao_id})` : "null(비로그인)", "isSupabaseReady:", isSupabaseReady);
+    // 로그인 유저면 DB에도 저장 (비로그인 시 pending_result는 결과 저장하기 버튼에서 처리)
     if (user && isSupabaseReady) {
-      supabase.from("quiz_results").insert({
+      supabase.from("quiz_results").upsert({
         kakao_id: String(user.kakao_id),
         constitution_type: type,
         scores: s,
-      }).then(({ data, error }) => {
-        if (error) {
-          console.error("[quiz_results] insert 실패:", error);
-        } else {
-          console.log("[quiz_results] insert 성공:", data);
-        }
+      }, { onConflict: "kakao_id" }).then(({ error }) => {
+        if (error) console.error("[quiz_results] upsert 실패:", error);
       });
     }
 
