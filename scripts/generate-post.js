@@ -255,7 +255,7 @@ content 필드 작성 규칙:
     : `"매력적이고 구체적인 제목 (30자 이내)"`;
 
   const message = await anthropic.messages.create({
-    model: "claude-opus-4-6",
+    model: "claude-sonnet-4-6",
     max_tokens: 1024,
     messages: [
       {
