@@ -19,12 +19,12 @@ async function savePendingResult(kakaoId: string) {
     localStorage.removeItem(PENDING_RESULT_KEY);
     console.log("[savePendingResult] localStorage 삭제 완료. isSupabaseReady:", isSupabaseReady);
     if (isSupabaseReady && constitutionType) {
-      console.log("[savePendingResult] supabase upsert 시작 — payload:", { kakao_id: kakaoId, constitution_type: constitutionType, scores });
+      console.log("[savePendingResult] supabase insert 시작 — payload:", { kakao_id: kakaoId, constitution_type: constitutionType, scores });
       const { data, error } = await supabase
         .from("quiz_results")
-        .upsert({ kakao_id: kakaoId, constitution_type: constitutionType, scores }, { onConflict: "kakao_id" })
+        .insert({ kakao_id: kakaoId, constitution_type: constitutionType, scores })
         .select();
-      console.log("[savePendingResult] upsert 결과 — data:", data, "error:", error);
+      console.log("[savePendingResult] insert 결과 — data:", data, "error:", error);
     } else {
       console.warn("[savePendingResult] upsert 건너뜀 — isSupabaseReady:", isSupabaseReady, "constitutionType:", constitutionType);
     }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, LabelList, ResponsiveContainer } from "recharts";
 import { useAuth } from "../context/AuthContext";
 import { supabase, isSupabaseReady } from "../lib/supabase";
 import { getSavedPostIds } from "../lib/bookmarks";
@@ -22,6 +23,7 @@ const CONSTITUTION_DESC: Record<string, string> = {
 interface QuizResult {
   constitutionType: string;
   scores: Record<string, number>;
+  created_at: string;
 }
 
 interface SavedItem {
@@ -31,6 +33,11 @@ interface SavedItem {
   tag: string;
   created_at: string;
   path: string;
+}
+
+function formatDate(isoString: string): string {
+  const d = new Date(isoString);
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
 }
 
 function SavedCard({ post, navigate }: { post: SavedItem; navigate: (path: string) => void }) {
@@ -63,10 +70,136 @@ function SavedCard({ post, navigate }: { post: SavedItem; navigate: (path: strin
   );
 }
 
+function DeleteConfirmModal({ onConfirm, onCancel }: { onConfirm: () => void; onCancel: () => void }) {
+  return (
+    <div
+      onClick={onCancel}
+      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "24px" }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{ background: "#ffffff", borderRadius: "16px", padding: "28px 24px", width: "100%", maxWidth: "320px", boxShadow: "0 8px 32px rgba(0,0,0,0.12)" }}
+      >
+        <p style={{ fontSize: "1rem", fontWeight: 700, color: "#000000", marginBottom: "8px", letterSpacing: "-0.02em" }}>
+          검사 기록 삭제
+        </p>
+        <p style={{ fontSize: "0.875rem", color: "#666666", marginBottom: "24px", lineHeight: 1.5 }}>
+          이 검사 기록을 삭제할까요?
+        </p>
+        <div style={{ display: "flex", gap: "8px" }}>
+          <button
+            onClick={onCancel}
+            style={{ flex: 1, padding: "11px", borderRadius: "50px", border: "1px solid #e8e8e8", background: "#ffffff", color: "#333333", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer" }}
+          >
+            취소
+          </button>
+          <button
+            onClick={onConfirm}
+            style={{ flex: 1, padding: "11px", borderRadius: "50px", border: "none", background: "#000000", color: "#ffffff", fontWeight: 600, fontSize: "0.875rem", cursor: "pointer" }}
+          >
+            삭제
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function HistoryCard({ item, isExpanded, onToggle, onDelete, onViewResult, navigate }: {
+  item: QuizResult;
+  isExpanded: boolean;
+  onToggle: () => void;
+  onDelete: (e: React.MouseEvent) => void;
+  onViewResult: () => void;
+  navigate: (p: string) => void;
+}) {
+  const scoreEntries = Object.entries(item.scores).sort(([, a], [, b]) => b - a);
+  const totalScore = scoreEntries.reduce((sum, [, s]) => sum + s, 0);
+
+  return (
+    <div style={{ border: "1px solid #e8e8e8", borderRadius: "12px", overflow: "hidden" }}>
+      <div
+        onClick={onToggle}
+        style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", cursor: "pointer", background: isExpanded ? "#f8f8f8" : "#ffffff", transition: "background 0.15s" }}
+        onMouseEnter={(e) => { if (!isExpanded) e.currentTarget.style.background = "#f8f8f8"; }}
+        onMouseLeave={(e) => { if (!isExpanded) e.currentTarget.style.background = "#ffffff"; }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <span style={{ fontSize: "0.8125rem", color: "#999999" }}>{formatDate(item.created_at)}</span>
+          <span style={{ fontSize: "0.9375rem", fontWeight: 700, color: "#000000" }}>
+            {CONSTITUTION_LABELS[item.constitutionType] ?? item.constitutionType}
+          </span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <button
+            onClick={(e) => { e.stopPropagation(); onDelete(e); }}
+            title="삭제"
+            style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "28px", height: "28px", borderRadius: "6px", border: "none", background: "transparent", cursor: "pointer", color: "#cccccc", flexShrink: 0, transition: "color 0.15s, background 0.15s" }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = "#ff4444"; e.currentTarget.style.background = "#fff0f0"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = "#cccccc"; e.currentTarget.style.background = "transparent"; }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+              <path d="M10 11v6" />
+              <path d="M14 11v6" />
+              <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+            </svg>
+          </button>
+          <span style={{ fontSize: "1rem", color: "#999999", display: "inline-block", transform: isExpanded ? "rotate(90deg)" : "none", transition: "transform 0.2s" }}>›</span>
+        </div>
+      </div>
+
+      {isExpanded && (
+        <div style={{ padding: "16px 20px", borderTop: "1px solid #f0f0f0" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "16px" }}>
+            {scoreEntries.map(([type, score]) => {
+              const pct = totalScore > 0 ? Math.round((score / totalScore) * 100) : 0;
+              const isTop = type === item.constitutionType;
+              return (
+                <div key={type}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "3px" }}>
+                    <span style={{ fontSize: "0.8rem", fontWeight: isTop ? 700 : 500, color: isTop ? "#000000" : "#666666" }}>{type}</span>
+                    <span style={{ fontSize: "0.8rem", fontWeight: isTop ? 700 : 400, color: isTop ? "#000000" : "#999999" }}>{pct}%</span>
+                  </div>
+                  <div style={{ height: "4px", background: "#f0f0f0", borderRadius: "2px", overflow: "hidden" }}>
+                    <div style={{ height: "100%", width: `${pct}%`, background: isTop ? "#000000" : "#cccccc", borderRadius: "2px" }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+            <button
+              onClick={(e) => { e.stopPropagation(); navigate(`/sasang?type=${item.constitutionType}`); }}
+              style={{ fontSize: "0.8125rem", fontWeight: 600, padding: "8px 16px", borderRadius: "50px", cursor: "pointer", color: "#111111", background: "#ffffff", border: "1px solid #e8e8e8", letterSpacing: "0.01em", transition: "all 0.15s" }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "#111111"; e.currentTarget.style.color = "#ffffff"; e.currentTarget.style.borderColor = "#111111"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "#ffffff"; e.currentTarget.style.color = "#111111"; e.currentTarget.style.borderColor = "#e8e8e8"; }}
+            >
+              관련 아티클 보기
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); onViewResult(); }}
+              style={{ fontSize: "0.8125rem", fontWeight: 600, padding: "8px 16px", borderRadius: "50px", cursor: "pointer", color: "#111111", background: "#ffffff", border: "1px solid #e8e8e8", letterSpacing: "0.01em", transition: "all 0.15s" }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "#111111"; e.currentTarget.style.color = "#ffffff"; e.currentTarget.style.borderColor = "#111111"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "#ffffff"; e.currentTarget.style.color = "#111111"; e.currentTarget.style.borderColor = "#e8e8e8"; }}
+            >
+              지난 결과 다시 보기
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function MyPage() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const [quizResult, setQuizResult] = useState<QuizResult | null>(null);
+  const [quizHistory, setQuizHistory] = useState<QuizResult[]>([]);
+  const [expandedAt, setExpandedAt] = useState<string | null>(null);
+  const [selectedAt, setSelectedAt] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<QuizResult | null>(null);
   const [savedTypology, setSavedTypology] = useState<SavedItem[]>([]);
   const [savedWellness, setSavedWellness] = useState<SavedItem[]>([]);
 
@@ -76,11 +209,11 @@ export default function MyPage() {
     if (!user) navigate("/");
   }, [user, navigate]);
 
-  // 퀴즈 결과 로드 (로그인 시 DB만 사용)
+  // 퀴즈 결과 히스토리 로드
   useEffect(() => {
     if (!user) return;
 
-    console.log("[MyPage] quiz_results 조회 시작 — kakao_id:", user.kakao_id, "(type:", typeof user.kakao_id, ")", "isSupabaseReady:", isSupabaseReady);
+    console.log("[MyPage] quiz_results 조회 시작 — kakao_id:", user.kakao_id, "isSupabaseReady:", isSupabaseReady);
 
     if (!isSupabaseReady) {
       console.warn("[MyPage] Supabase 미설정 — 퀴즈 결과 조회 불가");
@@ -89,20 +222,18 @@ export default function MyPage() {
 
     supabase
       .from("quiz_results")
-      .select("constitution_type, scores")
+      .select("constitution_type, scores, created_at")
       .eq("kakao_id", String(user.kakao_id))
       .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle()
       .then(({ data, error }) => {
         console.log("[MyPage] quiz_results 응답 — data:", data, "error:", error);
-        if (data?.constitution_type) {
-          console.log("[MyPage] DB 결과 적용:", data.constitution_type, "scores:", data.scores);
-          const result = { constitutionType: data.constitution_type, scores: data.scores ?? {} };
-          setQuizResult(result);
-          console.log("[MyPage] setQuizResult 호출 완료 — 값:", result);
-        } else {
-          console.log("[MyPage] DB에 퀴즈 결과 없음 — data:", data);
+        if (data?.length) {
+          const history: QuizResult[] = data.map((row: any) => ({
+            constitutionType: row.constitution_type,
+            scores: row.scores ?? {},
+            created_at: row.created_at,
+          }));
+          setQuizHistory(history);
         }
       });
   }, [user]);
@@ -187,9 +318,26 @@ export default function MyPage() {
     }
   }, [user]);
 
+  async function handleDeleteConfirm() {
+    if (!deleteTarget || !user || !isSupabaseReady) return;
+    const { error } = await supabase
+      .from("quiz_results")
+      .delete()
+      .eq("kakao_id", String(user.kakao_id))
+      .eq("created_at", deleteTarget.created_at);
+    if (error) {
+      console.error("[quiz_results] delete 실패:", error);
+    } else {
+      setQuizHistory((prev) => prev.filter((r) => r.created_at !== deleteTarget.created_at));
+      if (expandedAt === deleteTarget.created_at) setExpandedAt(null);
+      if (selectedAt === deleteTarget.created_at) setSelectedAt(null);
+    }
+    setDeleteTarget(null);
+  }
+
   if (!user) return null;
 
-  console.log("[MyPage render] quizResult state:", quizResult, "| user.kakao_id:", user.kakao_id);
+  const quizResult = quizHistory[0] ?? null;
 
   const scoreEntries = quizResult
     ? Object.entries(quizResult.scores).sort(([, a], [, b]) => b - a)
@@ -197,6 +345,13 @@ export default function MyPage() {
   const totalScore = scoreEntries.reduce((sum, [, s]) => sum + s, 0);
 
   return (
+    <>
+    {deleteTarget && (
+      <DeleteConfirmModal
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeleteTarget(null)}
+      />
+    )}
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -298,14 +453,12 @@ export default function MyPage() {
               </div>
 
               <div style={{ marginTop: "24px", paddingTop: "20px", borderTop: "1px solid #f0f0f0", display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                {(["관련 아티클 보기", "다시 진단하기", "지난 결과 다시 보기"] as const).map((label) => (
+                {(["관련 아티클 보기", "지난 결과 다시 보기"] as const).map((label) => (
                   <button
                     key={label}
                     onClick={() => {
                       if (label === "관련 아티클 보기") {
                         navigate(`/sasang?type=${quizResult.constitutionType}`);
-                      } else if (label === "다시 진단하기") {
-                        navigate("/test");
                       } else {
                         const total = Object.values(quizResult.scores).reduce((a, b) => a + b, 0);
                         const params = new URLSearchParams({ type: quizResult.constitutionType, from: "history" });
@@ -387,6 +540,193 @@ export default function MyPage() {
 
         <div style={{ height: "1px", background: "#e8e8e8", marginBottom: "48px" }} />
 
+        {/* ── 검사 기록 ── */}
+        <section style={{ marginBottom: "48px" }}>
+          <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "#999999", marginBottom: "20px" }}>
+            HISTORY
+          </p>
+          {quizHistory.length === 0 ? (
+            <div style={{ padding: "32px 28px", border: "1px solid #e8e8e8", borderRadius: "16px", background: "#f5f5f5", textAlign: "center" }}>
+              <p style={{ fontSize: "0.9rem", color: "#999999" }}>검사 기록이 없습니다.</p>
+            </div>
+          ) : (
+            <>
+              {quizHistory.length >= 2 && (() => {
+                const TYPES = ["태양인", "태음인", "소양인", "소음인"] as const;
+                const COLORS: Record<string, string> = {
+                  태양인: "#E8460A",
+                  소양인: "#0774C4",
+                  태음인: "#1E8A4C",
+                  소음인: "#6B3FA0",
+                };
+                const DASH: Record<string, string | undefined> = {
+                  태양인: undefined,
+                  태음인: "8 3",
+                  소양인: "3 3",
+                  소음인: "1 5",
+                };
+                const WIDTHS: Record<string, number> = {
+                  태양인: 3,
+                  태음인: 2.5,
+                  소양인: 2,
+                  소음인: 2.5,
+                };
+                const LINECAPS: Record<string, "round" | "butt" | "square"> = {
+                  태양인: "butt",
+                  태음인: "butt",
+                  소양인: "butt",
+                  소음인: "round",
+                };
+                const reversedHistory = [...quizHistory].reverse();
+                const selectedIndex = expandedAt
+                  ? reversedHistory.findIndex((item) => item.created_at === expandedAt)
+                  : -1;
+                const expandedConstitutionType = expandedAt
+                  ? quizHistory.find((r) => r.created_at === expandedAt)?.constitutionType ?? null
+                  : null;
+                const chartData = reversedHistory.map((item, i) => {
+                  const total = Object.values(item.scores).reduce((a, b) => a + b, 0);
+                  const entry: Record<string, string | number> = {
+                    idx: i,
+                    date: formatDate(item.created_at),
+                  };
+                  TYPES.forEach((t) => {
+                    entry[t] = total > 0 ? Math.round((item.scores[t] ?? 0) / total * 100) : 0;
+                  });
+                  return entry;
+                });
+                const dateByIndex = chartData.map((d) => d.date as string);
+                return (
+                  <div style={{ padding: "24px 8px 8px", border: "1px solid #e8e8e8", borderRadius: "16px", background: "#ffffff", marginBottom: "8px" }}>
+                    <ResponsiveContainer width="100%" height={240}>
+                      <LineChart data={chartData} margin={{ top: 20, right: 20, left: -8, bottom: 4 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                        <XAxis
+                          dataKey="idx"
+                          type="number"
+                          domain={[0, chartData.length - 1]}
+                          ticks={chartData.map((_, i) => i)}
+                          tickFormatter={(i: number) => dateByIndex[i] ?? ""}
+                          tick={{ fontSize: 11, fill: "#999999" }}
+                          axisLine={false}
+                          tickLine={false}
+                        />
+                        <YAxis
+                          domain={[0, 100]}
+                          ticks={[0, 20, 40, 60, 80, 100]}
+                          tick={{ fontSize: 11, fill: "#999999" }}
+                          axisLine={false}
+                          tickLine={false}
+                        />
+                        <Tooltip
+                          content={({ active, payload, label }) => {
+                            if (!active || !payload?.length) return null;
+                            const sorted = [...payload].sort((a: any, b: any) => b.value - a.value);
+                            return (
+                              <div style={{ background: "#ffffff", border: "1px solid #e8e8e8", borderRadius: "8px", padding: "12px", fontSize: "12px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+                                <p style={{ marginBottom: "8px", color: "#999999", fontWeight: 600 }}>{dateByIndex[label as number] ?? ""}</p>
+                                {sorted.map((item: any) => (
+                                  <p key={item.dataKey} style={{ color: item.color, marginBottom: "4px", fontWeight: 500 }}>
+                                    {item.name} : {item.value}%
+                                  </p>
+                                ))}
+                              </div>
+                            );
+                          }}
+                        />
+                        {TYPES.map((t) => (
+                          <Line
+                            key={t}
+                            type="monotone"
+                            dataKey={t}
+                            stroke={COLORS[t]}
+                            strokeWidth={WIDTHS[t]}
+                            strokeDasharray={DASH[t]}
+                            strokeLinecap={LINECAPS[t]}
+                            dot={(props: any) => {
+                              const { cx, cy, index } = props;
+                              const isSel = index === selectedIndex;
+                              return (
+                                <circle
+                                  key={`dot-${t}-${index}`}
+                                  cx={cx}
+                                  cy={cy}
+                                  r={isSel ? 8 : 4}
+                                  fill={COLORS[t]}
+                                  stroke={isSel ? "#ffffff" : "none"}
+                                  strokeWidth={isSel ? 2 : 0}
+                                />
+                              );
+                            }}
+                            activeDot={{ r: 5 }}
+                          >
+                            <LabelList
+                              dataKey={t}
+                              position="top"
+                              content={(props: any) => {
+                                const isSel = props.index === selectedIndex;
+                                return (
+                                  <text
+                                    key={`label-${t}-${props.index}`}
+                                    x={props.x}
+                                    y={(props.y ?? 0) - 4}
+                                    textAnchor="middle"
+                                    fill={COLORS[t]}
+                                    fontSize={isSel ? 13 : 11}
+                                    fontWeight={isSel ? 700 : 600}
+                                  >
+                                    {`${props.value}%`}
+                                  </text>
+                                );
+                              }}
+                            />
+                          </Line>
+                        ))}
+                      </LineChart>
+                    </ResponsiveContainer>
+                    <div style={{ display: "flex", justifyContent: "center", gap: "16px", padding: "12px 8px 16px", flexWrap: "wrap" }}>
+                      {TYPES.map((t) => (
+                        <div key={t} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                          <svg width="30" height="12" style={{ flexShrink: 0, overflow: "visible" }}>
+                            <line
+                              x1="0" y1="6" x2="30" y2="6"
+                              stroke={COLORS[t]}
+                              strokeWidth={WIDTHS[t]}
+                              strokeDasharray={DASH[t] ?? "none"}
+                              strokeLinecap={LINECAPS[t]}
+                            />
+
+                          </svg>
+                          <span style={{ fontSize: "12px", fontWeight: t === expandedConstitutionType ? 700 : 400, color: t === expandedConstitutionType ? "#111111" : "#555555" }}>{t}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                {quizHistory.map((item) => (
+                  <HistoryCard
+                    key={item.created_at}
+                    item={item}
+                    isExpanded={expandedAt === item.created_at}
+                    onToggle={() => {
+                      const next = expandedAt === item.created_at ? null : item.created_at;
+                      setExpandedAt(next);
+                      setSelectedAt(next);
+                    }}
+                    onDelete={(e) => { e.stopPropagation(); setDeleteTarget(item); }}
+                    onViewResult={() => navigate("/result", { state: { constitutionType: item.constitutionType, scores: item.scores } })}
+                    navigate={navigate}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </section>
+
+        <div style={{ height: "1px", background: "#e8e8e8", marginBottom: "48px" }} />
+
         {/* ── 계정 / 로그아웃 ── */}
         <section>
           <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "#999999", marginBottom: "20px" }}>
@@ -401,5 +741,6 @@ export default function MyPage() {
         </section>
       </div>
     </motion.div>
+    </>
   );
 }

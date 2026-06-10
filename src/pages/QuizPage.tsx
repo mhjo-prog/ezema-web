@@ -78,12 +78,12 @@ export default function QuizPage() {
 
     // 로그인 유저면 DB에도 저장 (비로그인 시 pending_result는 결과 저장하기 버튼에서 처리)
     if (user && isSupabaseReady) {
-      supabase.from("quiz_results").upsert({
+      supabase.from("quiz_results").insert({
         kakao_id: String(user.kakao_id),
         constitution_type: type,
         scores: s,
-      }, { onConflict: "kakao_id" }).then(({ error }) => {
-        if (error) console.error("[quiz_results] upsert 실패:", error);
+      }).then(({ error }) => {
+        if (error) console.error("[quiz_results] insert 실패:", error);
       });
     }
 
