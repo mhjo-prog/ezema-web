@@ -134,6 +134,7 @@ function PostPreviewModal({
   onClose,
   onApprove,
   onDelete,
+  onArchive,
   onSave,
   onError,
 }: {
@@ -141,6 +142,7 @@ function PostPreviewModal({
   onClose: () => void;
   onApprove: () => void;
   onDelete: () => void;
+  onArchive: () => void;
   onSave: (fields: { title: string; content: string; card_image_url: string }) => Promise<void>;
   onError: (msg: string) => void;
 }) {
@@ -314,6 +316,14 @@ function PostPreviewModal({
               >
                 삭제하기
               </button>
+              {post.status === "published" && (
+                <button
+                  onClick={onArchive}
+                  style={{ flex: 1, padding: "11px", background: "#f5f5f5", color: "#000000", fontWeight: 600, fontSize: "0.875rem", borderRadius: "10px", border: "1px solid #e0e0e0", cursor: "pointer" }}
+                >
+                  보관하기
+                </button>
+              )}
               <button
                 onClick={onClose}
                 style={{ padding: "11px 18px", background: "#f5f5f5", color: "#666666", fontWeight: 600, fontSize: "0.875rem", borderRadius: "10px", cursor: "pointer" }}
@@ -334,6 +344,7 @@ function WellnessPostPreviewModal({
   onClose,
   onApprove,
   onDelete,
+  onArchive,
   onSave,
   onError,
 }: {
@@ -341,6 +352,7 @@ function WellnessPostPreviewModal({
   onClose: () => void;
   onApprove: () => void;
   onDelete: () => void;
+  onArchive: () => void;
   onSave: (fields: { title: string; content: string; card_image_url: string; content_image_url: string }) => Promise<void>;
   onError: (msg: string) => void;
 }) {
@@ -545,6 +557,14 @@ function WellnessPostPreviewModal({
               >
                 삭제하기
               </button>
+              {post.status === "published" && (
+                <button
+                  onClick={onArchive}
+                  style={{ flex: 1, padding: "11px", background: "#f5f5f5", color: "#000000", fontWeight: 600, fontSize: "0.875rem", borderRadius: "10px", border: "1px solid #e0e0e0", cursor: "pointer" }}
+                >
+                  보관하기
+                </button>
+              )}
               <button
                 onClick={onClose}
                 style={{ padding: "11px 18px", background: "#f5f5f5", color: "#666666", fontWeight: 600, fontSize: "0.875rem", borderRadius: "10px", cursor: "pointer" }}
@@ -744,6 +764,18 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
     setDeleting(null);
   }
 
+  async function handleArchive(postId: string) {
+    if (!isSupabaseReady) return;
+    const { error } = await supabase.from("posts").update({ status: "draft" }).eq("id", postId);
+    if (!error) {
+      setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, status: "draft" } : p)));
+      setPreview(null);
+      showToast("보관 처리되었습니다.");
+    } else {
+      showToast("오류가 발생했습니다.");
+    }
+  }
+
   async function handleApprove(postId: string) {
     if (!isSupabaseReady) return;
     setApproving(postId);
@@ -878,6 +910,18 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
       showToast("삭제 중 오류가 발생했습니다.");
     }
     setWellnessDeleting(null);
+  }
+
+  async function handleWellnessArchive(postId: string) {
+    if (!isSupabaseReady) return;
+    const { error } = await supabase.from("wellness_posts").update({ status: "draft" }).eq("id", postId);
+    if (!error) {
+      setWellnessPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, status: "draft" } : p)));
+      setWellnessPreview(null);
+      showToast("보관 처리되었습니다.");
+    } else {
+      showToast("오류가 발생했습니다.");
+    }
   }
 
   async function handleWellnessApprove(postId: string) {
@@ -1753,6 +1797,7 @@ async function fetchAllAnalytics(since: Date): Promise<{ event_type: string; cre
           onClose={() => setPreview(null)}
           onApprove={() => handleApprove(preview.id)}
           onDelete={() => handleDelete(preview.id)}
+          onArchive={() => handleArchive(preview.id)}
           onSave={(fields) => handleSave(preview.id, fields)}
           onError={(msg) => showToast(msg)}
         />
@@ -1765,6 +1810,7 @@ async function fetchAllAnalytics(since: Date): Promise<{ event_type: string; cre
           onClose={() => setWellnessPreview(null)}
           onApprove={() => handleWellnessApprove(wellnessPreview.id)}
           onDelete={() => handleWellnessDelete(wellnessPreview.id)}
+          onArchive={() => handleWellnessArchive(wellnessPreview.id)}
           onSave={(fields) => handleWellnessSave(wellnessPreview.id, fields)}
           onError={(msg) => showToast(msg)}
         />
