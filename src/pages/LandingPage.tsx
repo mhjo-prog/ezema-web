@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { motion } from "framer-motion";
+import { Helmet } from "react-helmet-async";
 import { supabase, isSupabaseReady } from "../lib/supabase";
 import Footer from "../components/Footer";
 import { CONSTITUTION_COLORS } from "../data/results";
@@ -55,7 +56,14 @@ export default function LandingPage({ onStart }: Props) {
   }, []);
 
   return (
-    <motion.div
+    <>
+      <Helmet>
+        <title>사상체질 자가진단 테스트 | 무료 체질검사 - 킵슬로우(Keepslow)</title>
+        <meta name="description" content="태양인·태음인·소양인·소음인 사상체질을 무료로 자가진단해보세요. 체질에 맞는 건강 정보를 제공합니다." />
+        <meta property="og:title" content="사상체질 자가진단 테스트 | 무료 체질검사 - 킵슬로우(Keepslow)" />
+        <meta property="og:description" content="태양인·태음인·소양인·소음인 사상체질을 무료로 자가진단해보세요. 체질에 맞는 건강 정보를 제공합니다." />
+      </Helmet>
+      <motion.div
       style={{ paddingTop: "56px" }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -453,5 +461,6 @@ export default function LandingPage({ onStart }: Props) {
       </footer>
       <Footer />
     </motion.div>
+    </>
   );
 }

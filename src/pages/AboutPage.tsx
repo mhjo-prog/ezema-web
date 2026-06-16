@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 
 function FadeUp({
   children,
@@ -59,7 +60,14 @@ export default function AboutPage() {
   const navigate = useNavigate();
 
   return (
-    <div
+    <>
+      <Helmet>
+        <title>킵슬로우 소개 | 이기적이지 않은 건강함 - Keepslow</title>
+        <meta name="description" content="킵슬로우(Keepslow)는 사상체질 기반 웰니스 브랜드입니다. 느리지만 꾸준한 건강함을 추구합니다." />
+        <meta property="og:title" content="킵슬로우 소개 | 이기적이지 않은 건강함 - Keepslow" />
+        <meta property="og:description" content="킵슬로우(Keepslow)는 사상체질 기반 웰니스 브랜드입니다. 느리지만 꾸준한 건강함을 추구합니다." />
+      </Helmet>
+      <div
       style={{
         minHeight: "100vh",
         background: "#ffffff",
@@ -377,5 +385,6 @@ export default function AboutPage() {
         }
       `}</style>
     </div>
+    </>
   );
 }
