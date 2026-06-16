@@ -398,13 +398,13 @@ export default function SasangDetailPage() {
                 <hr style={{ border: "none", borderTop: "1px solid #eeeeee", margin: "2em 0" }} />
               ),
               ul: ({ children }) => (
-                <ul style={{ paddingLeft: "1.4em", margin: "0 0 1.4em", lineHeight: 1.95, color: "#333333" }}>{children}</ul>
+                <ul style={{ listStyleType: "disc", paddingLeft: "1.5rem", margin: "0 0 1.4em", lineHeight: 1.95, color: "#333333" }}>{children}</ul>
               ),
               ol: ({ children }) => (
-                <ol style={{ paddingLeft: "1.4em", margin: "0 0 1.4em", lineHeight: 1.95, color: "#333333" }}>{children}</ol>
+                <ol style={{ listStyleType: "decimal", paddingLeft: "1.5rem", margin: "0 0 1.4em", lineHeight: 1.95, color: "#333333" }}>{children}</ol>
               ),
               li: ({ children }) => (
-                <li style={{ fontSize: "1rem", lineHeight: 1.8, marginBottom: "0.4em" }}>{children}</li>
+                <li style={{ display: "list-item", fontSize: "1rem", lineHeight: 1.8, marginBottom: "0.4em" }}>{children}</li>
               ),
             }}
           >

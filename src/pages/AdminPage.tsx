@@ -4,8 +4,28 @@ import { supabase, adminSupabase, isSupabaseReady, type Post, type WellnessPost 
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from "recharts";
 import ReactMarkdown from "react-markdown";
 import { useEditor, EditorContent } from "@tiptap/react";
+import { Extension } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
+
+// 리스트 안에서 Shift+Enter → 새 li (기본 HardBreak의 br 삽입보다 먼저 실행)
+const ListShiftEnter = Extension.create({
+  name: "listShiftEnter",
+  priority: 200,
+  addKeyboardShortcuts() {
+    return {
+      "Shift-Enter": () => {
+        const { $from } = this.editor.state.selection;
+        for (let d = $from.depth; d > 0; d--) {
+          if ($from.node(d).type.name === "listItem") {
+            return this.editor.commands.splitListItem("listItem");
+          }
+        }
+        return false; // 리스트 밖이면 기본 HardBreak(br)로 폴스루
+      },
+    };
+  },
+});
 import { marked } from "marked";
 import TurndownService from "turndown";
 
@@ -44,12 +64,6 @@ const TOOLBAR: { label: string; title: string; cmd: ToolbarCmd; style?: React.CS
 ];
 
 function contentToHtml(text: string): string {
-  const paragraphs = text.split(/\n\n+/).filter((p) => p.trim() !== "");
-  if (paragraphs.length > 1) {
-    return paragraphs
-      .map((p) => `<p>${p.trim().replace(/\n/g, "<br>")}</p>`)
-      .join("<p></p>");
-  }
   return marked.parse(text, { async: false }) as string;
 }
 
@@ -58,7 +72,15 @@ function RichEditor({ initialMarkdown, onChange }: { initialMarkdown: string; on
   onChangeRef.current = onChange;
 
   const editor = useEditor({
-    extensions: [StarterKit, Underline],
+    extensions: [
+      StarterKit.configure({
+        bulletList: { HTMLAttributes: { style: "list-style-type:disc;padding-left:1.5rem;" } },
+        orderedList: { HTMLAttributes: { style: "list-style-type:decimal;padding-left:1.5rem;" } },
+        listItem: { HTMLAttributes: { style: "display:list-item;line-height:1.8;" } },
+      }),
+      Underline,
+      ListShiftEnter,
+    ],
     content: contentToHtml(initialMarkdown),
     onUpdate({ editor }) {
       onChangeRef.current(turndown.turndown(editor.getHTML()));
@@ -291,6 +313,15 @@ function PostPreviewModal({
                 components={{
                   p: ({ children }) => (
                     <p style={{ marginBottom: '1em', lineHeight: '1.7', fontSize: '1rem', color: '#333333' }}>{children}</p>
+                  ),
+                  ul: ({ children }) => (
+                    <ul style={{ listStyleType: 'disc', paddingLeft: '1.5rem', margin: '0.5em 0' }}>{children}</ul>
+                  ),
+                  ol: ({ children }) => (
+                    <ol style={{ listStyleType: 'decimal', paddingLeft: '1.5rem', margin: '0.5em 0' }}>{children}</ol>
+                  ),
+                  li: ({ children }) => (
+                    <li style={{ display: 'list-item' }}>{children}</li>
                   ),
                 }}
               >{post.content}</ReactMarkdown>
@@ -532,6 +563,15 @@ function WellnessPostPreviewModal({
                 components={{
                   p: ({ children }) => (
                     <p style={{ marginBottom: '1em', lineHeight: '1.7', fontSize: '1rem', color: '#333333' }}>{children}</p>
+                  ),
+                  ul: ({ children }) => (
+                    <ul style={{ listStyleType: 'disc', paddingLeft: '1.5rem', margin: '0.5em 0' }}>{children}</ul>
+                  ),
+                  ol: ({ children }) => (
+                    <ol style={{ listStyleType: 'decimal', paddingLeft: '1.5rem', margin: '0.5em 0' }}>{children}</ol>
+                  ),
+                  li: ({ children }) => (
+                    <li style={{ display: 'list-item' }}>{children}</li>
                   ),
                 }}
               >{post.content}</ReactMarkdown>
