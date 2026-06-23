@@ -53,7 +53,7 @@ async function fetchRecentFeedback(constitutionType) {
       .from("post_feedback")
       .select("title, feedback_score, feedback_note, edited_title, edited_content, original_content")
       .eq("constitution_type", constitutionType)
-      .not("feedback_score", "is", null)
+      .or("feedback_score.not.is.null,edited_content.not.is.null")
       .order("created_at", { ascending: false })
       .limit(5);
 

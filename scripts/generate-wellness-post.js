@@ -243,6 +243,29 @@ async function fetchWellnessNews() {
   return results;
 }
 
+// ── Supabase에서 이전 피드백 읽기 ────────────────────────────────────
+async function fetchRecentFeedback() {
+  try {
+    const { data, error } = await supabase
+      .from("wellness_post_feedback")
+      .select("feedback_score, feedback_note, edited_title, edited_content, original_content")
+      .or("feedback_score.not.is.null,edited_content.not.is.null")
+      .order("created_at", { ascending: false })
+      .limit(5);
+
+    if (error || !data || data.length === 0) {
+      console.log("이전 피드백 없음. 기본 프롬프트 사용.");
+      return [];
+    }
+
+    console.log(`이전 피드백 ${data.length}건 로드됨`);
+    return data;
+  } catch (err) {
+    console.warn("피드백 로드 오류 (무시):", err.message);
+    return [];
+  }
+}
+
 // ── Supabase에서 최근 트렌드 키워드 읽기 ───────────────────────────
 async function fetchRecentTrends() {
   try {
@@ -345,7 +368,7 @@ async function fetchCrossCategoryTitles(category) {
 
 // ── Claude로 웰니스 콘텐츠 생성 ─────────────────────────────────────
 // externalRef: { source: "fitt"|"dallem"|"news", items: [{title, summary, source?}] } | null
-async function generateWellnessPostContent(category, trends, existingPosts, crossTitles, externalRef) {
+async function generateWellnessPostContent(category, trends, feedbacks, existingPosts, crossTitles, externalRef) {
   let externalSection = "";
   if (externalRef && externalRef.items.length > 0) {
     if (externalRef.source === "fitt") {
@@ -371,6 +394,26 @@ async function generateWellnessPostContent(category, trends, existingPosts, cros
         "\n";
     }
   }
+
+  const feedbackSection =
+    feedbacks.length > 0
+      ? `\n[이전 게시물 피드백 참고]\n` +
+        feedbacks
+          .map((f) => {
+            const score = f.feedback_score != null ? `점수: ${f.feedback_score}/5` : "점수: 없음";
+            const note = f.feedback_note ? `\n  메모: ${f.feedback_note}` : "";
+            const titleDiff = f.edited_title
+              ? `\n  제목 수정 → 수정본: "${f.edited_title}"`
+              : "";
+            const contentDiff =
+              f.edited_content && f.edited_content !== f.original_content
+                ? `\n  본문 수정 →\n    [원본] ${f.original_content.slice(0, 150)}...\n    [수정본] ${f.edited_content.slice(0, 150)}...`
+                : "";
+            return `- ${score}${titleDiff}${note}${contentDiff}`;
+          })
+          .join("\n") +
+        `\n점수가 낮거나 수정이 많았던 글의 패턴을 피하고, 높은 평가를 받은 스타일을 참고해서 작성해주세요.\n`
+      : "";
 
   const trendSection =
     trends.length > 0
@@ -412,7 +455,7 @@ async function generateWellnessPostContent(category, trends, existingPosts, cros
       {
         role: "user",
         content: `당신은 현대인의 건강한 삶을 돕는 웰니스 전문가입니다. 오늘의 '${category}' 웰니스 이야기를 작성해주세요.
-${externalSection}${trendSection}
+${externalSection}${trendSection}${feedbackSection}
 카테고리 주제 범위: ${categoryGuide[category]}
 ${existingPostsSection}${crossTitlesSection}
 다음 JSON 형식으로만 응답하세요 (다른 텍스트 없이):
@@ -538,6 +581,10 @@ async function main() {
   console.log("Supabase에서 최근 트렌드 로드 중...");
   const trends = await fetchRecentTrends();
 
+  // 2b. 이전 피드백 로드 (없어도 계속 진행)
+  console.log("Supabase에서 이전 피드백 로드 중...");
+  const feedbacks = await fetchRecentFeedback();
+
   // 3. 기존 게시글 제목+요약 로드 (중복 방지용)
   console.log("Supabase에서 기존 게시글 요약 로드 중...");
   const existingPosts = await fetchRecentPostSummaries(category);
@@ -559,6 +606,7 @@ async function main() {
     const candidate = await generateWellnessPostContent(
       category,
       trends,
+      feedbacks,
       existingPosts,
       crossTitles,
       externalRef
