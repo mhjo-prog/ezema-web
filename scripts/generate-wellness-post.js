@@ -248,7 +248,7 @@ async function fetchRecentFeedback() {
   try {
     const { data, error } = await supabase
       .from("wellness_post_feedback")
-      .select("feedback_score, feedback_note, edited_title, edited_content, original_content")
+      .select("title, feedback_score, feedback_note, edited_title, edited_content, original_content")
       .or("feedback_score.not.is.null,edited_content.not.is.null")
       .order("created_at", { ascending: false })
       .limit(5);
@@ -403,8 +403,8 @@ async function generateWellnessPostContent(category, trends, feedbacks, existing
             const score = f.feedback_score != null ? `점수: ${f.feedback_score}/5` : "점수: 없음";
             const note = f.feedback_note ? `\n  메모: ${f.feedback_note}` : "";
             const titleDiff = f.edited_title
-              ? `\n  제목 수정 → 수정본: "${f.edited_title}"`
-              : "";
+              ? `\n  제목 수정 → 원본: "${f.title}" / 수정본: "${f.edited_title}"`
+              : `\n  제목: "${f.title}"`;
             const contentDiff =
               f.edited_content && f.edited_content !== f.original_content
                 ? `\n  본문 수정 →\n    [원본] ${f.original_content.slice(0, 150)}...\n    [수정본] ${f.edited_content.slice(0, 150)}...`
