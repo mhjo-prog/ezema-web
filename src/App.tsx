@@ -1,5 +1,6 @@
 import { useRef, useEffect } from "react";
 import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
+import { Analytics } from "@vercel/analytics/react";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -100,6 +101,7 @@ export default function App() {
     <div style={{ width: "100%" }}>
       <Header onQuizStart={handleQuizStart} />
       <AppRoutes onQuizStart={handleQuizStart} />
+      <Analytics />
     </div>
   );
 }
