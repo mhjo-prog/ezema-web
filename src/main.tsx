@@ -6,6 +6,9 @@ import './index.css'
 import App from './App.tsx'
 import { AuthProvider } from './context/AuthContext.tsx'
 import { BookmarkProvider } from './context/BookmarkContext.tsx'
+import { initGA } from './lib/analytics'
+
+initGA()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

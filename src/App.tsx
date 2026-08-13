@@ -23,9 +23,15 @@ import KakaoCallbackPage from "./pages/KakaoCallbackPage";
 import AboutPage from "./pages/AboutPage";
 import MyPage from "./pages/MyPage";
 import ResultRoute from "./pages/ResultRoute";
+import { trackPageview } from "./lib/analytics";
 
 function AppRoutes({ onQuizStart }: { onQuizStart: () => void }) {
   const location = useLocation();
+
+  useEffect(() => {
+    trackPageview(location.pathname + location.search);
+  }, [location.pathname, location.search]);
+
   return (
     <AnimatePresence mode="wait">
       <ScrollToTop />
