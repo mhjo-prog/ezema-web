@@ -25,9 +25,12 @@ export function initGA() {
   document.head.appendChild(script);
 
   window.dataLayer = window.dataLayer || [];
-  window.gtag = function gtag(...args: unknown[]) {
-    window.dataLayer.push(args);
-  };
+  // 주의: gtag.js는 dataLayer에 push된 값이 `arguments` 객체일 때만 명령으로 인식한다.
+  // 배열(rest 파라미터)로 push하면 에러 없이 조용히 무시되므로 반드시 arguments를 그대로 넘긴다.
+  window.gtag = function gtag() {
+    // eslint-disable-next-line prefer-rest-params
+    window.dataLayer.push(arguments);
+  } as (...args: unknown[]) => void;
 
   window.gtag("js", new Date());
   // SPA이므로 초기 자동 page_view는 끄고, 라우트 변경 시 trackPageview로 직접 전송한다.
