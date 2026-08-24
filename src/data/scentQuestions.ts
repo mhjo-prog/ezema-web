@@ -108,10 +108,10 @@ export const scentQuestions: ScentQuestion[] = [
     { id: "c", text: "3~4일", scores: s("활력", 2) },
     { id: "d", text: "거의 매일", scores: s("활력", 1) },
   ]},
-  { id: 10, category: "활동량 · 피로도", text: "최근 일주일 동안 아침에 눈을 뜨는 것\n자체가 힘들게 느껴졌나요?", facet: "wakeup", options: [
-    { id: "a", text: "전혀 아니다", scores: s("활력", 4) },
-    { id: "b", text: "가끔", scores: s("활력", 3) },
-    { id: "c", text: "자주", scores: s("활력", 2) },
+  { id: 10, category: "활동량 · 피로도", text: "최근 일주일 동안 아침에 눈뜨기가\n힘들었던 날이 얼마나 되나요?", facet: "wakeup", options: [
+    { id: "a", text: "거의 없다", scores: s("활력", 4) },
+    { id: "b", text: "1~2일", scores: s("활력", 3) },
+    { id: "c", text: "3~4일", scores: s("활력", 2) },
     { id: "d", text: "거의 매일", scores: s("활력", 1) },
   ]},
   { id: 11, category: "활동량 · 피로도", text: "최근 일주일 동안 특별히 무리하지 않았는데도\n몸이 무겁게 느껴진 날이 얼마나 되나요?", facet: "fatigue", options: [
