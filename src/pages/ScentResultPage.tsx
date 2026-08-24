@@ -313,8 +313,8 @@ function ScentRadarChart({ axes: axisData, color }: { axes: RadarAxis[]; color: 
     // label position: r + 28px in the axis direction
     const lx = cx + (r + 28) * cos;
     const ly = cy + (r + 28) * sin;
-    const textAnchor = cos > 0.15 ? "start" : cos < -0.15 ? "end" : "middle";
-    const dominantBaseline = sin < -0.15 ? "auto" : sin > 0.15 ? "hanging" : "middle";
+    const textAnchor = (cos > 0.15 ? "start" : cos < -0.15 ? "end" : "middle") as "start" | "end" | "middle";
+    const dominantBaseline = (sin < -0.15 ? "auto" : sin > 0.15 ? "hanging" : "middle") as "auto" | "hanging" | "middle";
     return { lx, ly, textAnchor, dominantBaseline };
   };
 

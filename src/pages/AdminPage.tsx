@@ -662,7 +662,7 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
   const [chartRange, setChartRange] = useState<"7d" | "30d" | "monthly" | "all">("7d");
   const [statsRefreshing, setStatsRefreshing] = useState(false);
   const [customersTab, setCustomersTab] = useState<"visits" | "members">("visits");
-  const [kakaoUsers, setKakaoUsers] = useState<Array<{ kakao_id: string; nickname: string | null; profile_image?: string | null; updated_at?: string }>>([]);
+  const [kakaoUsers, setKakaoUsers] = useState<Array<{ kakao_id: string; nickname: string | null; profile_image?: string | null; updated_at?: string; created_at?: string }>>([]);
   const [usersLoading, setUsersLoading] = useState(false);
 
   function showToast(msg: string) {
