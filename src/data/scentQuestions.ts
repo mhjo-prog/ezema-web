@@ -102,7 +102,7 @@ export const scentQuestions: ScentQuestion[] = [
     { id: "c", text: "별로 그렇지 않았다", scores: s("이완", 2) },
     { id: "d", text: "전혀 그렇지 않았다", scores: s("이완", 1) },
   ]},
-  { id: 9, category: "활동량 · 피로도", text: "최근 일주일 동안 오후 2~4시 사이\n집중력이 급격히 떨어진 날이 얼마나 되나요?", facet: "afternoon", options: [
+  { id: 9, category: "활동량 · 피로도", text: "최근 일주일 동안 오후에 집중력이\n급격히 떨어진 날이 얼마나 되나요?", facet: "afternoon", options: [
     { id: "a", text: "거의 없다", scores: s("활력", 4) },
     { id: "b", text: "1~2일", scores: s("활력", 3) },
     { id: "c", text: "3~4일", scores: s("활력", 2) },
