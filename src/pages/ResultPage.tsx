@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { results, CONSTITUTION_COLORS } from "../data/results";
 import { supabase, isSupabaseReady } from "../lib/supabase";
 import { useAuth, PENDING_RESULT_KEY } from "../context/AuthContext";
+import { isProductionEnv } from "../lib/env";
 
 declare global {
   interface Window {
@@ -1214,7 +1215,7 @@ export default function ResultPage({ constitutionType, scores, onRetry, isShared
   const themeColor = CONSTITUTION_COLORS[constitutionType] ?? "#0774C4";
 
   useEffect(() => {
-    if (isSupabaseReady && constitutionType && !isShared && !isHistory) {
+    if (isSupabaseReady && isProductionEnv && constitutionType && !isShared && !isHistory) {
       supabase.from("analytics").insert({ event_type: "quiz_complete", constitution_type: constitutionType })
         .then(({ error }) => { if (error) console.log("[analytics] insert error:", error); });
     }

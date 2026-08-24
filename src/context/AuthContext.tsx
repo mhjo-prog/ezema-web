@@ -3,7 +3,7 @@ import { KAKAO_JS_KEY, KAKAO_REST_KEY, REDIRECT_URI, type KakaoUser } from "../l
 import { migrateLocalBookmarksToDb } from "../lib/bookmarks";
 import { supabase, isSupabaseReady } from "../lib/supabase";
 
-const isProductionEnv = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+import { isProductionEnv } from "../lib/env";
 
 export const PENDING_RESULT_KEY = "pending_result";
 export const PENDING_SCENT_KEY = "pending_scent_result";

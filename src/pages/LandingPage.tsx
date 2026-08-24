@@ -5,6 +5,7 @@ import { Helmet } from "react-helmet-async";
 import { supabase, isSupabaseReady } from "../lib/supabase";
 import Footer from "../components/Footer";
 import { CONSTITUTION_COLORS } from "../data/results";
+import { isProductionEnv } from "../lib/env";
 
 interface Props {
   onStart: () => void;
@@ -52,7 +53,7 @@ export default function LandingPage({ onStart }: Props) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isSupabaseReady) {
+    if (isSupabaseReady && isProductionEnv) {
       supabase.from("analytics").insert({ event_type: "page_visit" })
         .then(({ error }) => { if (error) console.log("[analytics] insert error:", error); });
     }

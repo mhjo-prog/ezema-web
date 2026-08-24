@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { supabase, isSupabaseReady, type WellnessPost } from "../lib/supabase";
 import Footer from "../components/Footer";
+import { isProductionEnv } from "../lib/env";
 
 const HERO_TITLES: Record<string, { line1: string; line2: string }> = {
   ko: { line1: "Selfless Wellness", line2: "이기적이지 않은 건강함" },
@@ -69,7 +70,7 @@ export default function HomePage() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (!isSupabaseReady) return;
+    if (!isSupabaseReady || !isProductionEnv) return;
     supabase.from("analytics").insert({ event_type: "page_visit" })
       .then(({ error }) => { if (error) console.log("[analytics] insert error:", error); });
   }, []);

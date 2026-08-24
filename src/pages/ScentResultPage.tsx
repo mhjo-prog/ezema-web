@@ -41,8 +41,7 @@ interface Props {
 }
 
 const KAKAO_APP_KEY = "fbf533c6007cf5212883947fe851e02d";
-// 런타임 환경 판별 (import.meta.env.PROD는 빌드 타임 치환 의존 → 신뢰성 보장 위해 hostname 체크)
-const isProductionEnv = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+import { isProductionEnv } from "../lib/env";
 
 function ScentToast({ visible, message = "복사됐습니다 ✓" }: { visible: boolean; message?: string }) {
   return (
