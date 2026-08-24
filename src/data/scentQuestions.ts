@@ -60,7 +60,7 @@ export const scentQuestions: ScentQuestion[] = [
     { id: "c", text: "20~40분", scores: s("숙면", 2) },
     { id: "d", text: "40분 이상", scores: s("숙면", 1) },
   ]},
-  { id: 2, category: "수면 패턴", text: "최근 일주일 동안 자다가 중간에 깨는 일이\n얼마나 잦았나요?", facet: "maintain", options: [
+  { id: 2, category: "수면 패턴", text: "최근 일주일 동안 자다가 중간에\n깨는 일이 얼마나 잦았나요?", facet: "maintain", options: [
     { id: "a", text: "거의 없다", scores: s("숙면", 4) },
     { id: "b", text: "1~2회", scores: s("숙면", 3) },
     { id: "c", text: "3~4회", scores: s("숙면", 2) },
