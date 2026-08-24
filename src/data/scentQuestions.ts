@@ -132,7 +132,7 @@ export const scentQuestions: ScentQuestion[] = [
     { id: "c", text: "15~30분", scores: s("몰입", 2) },
     { id: "d", text: "15분 미만", scores: s("몰입", 1) },
   ]},
-  { id: 14, category: "집중 · 업무환경", text: "어제 일하다가 스마트폰이나 딴생각으로\n집중이 끊긴 적이 얼마나 있었나요?", facet: "distract", options: [
+  { id: 14, category: "집중 · 업무환경", text: "어제, 업무중 스마트폰이나 딴생각으로\n집중이 끊긴 적이 얼마나 있었나요?", facet: "distract", options: [
     { id: "a", text: "거의 없었다", scores: s("몰입", 4) },
     { id: "b", text: "가끔", scores: s("몰입", 3) },
     { id: "c", text: "자주", scores: s("몰입", 2) },
