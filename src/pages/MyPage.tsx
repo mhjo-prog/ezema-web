@@ -48,7 +48,15 @@ const SCENT_DASH: Record<string, string | undefined> = {
   숙면: "8 3",
   활력: "3 3",
   몰입: "1 5",
-  청정: undefined,
+  청정: "4 2 1 2",
+};
+
+const SCENT_LINECAPS: Record<string, "round" | "butt" | "square"> = {
+  이완: "butt",
+  숙면: "butt",
+  활력: "butt",
+  몰입: "round",
+  청정: "butt",
 };
 
 const SCENT_WIDTHS: Record<string, number> = {
@@ -709,7 +717,7 @@ export default function MyPage() {
         {/* ── 검사 기록 ── */}
         <section style={{ marginBottom: "48px" }}>
           <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "#999999", marginBottom: "20px" }}>
-            HISTORY
+            SASANG HISTORY
           </p>
           {quizHistory.length === 0 ? (
             <div style={{ padding: "32px 28px", border: "1px solid #e8e8e8", borderRadius: "16px", background: "#f5f5f5", textAlign: "center" }}>
@@ -974,7 +982,7 @@ export default function MyPage() {
                             stroke={SCENT_CHART_COLORS[t]}
                             strokeWidth={SCENT_WIDTHS[t]}
                             strokeDasharray={SCENT_DASH[t]}
-                            strokeLinecap="butt"
+                            strokeLinecap={SCENT_LINECAPS[t]}
                             dot={(props: any) => {
                               const { cx, cy, index } = props;
                               const isSel = index === selectedIndex;
@@ -1024,7 +1032,7 @@ export default function MyPage() {
                               stroke={SCENT_CHART_COLORS[t]}
                               strokeWidth={SCENT_WIDTHS[t]}
                               strokeDasharray={SCENT_DASH[t] ?? "none"}
-                              strokeLinecap="butt"
+                              strokeLinecap={SCENT_LINECAPS[t]}
                             />
                           </svg>
                           <span style={{ fontSize: "12px", fontWeight: t === expandedScentType ? 700 : 400, color: t === expandedScentType ? "#111111" : "#555555" }}>{t}케어</span>
