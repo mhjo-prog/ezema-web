@@ -40,7 +40,7 @@ export default function Footer() {
         </p>
       </div>
       <p style={{ fontSize: "11px", color: "#ccc", margin: 0, textAlign: "center", lineHeight: 1.8 }}>
-        BigBrown, 606-87-02388<br />
+        BIIGBROWN, 606-87-02388<br />
         10F, 437 Teheran-ro, Gangnam-gu, Seoul (Samyoung Building)
       </p>
     </footer>

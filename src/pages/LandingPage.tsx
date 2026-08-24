@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Helmet } from "react-helmet-async";
 import { supabase, isSupabaseReady } from "../lib/supabase";
@@ -48,6 +49,8 @@ const constitutions = [
 ];
 
 export default function LandingPage({ onStart }: Props) {
+  const navigate = useNavigate();
+
   useEffect(() => {
     if (isSupabaseReady) {
       supabase.from("analytics").insert({ event_type: "page_visit" })
@@ -82,105 +85,235 @@ export default function LandingPage({ onStart }: Props) {
         }}
       >
         <div
+          className="hero-grid-container"
           style={{
-            maxWidth: "760px",
+            maxWidth: "1080px",
             width: "100%",
-            textAlign: "center",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            position: "relative",
           }}
         >
-          {/* Label */}
-          <motion.div
-            className="flex items-center gap-3"
-            style={{ marginBottom: "1.25rem" }}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.55 }}
-          >
-            <div style={{ height: "1px", width: "28px", background: "#0774C4", flexShrink: 0 }} />
-            <span className="lp-label" style={{ fontWeight: 600, fontSize: "11px", letterSpacing: "0.28em", textTransform: "uppercase", color: "#0774C4", whiteSpace: "nowrap" }}>
-              SASANG BODY TYPE TEST
-            </span>
-            <div style={{ height: "1px", width: "28px", background: "#0774C4", flexShrink: 0 }} />
-          </motion.div>
-
-          {/* Headline */}
-          <motion.h1
+          {/* Vertical divider */}
+          <div
+            className="hero-divider"
             style={{
-              fontWeight: 800,
-              fontSize: "clamp(2rem, 8vw, 4rem)",
-              letterSpacing: "-0.04em",
-              lineHeight: 1.1,
-              color: "#111111",
-              marginBottom: "1.25rem",
+              position: "absolute",
+              left: "50%",
+              top: 0,
+              bottom: 0,
+              width: "1px",
+              background: "#eeeeee",
+              transform: "translateX(-50%)",
+              pointerEvents: "none",
             }}
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          >
-            당신의 체질을
-            <br />
-            <span style={{ color: "#0774C4" }}>알아보세요</span>
-          </motion.h1>
+          />
 
-          {/* Subtitle */}
-          <motion.p
+          {/* ── Left Column: Sasang Body Type Test ── */}
+          <div
+            className="hero-col hero-col-left"
             style={{
-              fontSize: "1.0625rem",
-              fontWeight: 400,
-              color: "#666666",
-              lineHeight: 1.75,
-              marginBottom: "2.5rem",
-              maxWidth: "420px",
-            }}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.6 }}
-          >
-            간단한 질문으로 나의 사상체질 유형과
-            <br />
-            체질별 맞춤 건강 가이드를 확인해보세요
-          </motion.p>
-
-          {/* CTA */}
-          <motion.button
-            onClick={onStart}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.55 }}
-            whileHover={{ scale: 1.025 }}
-            whileTap={{ scale: 0.975 }}
-            className="lp-cta-btn"
-            style={{
-              padding: "16px 56px",
-              borderRadius: "50px",
-              background: "#0774C4",
-              color: "#ffffff",
-              fontSize: "1rem",
-              fontWeight: 600,
-              letterSpacing: "0.02em",
-              boxShadow: "0 4px 20px rgba(7,116,196,0.28)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              textAlign: "center",
+              padding: "48px clamp(20px, 4vw, 64px)",
             }}
           >
-            체질 테스트 시작하기
-          </motion.button>
-
-          {/* Scroll hint */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.1, duration: 0.8 }}
-            style={{ marginTop: "4rem", display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}
-          >
-            <span style={{ fontSize: "11px", letterSpacing: "0.1em", color: "#bbbbbb", textTransform: "uppercase" }}>scroll</span>
+            {/* Label */}
             <motion.div
-              animate={{ y: [0, 6, 0] }}
-              transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
-              style={{ width: "1px", height: "24px", background: "#dddddd" }}
-            />
-          </motion.div>
+              className="flex items-center gap-3"
+              style={{ marginBottom: "1.25rem" }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.55 }}
+            >
+              <div style={{ height: "1px", width: "28px", background: "#0774C4", flexShrink: 0 }} />
+              <span className="lp-label" style={{ fontWeight: 600, fontSize: "11px", letterSpacing: "0.28em", textTransform: "uppercase", color: "#0774C4", whiteSpace: "nowrap" }}>
+                SASANG BODY TYPE TEST
+              </span>
+              <div style={{ height: "1px", width: "28px", background: "#0774C4", flexShrink: 0 }} />
+            </motion.div>
+
+            {/* Headline */}
+            <motion.h1
+              style={{
+                fontWeight: 800,
+                fontSize: "clamp(1.75rem, 4vw, 2.75rem)",
+                letterSpacing: "-0.04em",
+                lineHeight: 1.1,
+                color: "#111111",
+                marginBottom: "1.25rem",
+              }}
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            >
+              당신의 체질을
+              <br />
+              <span style={{ color: "#0774C4" }}>알아보세요</span>
+            </motion.h1>
+
+            {/* Subtitle */}
+            <motion.p
+              style={{
+                fontSize: "1.0625rem",
+                fontWeight: 400,
+                color: "#666666",
+                lineHeight: 1.75,
+                marginBottom: "2.5rem",
+                maxWidth: "360px",
+              }}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.6 }}
+            >
+              간단한 질문으로 나의 사상체질 유형과
+              <br />
+              체질별 맞춤 건강 가이드를 확인해보세요
+            </motion.p>
+
+            {/* CTA */}
+            <motion.button
+              onClick={onStart}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.55 }}
+              whileHover={{ scale: 1.025 }}
+              whileTap={{ scale: 0.975 }}
+              className="lp-cta-btn"
+              style={{
+                padding: "16px 56px",
+                borderRadius: "50px",
+                background: "#0774C4",
+                color: "#ffffff",
+                fontSize: "1rem",
+                fontWeight: 600,
+                letterSpacing: "0.02em",
+                boxShadow: "0 4px 20px rgba(7,116,196,0.28)",
+              }}
+            >
+              체질 테스트 시작하기
+            </motion.button>
+
+            {/* Scroll hint — left column only */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.1, duration: 0.8 }}
+              style={{ marginTop: "4rem", display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}
+            >
+              <span style={{ fontSize: "11px", letterSpacing: "0.1em", color: "#bbbbbb", textTransform: "uppercase" }}>scroll</span>
+              <motion.div
+                animate={{ y: [0, 6, 0] }}
+                transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+                style={{ width: "1px", height: "24px", background: "#dddddd" }}
+              />
+            </motion.div>
+          </div>
+
+          {/* ── Right Column: Scent Health Test ── */}
+          <div
+            className="hero-col hero-col-right"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              textAlign: "center",
+              padding: "48px clamp(20px, 4vw, 64px)",
+            }}
+          >
+            {/* Label */}
+            <motion.div
+              className="flex items-center gap-3"
+              style={{ marginBottom: "1.25rem" }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35, duration: 0.55 }}
+            >
+              <div style={{ height: "1px", width: "28px", background: "#4A0E14", flexShrink: 0 }} />
+              <span className="lp-label" style={{ fontWeight: 600, fontSize: "11px", letterSpacing: "0.28em", textTransform: "uppercase", color: "#4A0E14", whiteSpace: "nowrap" }}>
+                SCENT HEALTH TEST
+              </span>
+              <div style={{ height: "1px", width: "28px", background: "#4A0E14", flexShrink: 0 }} />
+            </motion.div>
+
+            {/* Headline */}
+            <motion.h1
+              style={{
+                fontWeight: 800,
+                fontSize: "clamp(1.75rem, 4vw, 2.75rem)",
+                letterSpacing: "-0.04em",
+                lineHeight: 1.1,
+                color: "#111111",
+                marginBottom: "1.25rem",
+              }}
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.45, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            >
+              당신에게 필요한
+              <br />
+              <span style={{ color: "#4A0E14" }}>향을</span> 알아보세요
+            </motion.h1>
+
+            {/* Subtitle */}
+            <motion.p
+              style={{
+                fontSize: "1.0625rem",
+                fontWeight: 400,
+                color: "#666666",
+                lineHeight: 1.75,
+                marginBottom: "2.5rem",
+                maxWidth: "360px",
+              }}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.55, duration: 0.6 }}
+            >
+              간단한 질문으로 나의 생활 패턴을 진단하고
+              <br />
+              나에게 필요한 향과 사용법을 확인해보세요
+            </motion.p>
+
+            {/* CTA */}
+            <motion.button
+              onClick={() => navigate("/scent-quiz")}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.65, duration: 0.55 }}
+              whileHover={{ scale: 1.025 }}
+              whileTap={{ scale: 0.975 }}
+              className="lp-cta-btn"
+              style={{
+                padding: "16px 56px",
+                borderRadius: "50px",
+                background: "#4A0E14",
+                color: "#ffffff",
+                fontSize: "1rem",
+                fontWeight: 600,
+                letterSpacing: "0.02em",
+                boxShadow: "0 4px 20px rgba(74,14,20,0.28)",
+              }}
+            >
+              향 테스트 시작하기
+            </motion.button>
+
+            {/* Scroll hint — right column */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.2, duration: 0.8 }}
+              style={{ marginTop: "4rem", display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}
+            >
+              <span style={{ fontSize: "11px", letterSpacing: "0.1em", color: "#bbbbbb", textTransform: "uppercase" }}>scroll</span>
+              <motion.div
+                animate={{ y: [0, 6, 0] }}
+                transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+                style={{ width: "1px", height: "24px", background: "#dddddd" }}
+              />
+            </motion.div>
+          </div>
         </div>
       </section>
 
@@ -418,30 +551,53 @@ export default function LandingPage({ onStart }: Props) {
             >
               나의 건강 뿐만 아니라, 소중한 사람의 안녕을 챙기는<br />이기적이지 않은 건강 문화를 선도합니다.
             </p>
-            <motion.button
-              onClick={onStart}
-              whileHover={{ scale: 1.025 }}
-              whileTap={{ scale: 0.975 }}
-              className="w-full sm:w-auto"
-              style={{
-                marginTop: "8px",
-                padding: "15px 40px",
-                borderRadius: "50px",
-                background: "#6B3FA014",
-                color: "#6B3FA0",
-                fontSize: "0.9375rem",
-                fontWeight: 600,
-                letterSpacing: "0.02em",
-                boxShadow: "0 2px 8px rgba(107,63,160,0.15)",
-              }}
-            >
-              내 체질 알아보기
-            </motion.button>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "8px" }}>
+              <motion.button
+                onClick={onStart}
+                whileHover={{ scale: 1.025 }}
+                whileTap={{ scale: 0.975 }}
+                style={{
+                  padding: "15px 40px",
+                  borderRadius: "50px",
+                  background: "#6B3FA014",
+                  color: "#6B3FA0",
+                  fontSize: "0.9375rem",
+                  fontWeight: 600,
+                  letterSpacing: "0.02em",
+                  boxShadow: "0 2px 8px rgba(107,63,160,0.15)",
+                }}
+              >
+                내 체질 알아보기
+              </motion.button>
+              <motion.button
+                onClick={() => navigate("/scent-quiz")}
+                whileHover={{ scale: 1.025 }}
+                whileTap={{ scale: 0.975 }}
+                style={{
+                  padding: "15px 40px",
+                  borderRadius: "50px",
+                  background: "#7A1B2E14",
+                  color: "#7A1B2E",
+                  fontSize: "0.9375rem",
+                  fontWeight: 600,
+                  letterSpacing: "0.02em",
+                  boxShadow: "0 2px 8px rgba(122,27,46,0.12)",
+                }}
+              >
+                내게 필요한 향 알아보기
+              </motion.button>
+            </div>
           </motion.div>
         </div>
       </section>
 
       <style>{`
+        @media (max-width: 768px) {
+          .hero-grid-container { grid-template-columns: 1fr !important; }
+          .hero-divider { display: none !important; }
+          .hero-col-left { border-bottom: 1px solid #eeeeee; }
+          .hero-col { padding: 48px clamp(16px, 6vw, 40px) !important; }
+        }
         @media (max-width: 480px) {
           .lp-label { font-size: 9px !important; letter-spacing: 0.18em !important; }
           .lp-cta-btn { padding: 12px 28px !important; font-size: 0.875rem !important; width: fit-content !important; }

@@ -34,7 +34,7 @@ export interface KakaoUser {
 
 export type ConstitutionType = "태음인" | "소음인" | "태양인" | "소양인";
 export type PostStatus = "draft" | "approved" | "published";
-export type WellnessCategory = "수면" | "식단" | "운동" | "명상" | "스트레스";
+export type WellnessCategory = "수면" | "식단" | "운동" | "명상" | "스트레스" | "향";
 
 export interface Post {
   id: string;

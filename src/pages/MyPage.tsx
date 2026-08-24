@@ -26,6 +26,49 @@ interface QuizResult {
   created_at: string;
 }
 
+interface ScentResult {
+  scentType: string;
+  scores: Record<string, number>;
+  facetScores: Record<string, number>;
+  created_at: string;
+}
+
+const SCENT_TYPES = ["이완", "숙면", "활력", "몰입", "청정"] as const;
+
+const SCENT_CHART_COLORS: Record<string, string> = {
+  이완: "#E87040",
+  숙면: "#4E7EC7",
+  활력: "#50B876",
+  몰입: "#9B6FC9",
+  청정: "#5BBCB4",
+};
+
+const SCENT_DASH: Record<string, string | undefined> = {
+  이완: undefined,
+  숙면: "8 3",
+  활력: "3 3",
+  몰입: "1 5",
+  청정: undefined,
+};
+
+const SCENT_WIDTHS: Record<string, number> = {
+  이완: 3, 숙면: 2.5, 활력: 2, 몰입: 2.5, 청정: 2,
+};
+
+const AXIS_ORDER_MYPAGE = ["이완", "숙면", "활력", "몰입", "청정"];
+const FACET_ORDER_MYPAGE = [
+  "onset","maintain","morning","rhythm",
+  "emotional","physical","autonomic","recovery",
+  "afternoon","wakeup","fatigue","caffeine",
+  "duration","distract","switch","screen",
+  "airway","sensitive","stuffy","hygiene",
+];
+
+function scentAxisDisplayScore(scores: Record<string, number>, type: string): number {
+  const raw = scores[type] || 0;
+  return Math.round(Math.max(0, Math.min(100, ((raw - 4) / 12) * 100)));
+}
+
 interface SavedItem {
   id: string;
   title: string;
@@ -193,6 +236,83 @@ function HistoryCard({ item, isExpanded, onToggle, onDelete, onViewResult, navig
   );
 }
 
+function ScentHistoryCard({ item, isExpanded, onToggle, onDelete, onViewResult }: {
+  item: ScentResult;
+  isExpanded: boolean;
+  onToggle: () => void;
+  onDelete: (e: React.MouseEvent) => void;
+  onViewResult: () => void;
+}) {
+  const scoreEntries = SCENT_TYPES.map(t => ({ type: t, score: scentAxisDisplayScore(item.scores, t) }))
+    .sort((a, b) => b.score - a.score);
+
+  return (
+    <div style={{ border: "1px solid #e8e8e8", borderRadius: "12px", overflow: "hidden" }}>
+      <div
+        onClick={onToggle}
+        style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", cursor: "pointer", background: isExpanded ? "#f8f8f8" : "#ffffff", transition: "background 0.15s" }}
+        onMouseEnter={(e) => { if (!isExpanded) e.currentTarget.style.background = "#f8f8f8"; }}
+        onMouseLeave={(e) => { if (!isExpanded) e.currentTarget.style.background = "#ffffff"; }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <span style={{ fontSize: "0.8125rem", color: "#999999" }}>{formatDate(item.created_at)}</span>
+          <span style={{ fontSize: "0.9375rem", fontWeight: 700, color: "#000000" }}>
+            {item.scentType}케어
+          </span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <button
+            onClick={(e) => { e.stopPropagation(); onDelete(e); }}
+            title="삭제"
+            style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "28px", height: "28px", borderRadius: "6px", border: "none", background: "transparent", cursor: "pointer", color: "#cccccc", flexShrink: 0, transition: "color 0.15s, background 0.15s" }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = "#ff4444"; e.currentTarget.style.background = "#fff0f0"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = "#cccccc"; e.currentTarget.style.background = "transparent"; }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+              <path d="M10 11v6" /><path d="M14 11v6" />
+              <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+            </svg>
+          </button>
+          <span style={{ fontSize: "1rem", color: "#999999", display: "inline-block", transform: isExpanded ? "rotate(90deg)" : "none", transition: "transform 0.2s" }}>›</span>
+        </div>
+      </div>
+
+      {isExpanded && (
+        <div style={{ padding: "16px 20px", borderTop: "1px solid #f0f0f0" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "16px" }}>
+            {scoreEntries.map(({ type, score }) => {
+              const isTop = type === item.scentType;
+              return (
+                <div key={type}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "3px" }}>
+                    <span style={{ fontSize: "0.8rem", fontWeight: isTop ? 700 : 500, color: isTop ? "#000000" : "#666666" }}>{type}케어</span>
+                    <span style={{ fontSize: "0.8rem", fontWeight: isTop ? 700 : 400, color: isTop ? "#000000" : "#999999" }}>{score}%</span>
+                  </div>
+                  <div style={{ height: "4px", background: "#f0f0f0", borderRadius: "2px", overflow: "hidden" }}>
+                    <div style={{ height: "100%", width: `${score}%`, background: isTop ? (SCENT_CHART_COLORS[type] ?? "#000000") : "#cccccc", borderRadius: "2px" }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ display: "flex", gap: "8px" }}>
+            <button
+              onClick={(e) => { e.stopPropagation(); onViewResult(); }}
+              style={{ fontSize: "0.8125rem", fontWeight: 600, padding: "8px 16px", borderRadius: "50px", cursor: "pointer", color: "#111111", background: "#ffffff", border: "1px solid #e8e8e8", letterSpacing: "0.01em", transition: "all 0.15s" }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "#111111"; e.currentTarget.style.color = "#ffffff"; e.currentTarget.style.borderColor = "#111111"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "#ffffff"; e.currentTarget.style.color = "#111111"; e.currentTarget.style.borderColor = "#e8e8e8"; }}
+            >
+              상세 결과 보기
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function MyPage() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -200,6 +320,9 @@ export default function MyPage() {
   const [expandedAt, setExpandedAt] = useState<string | null>(null);
   const [selectedAt, setSelectedAt] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<QuizResult | null>(null);
+  const [scentHistory, setScentHistory] = useState<ScentResult[]>([]);
+  const [scentExpandedAt, setScentExpandedAt] = useState<string | null>(null);
+  const [scentDeleteTarget, setScentDeleteTarget] = useState<ScentResult | null>(null);
   const [savedTypology, setSavedTypology] = useState<SavedItem[]>([]);
   const [savedWellness, setSavedWellness] = useState<SavedItem[]>([]);
 
@@ -234,6 +357,27 @@ export default function MyPage() {
             created_at: row.created_at,
           }));
           setQuizHistory(history);
+        }
+      });
+  }, [user]);
+
+  // 향 체질 검사 기록 로드
+  useEffect(() => {
+    if (!user || !isSupabaseReady) return;
+    supabase
+      .from("scent_results")
+      .select("scent_type, scores, facet_scores, created_at")
+      .eq("kakao_id", String(user.kakao_id))
+      .order("created_at", { ascending: false })
+      .then(({ data, error }) => {
+        if (error) console.error("[MyPage] scent_results 조회 오류:", error);
+        if (data?.length) {
+          setScentHistory(data.map((row: any) => ({
+            scentType: row.scent_type,
+            scores: row.scores ?? {},
+            facetScores: row.facet_scores ?? {},
+            created_at: row.created_at,
+          })));
         }
       });
   }, [user]);
@@ -335,6 +479,22 @@ export default function MyPage() {
     setDeleteTarget(null);
   }
 
+  async function handleDeleteScentConfirm() {
+    if (!scentDeleteTarget || !user || !isSupabaseReady) return;
+    const { error } = await supabase
+      .from("scent_results")
+      .delete()
+      .eq("kakao_id", String(user.kakao_id))
+      .eq("created_at", scentDeleteTarget.created_at);
+    if (error) {
+      console.error("[scent_results] delete 실패:", error);
+    } else {
+      setScentHistory((prev) => prev.filter((r) => r.created_at !== scentDeleteTarget.created_at));
+      if (scentExpandedAt === scentDeleteTarget.created_at) setScentExpandedAt(null);
+    }
+    setScentDeleteTarget(null);
+  }
+
   if (!user) return null;
 
   const quizResult = quizHistory[0] ?? null;
@@ -350,6 +510,12 @@ export default function MyPage() {
       <DeleteConfirmModal
         onConfirm={handleDeleteConfirm}
         onCancel={() => setDeleteTarget(null)}
+      />
+    )}
+    {scentDeleteTarget && (
+      <DeleteConfirmModal
+        onConfirm={handleDeleteScentConfirm}
+        onCancel={() => setScentDeleteTarget(null)}
       />
     )}
     <motion.div
@@ -718,6 +884,169 @@ export default function MyPage() {
                     onDelete={(e) => { e.stopPropagation(); setDeleteTarget(item); }}
                     onViewResult={() => navigate("/result", { state: { constitutionType: item.constitutionType, scores: item.scores } })}
                     navigate={navigate}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </section>
+
+        <div style={{ height: "1px", background: "#e8e8e8", marginBottom: "48px" }} />
+
+        {/* ── 향 체질 검사 기록 ── */}
+        <section style={{ marginBottom: "48px" }}>
+          <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "#999999", marginBottom: "20px" }}>
+            SCENT HISTORY
+          </p>
+          {scentHistory.length === 0 ? (
+            <div style={{ padding: "32px 28px", border: "1px solid #e8e8e8", borderRadius: "16px", background: "#f5f5f5", textAlign: "center" }}>
+              <p style={{ fontSize: "0.9rem", color: "#999999", marginBottom: "16px" }}>향 체질 검사 기록이 없습니다.</p>
+              <button
+                onClick={() => navigate("/scent-quiz")}
+                style={{ padding: "9px 20px", background: "#ffffff", color: "#111111", fontWeight: 600, fontSize: "0.8125rem", borderRadius: "50px", cursor: "pointer", border: "1px solid #e8e8e8", transition: "all 0.15s" }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "#111111"; e.currentTarget.style.color = "#ffffff"; e.currentTarget.style.borderColor = "#111111"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "#ffffff"; e.currentTarget.style.color = "#111111"; e.currentTarget.style.borderColor = "#e8e8e8"; }}
+              >
+                향 체질 검사하러 가기
+              </button>
+            </div>
+          ) : (
+            <>
+              {scentHistory.length >= 2 && (() => {
+                const reversedScent = [...scentHistory].reverse();
+                const selectedIndex = scentExpandedAt
+                  ? reversedScent.findIndex((item) => item.created_at === scentExpandedAt)
+                  : -1;
+                const expandedScentType = scentExpandedAt
+                  ? scentHistory.find((r) => r.created_at === scentExpandedAt)?.scentType ?? null
+                  : null;
+                const chartData = reversedScent.map((item, i) => {
+                  const entry: Record<string, string | number> = { idx: i, date: formatDate(item.created_at) };
+                  SCENT_TYPES.forEach((t) => {
+                    entry[t] = scentAxisDisplayScore(item.scores, t);
+                  });
+                  return entry;
+                });
+                const dateByIndex = chartData.map((d) => d.date as string);
+                return (
+                  <div style={{ padding: "24px 8px 8px", border: "1px solid #e8e8e8", borderRadius: "16px", background: "#ffffff", marginBottom: "8px" }}>
+                    <ResponsiveContainer width="100%" height={240}>
+                      <LineChart data={chartData} margin={{ top: 20, right: 20, left: -8, bottom: 4 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                        <XAxis
+                          dataKey="idx"
+                          type="number"
+                          domain={[0, chartData.length - 1]}
+                          ticks={chartData.map((_, i) => i)}
+                          tickFormatter={(i: number) => dateByIndex[i] ?? ""}
+                          tick={{ fontSize: 11, fill: "#999999" }}
+                          axisLine={false}
+                          tickLine={false}
+                        />
+                        <YAxis
+                          domain={[0, 100]}
+                          ticks={[0, 20, 40, 60, 80, 100]}
+                          tick={{ fontSize: 11, fill: "#999999" }}
+                          axisLine={false}
+                          tickLine={false}
+                        />
+                        <Tooltip
+                          content={({ active, payload, label }) => {
+                            if (!active || !payload?.length) return null;
+                            const sorted = [...payload].sort((a: any, b: any) => b.value - a.value);
+                            return (
+                              <div style={{ background: "#ffffff", border: "1px solid #e8e8e8", borderRadius: "8px", padding: "12px", fontSize: "12px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+                                <p style={{ marginBottom: "8px", color: "#999999", fontWeight: 600 }}>{dateByIndex[label as number] ?? ""}</p>
+                                {sorted.map((item: any) => (
+                                  <p key={item.dataKey} style={{ color: item.color, marginBottom: "4px", fontWeight: 500 }}>
+                                    {item.name}케어 : {item.value}%
+                                  </p>
+                                ))}
+                              </div>
+                            );
+                          }}
+                        />
+                        {SCENT_TYPES.map((t) => (
+                          <Line
+                            key={t}
+                            type="monotone"
+                            dataKey={t}
+                            stroke={SCENT_CHART_COLORS[t]}
+                            strokeWidth={SCENT_WIDTHS[t]}
+                            strokeDasharray={SCENT_DASH[t]}
+                            strokeLinecap="butt"
+                            dot={(props: any) => {
+                              const { cx, cy, index } = props;
+                              const isSel = index === selectedIndex;
+                              return (
+                                <circle
+                                  key={`dot-${t}-${index}`}
+                                  cx={cx} cy={cy}
+                                  r={isSel ? 8 : 4}
+                                  fill={SCENT_CHART_COLORS[t]}
+                                  stroke={isSel ? "#ffffff" : "none"}
+                                  strokeWidth={isSel ? 2 : 0}
+                                />
+                              );
+                            }}
+                            activeDot={{ r: 5 }}
+                          >
+                            <LabelList
+                              dataKey={t}
+                              position="top"
+                              content={(props: any) => {
+                                const isSel = props.index === selectedIndex;
+                                return (
+                                  <text
+                                    key={`label-${t}-${props.index}`}
+                                    x={props.x}
+                                    y={(props.y ?? 0) - 4}
+                                    textAnchor="middle"
+                                    fill={SCENT_CHART_COLORS[t]}
+                                    fontSize={isSel ? 13 : 11}
+                                    fontWeight={isSel ? 700 : 600}
+                                  >
+                                    {`${props.value}%`}
+                                  </text>
+                                );
+                              }}
+                            />
+                          </Line>
+                        ))}
+                      </LineChart>
+                    </ResponsiveContainer>
+                    <div style={{ display: "flex", justifyContent: "center", gap: "16px", padding: "12px 8px 16px", flexWrap: "wrap" }}>
+                      {SCENT_TYPES.map((t) => (
+                        <div key={t} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                          <svg width="30" height="12" style={{ flexShrink: 0, overflow: "visible" }}>
+                            <line
+                              x1="0" y1="6" x2="30" y2="6"
+                              stroke={SCENT_CHART_COLORS[t]}
+                              strokeWidth={SCENT_WIDTHS[t]}
+                              strokeDasharray={SCENT_DASH[t] ?? "none"}
+                              strokeLinecap="butt"
+                            />
+                          </svg>
+                          <span style={{ fontSize: "12px", fontWeight: t === expandedScentType ? 700 : 400, color: t === expandedScentType ? "#111111" : "#555555" }}>{t}케어</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                {scentHistory.map((item) => (
+                  <ScentHistoryCard
+                    key={item.created_at}
+                    item={item}
+                    isExpanded={scentExpandedAt === item.created_at}
+                    onToggle={() => setScentExpandedAt(scentExpandedAt === item.created_at ? null : item.created_at)}
+                    onDelete={(e) => { e.stopPropagation(); setScentDeleteTarget(item); }}
+                    onViewResult={() => {
+                      const as = AXIS_ORDER_MYPAGE.map(t => Math.round(item.scores[t] ?? 0)).join(",");
+                      const fs = FACET_ORDER_MYPAGE.map(f => Math.round(item.facetScores[f] ?? 1)).join(",");
+                      navigate(`/scent-quiz?scentType=${encodeURIComponent(item.scentType)}&as=${as}&fs=${fs}`);
+                    }}
                   />
                 ))}
               </div>

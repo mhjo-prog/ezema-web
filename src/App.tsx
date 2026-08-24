@@ -23,6 +23,7 @@ import KakaoCallbackPage from "./pages/KakaoCallbackPage";
 import AboutPage from "./pages/AboutPage";
 import MyPage from "./pages/MyPage";
 import ResultRoute from "./pages/ResultRoute";
+import ScentQuizPage from "./pages/ScentQuizPage";
 import { trackPageview } from "./lib/analytics";
 
 function AppRoutes({ onQuizStart }: { onQuizStart: () => void }) {
@@ -48,6 +49,7 @@ function AppRoutes({ onQuizStart }: { onQuizStart: () => void }) {
         <Route path="/auth/kakao/callback" element={<KakaoCallbackPage />} />
         <Route path="/mypage" element={<MyPage />} />
         <Route path="/result" element={<ResultRoute />} />
+        <Route path="/scent-quiz" element={<ScentQuizPage />} />
       </Routes>
     </AnimatePresence>
   );

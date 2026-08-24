@@ -1,7 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { KAKAO_REST_KEY, REDIRECT_URI, upsertKakaoUser, type KakaoUser } from "../lib/kakaoApi";
-import { useAuth, KAKAO_BROADCAST_CHANNEL, PENDING_RESULT_KEY } from "../context/AuthContext";
+import {
+  useAuth,
+  KAKAO_BROADCAST_CHANNEL,
+  PENDING_RESULT_KEY,
+  KAKAO_LOGIN_MODE_KEY,
+  POST_LOGIN_REDIRECT_KEY,
+} from "../context/AuthContext";
 
 type Status = "processing" | "error";
 
@@ -11,6 +17,9 @@ export default function KakaoCallbackPage() {
   const [status, setStatus] = useState<Status>("processing");
   const [errorMsg, setErrorMsg] = useState("");
   const hasProcessed = useRef(false);
+  // 팝업/리다이렉트 여부는 opener/name 추측이 아니라 로그인 시작 시점에
+  // 명시적으로 저장해둔 값으로 판별 (모바일에서 opener/name이 신뢰 불가)
+  const loginModeRef = useRef<string | null>(null);
 
   useEffect(() => {
     // React StrictMode에서 effect가 두 번 실행되는 것 방지
@@ -18,9 +27,12 @@ export default function KakaoCallbackPage() {
     if (hasProcessed.current) return;
     hasProcessed.current = true;
 
+    loginModeRef.current = sessionStorage.getItem(KAKAO_LOGIN_MODE_KEY);
+    sessionStorage.removeItem(KAKAO_LOGIN_MODE_KEY);
+
     const pendingRaw = localStorage.getItem(PENDING_RESULT_KEY);
     console.log("[KakaoCallback] 페이지 로드 시 pending_result:", pendingRaw);
-    console.log("[KakaoCallback] window.opener:", window.opener, "| window.name:", window.name);
+    console.log("[KakaoCallback] loginMode:", loginModeRef.current, "| window.opener:", window.opener, "| window.name:", window.name);
 
     const params = new URLSearchParams(window.location.search);
     const code = params.get("code");
@@ -55,7 +67,8 @@ export default function KakaoCallbackPage() {
     setStatus("error");
     setErrorMsg(msg);
 
-    if (window.opener && !window.opener.closed) {
+    const isPopup = loginModeRef.current === "popup" && !!window.opener && !window.opener.closed;
+    if (isPopup) {
       broadcast({ type: "KAKAO_LOGIN_ERROR", message: msg });
       setTimeout(() => window.close(), 1200);
     } else {
@@ -117,9 +130,11 @@ export default function KakaoCallbackPage() {
       // 3. Supabase에 유저 저장 (upsert)
       await upsertKakaoUser(user);
 
-      // 4. 팝업으로 열린 경우: BroadcastChannel로 부모에 전송 후 팝업 닫기
-      //    직접 접근한 경우: 상태 저장 후 메인으로 리다이렉트
-      if (window.opener !== null || window.name === "kakaoLogin") {
+      // 4. 팝업으로 열린 경우(데스크톱): BroadcastChannel로 부모에 전송 후 팝업 닫기
+      //    리다이렉트로 들어온 경우(주로 모바일): 상태 저장 후 직접 이동
+      //    -> opener/name 추측 대신 로그인 시작 시 저장해둔 모드 값으로 판별
+      const isPopupFlow = loginModeRef.current === "popup" && !!window.opener;
+      if (isPopupFlow) {
         broadcast({ type: "KAKAO_LOGIN_SUCCESS", user });
         // 메시지 전달 보장 후 팝업 닫기
         setTimeout(() => window.close(), 300);
@@ -127,9 +142,11 @@ export default function KakaoCallbackPage() {
         // pending_result 여부를 setUserFromCallback 호출 전에 확인
         // (setUserFromCallback 내부에서 localStorage를 지우기 전에 체크해야 함)
         const hasPendingResult = !!localStorage.getItem(PENDING_RESULT_KEY);
+        const postLoginRedirect = sessionStorage.getItem(POST_LOGIN_REDIRECT_KEY);
+        sessionStorage.removeItem(POST_LOGIN_REDIRECT_KEY);
         setUserFromCallback(user);
         if (!hasPendingResult) {
-          navigate("/", { replace: true });
+          navigate(postLoginRedirect || "/", { replace: true });
         }
         // hasPendingResult가 true면 savePendingResult가 /mypage로 이동시킴
       }

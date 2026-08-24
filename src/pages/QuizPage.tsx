@@ -76,8 +76,8 @@ export default function QuizPage() {
     sessionStorage.setItem(SESSION_KEY, result);
     localStorage.setItem("ezema_mypage_result", result);
 
-    // 로그인 유저면 DB에도 저장 (비로그인 시 pending_result는 결과 저장하기 버튼에서 처리)
-    if (user && isSupabaseReady) {
+    // 로그인 유저면 DB에도 저장 (비로그인 시 pending_result는 결과 저장하기 버튼에서 처리, 프로덕션 전용)
+    if (user && isSupabaseReady && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
       supabase.from("quiz_results").insert({
         kakao_id: String(user.kakao_id),
         constitution_type: type,

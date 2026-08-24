@@ -658,7 +658,7 @@ export default function AdminPage() {
 
   // 공통
   const [toast, setToast] = useState<string | null>(null);
-const [chartData, setChartData] = useState<{ date: string; visits: number; quizCompletes: number }[]>([]);
+const [chartData, setChartData] = useState<{ date: string; visits: number; quizCompletes: number; scentCompletes: number }[]>([]);
   const [chartRange, setChartRange] = useState<"7d" | "30d" | "monthly" | "all">("7d");
   const [statsRefreshing, setStatsRefreshing] = useState(false);
   const [customersTab, setCustomersTab] = useState<"visits" | "members">("visits");
@@ -1016,6 +1016,26 @@ async function fetchAllAnalytics(since: Date): Promise<{ event_type: string; cre
     return all;
   }
 
+  async function fetchAllScentDates(since?: Date): Promise<string[]> {
+    const PAGE = 1000;
+    const all: string[] = [];
+    let from = 0;
+    while (true) {
+      let query = supabase
+        .from("scent_results")
+        .select("created_at")
+        .order("created_at", { ascending: true })
+        .range(from, from + PAGE - 1);
+      if (since) query = query.gte("created_at", since.toISOString());
+      const { data } = await query;
+      if (!data || data.length === 0) break;
+      all.push(...(data as { created_at: string }[]).map((r) => r.created_at));
+      if (data.length < PAGE) break;
+      from += PAGE;
+    }
+    return all;
+  }
+
   async function fetchChartData(range: "7d" | "30d" | "monthly" | "all") {
     if (!isSupabaseReady) return;
     if (range === "all") {
@@ -1033,13 +1053,20 @@ async function fetchAllAnalytics(since: Date): Promise<{ event_type: string; cre
         if (data.length < PAGE) break;
         from += PAGE;
       }
-      const buckets: Record<string, { visits: number; quizCompletes: number }> = {};
+      const buckets: Record<string, { visits: number; quizCompletes: number; scentCompletes: number }> = {};
       all.forEach((row) => {
         const d = new Date(row.created_at);
         const key = `${String(d.getFullYear()).slice(2)}/${String(d.getMonth() + 1).padStart(2, "0")}`;
-        if (!buckets[key]) buckets[key] = { visits: 0, quizCompletes: 0 };
+        if (!buckets[key]) buckets[key] = { visits: 0, quizCompletes: 0, scentCompletes: 0 };
         if (row.event_type === "page_visit") buckets[key].visits++;
         else if (row.event_type === "quiz_complete") buckets[key].quizCompletes++;
+      });
+      const scentDates = await fetchAllScentDates();
+      scentDates.forEach((createdAt) => {
+        const d = new Date(createdAt);
+        const key = `${String(d.getFullYear()).slice(2)}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+        if (!buckets[key]) buckets[key] = { visits: 0, quizCompletes: 0, scentCompletes: 0 };
+        buckets[key].scentCompletes++;
       });
       setChartData(
         Object.entries(buckets)
@@ -1050,17 +1077,20 @@ async function fetchAllAnalytics(since: Date): Promise<{ event_type: string; cre
     }
     if (range === "7d" || range === "30d") {
       const days = range === "7d" ? 7 : 30;
-      const buckets: Record<string, { visits: number; quizCompletes: number }> = {};
+      const buckets: Record<string, { visits: number; quizCompletes: number; scentCompletes: number }> = {};
       for (let i = 0; i < days; i++) {
         const d = new Date();
         d.setDate(d.getDate() - (days - 1 - i));
         const key = `${d.getMonth() + 1}/${d.getDate()}`;
-        buckets[key] = { visits: 0, quizCompletes: 0 };
+        buckets[key] = { visits: 0, quizCompletes: 0, scentCompletes: 0 };
       }
       const since = new Date();
       since.setDate(since.getDate() - (days - 1));
       since.setHours(0, 0, 0, 0);
-      const rows = await fetchAllAnalytics(since);
+      const [rows, scentDates] = await Promise.all([
+        fetchAllAnalytics(since),
+        fetchAllScentDates(since),
+      ]);
       rows.forEach((row) => {
         const d = new Date(row.created_at);
         const key = `${d.getMonth() + 1}/${d.getDate()}`;
@@ -1069,21 +1099,29 @@ async function fetchAllAnalytics(since: Date): Promise<{ event_type: string; cre
           else if (row.event_type === "quiz_complete") buckets[key].quizCompletes++;
         }
       });
+      scentDates.forEach((createdAt) => {
+        const d = new Date(createdAt);
+        const key = `${d.getMonth() + 1}/${d.getDate()}`;
+        if (buckets[key]) buckets[key].scentCompletes++;
+      });
       setChartData(Object.entries(buckets).map(([date, v]) => ({ date, ...v })));
     } else {
-      const buckets: Record<string, { visits: number; quizCompletes: number }> = {};
+      const buckets: Record<string, { visits: number; quizCompletes: number; scentCompletes: number }> = {};
       for (let i = 0; i < 12; i++) {
         const d = new Date();
         d.setDate(1);
         d.setMonth(d.getMonth() - (11 - i));
         const key = `${String(d.getFullYear()).slice(2)}/${String(d.getMonth() + 1).padStart(2, "0")}`;
-        buckets[key] = { visits: 0, quizCompletes: 0 };
+        buckets[key] = { visits: 0, quizCompletes: 0, scentCompletes: 0 };
       }
       const since = new Date();
       since.setDate(1);
       since.setMonth(since.getMonth() - 11);
       since.setHours(0, 0, 0, 0);
-      const rows = await fetchAllAnalytics(since);
+      const [rows, scentDates] = await Promise.all([
+        fetchAllAnalytics(since),
+        fetchAllScentDates(since),
+      ]);
       rows.forEach((row) => {
         const d = new Date(row.created_at);
         const key = `${String(d.getFullYear()).slice(2)}/${String(d.getMonth() + 1).padStart(2, "0")}`;
@@ -1091,6 +1129,11 @@ async function fetchAllAnalytics(since: Date): Promise<{ event_type: string; cre
           if (row.event_type === "page_visit") buckets[key].visits++;
           else if (row.event_type === "quiz_complete") buckets[key].quizCompletes++;
         }
+      });
+      scentDates.forEach((createdAt) => {
+        const d = new Date(createdAt);
+        const key = `${String(d.getFullYear()).slice(2)}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+        if (buckets[key]) buckets[key].scentCompletes++;
       });
       setChartData(Object.entries(buckets).map(([date, v]) => ({ date, ...v })));
     }
@@ -1101,8 +1144,8 @@ async function fetchAllAnalytics(since: Date): Promise<{ event_type: string; cre
     setUsersLoading(true);
     const { data, error } = await adminSupabase
       .from("kakao_users")
-      .select("kakao_id, nickname, profile_image, updated_at")
-      .order("updated_at", { ascending: false });
+      .select("kakao_id, nickname, profile_image, updated_at, created_at")
+      .order("created_at", { ascending: false });
     if (error) console.error("[fetchKakaoUsers]", error);
     setKakaoUsers(data ?? []);
     setUsersLoading(false);
@@ -1723,14 +1766,15 @@ async function fetchAllAnalytics(since: Date): Promise<{ event_type: string; cre
               <>
                 {chartData.length > 0 && (() => {
                   const periodStats = chartData.reduce(
-                    (acc, d) => ({ visits: acc.visits + d.visits, quizCompletes: acc.quizCompletes + d.quizCompletes }),
-                    { visits: 0, quizCompletes: 0 }
+                    (acc, d) => ({ visits: acc.visits + d.visits, quizCompletes: acc.quizCompletes + d.quizCompletes, scentCompletes: acc.scentCompletes + d.scentCompletes }),
+                    { visits: 0, quizCompletes: 0, scentCompletes: 0 }
                   );
                   return (
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px", marginBottom: "32px" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px", marginBottom: "32px" }}>
                     {[
                       { label: "총 방문자 수", value: periodStats.visits },
-                      { label: "체질 진단 완료", value: periodStats.quizCompletes },
+                      { label: "진단완료(사상체질)", value: periodStats.quizCompletes },
+                      { label: "진단완료(향)", value: periodStats.scentCompletes },
                     ].map((s) => (
                       <div key={s.label} style={{ background: "#ffffff", borderRadius: "16px", padding: "20px", border: "1px solid #e8e8e8", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
                         <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#999999", marginBottom: "10px" }}>{s.label}</p>
@@ -1766,7 +1810,8 @@ async function fetchAllAnalytics(since: Date): Promise<{ event_type: string; cre
                         <Tooltip contentStyle={{ fontSize: "0.8125rem", borderRadius: "8px", border: "1px solid #e8e8e8", boxShadow: "0 4px 16px rgba(0,0,0,0.08)" }} />
                         <Legend wrapperStyle={{ fontSize: "0.8125rem", color: "#666666" }} />
                         <Line type="monotone" dataKey="visits" name="방문자" stroke="#000000" strokeWidth={2} dot={{ r: 3 }} />
-                        <Line type="monotone" dataKey="quizCompletes" name="진단완료" stroke="#999999" strokeWidth={2} dot={{ r: 3 }} />
+                        <Line type="monotone" dataKey="quizCompletes" name="진단완료(사상체질)" stroke="#999999" strokeWidth={2} dot={{ r: 3 }} />
+                        <Line type="monotone" dataKey="scentCompletes" name="진단완료(향)" stroke="#cccccc" strokeWidth={2} dot={{ r: 3, fill: "#cccccc" }} />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
@@ -1791,7 +1836,7 @@ async function fetchAllAnalytics(since: Date): Promise<{ event_type: string; cre
                   ) : kakaoUsers.length === 0 ? (
                     <div style={{ padding: "48px", textAlign: "center", color: "#aaaaaa", fontSize: "0.875rem" }}>가입자가 없습니다</div>
                   ) : (
-                    <div style={{ maxHeight: "420px", overflowY: "auto" }}>
+                    <div style={{ maxHeight: "420px", overflowY: "auto" }} onWheel={(e) => e.stopPropagation()}>
                       {kakaoUsers.map((u, i) => {
                         const displayName = u.nickname || `가입자${i + 1}`;
                         return (
@@ -1815,7 +1860,7 @@ async function fetchAllAnalytics(since: Date): Promise<{ event_type: string; cre
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <p style={{ fontSize: "0.875rem", fontWeight: 600, color: "#111111", marginBottom: "2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{displayName}</p>
                               <p style={{ fontSize: "0.75rem", color: "#aaaaaa" }}>
-                                {u.updated_at ? new Date(u.updated_at).toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" }) : "-"}
+                                {u.created_at ? new Date(u.created_at).toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" }) : "-"}
                               </p>
                             </div>
                           </div>

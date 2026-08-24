@@ -24,12 +24,14 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
   const [mobileLangOpen, setMobileLangOpen] = useState(false);
   const [_isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
   const [isSmallMobile, setIsSmallMobile] = useState(() => window.innerWidth <= 480);
+  const [isNarrow, setIsNarrow] = useState(() => window.innerWidth < 1024);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     const handler = () => {
       setIsMobile(window.innerWidth < 768);
       setIsSmallMobile(window.innerWidth <= 480);
+      setIsNarrow(window.innerWidth < 1024);
     };
     window.addEventListener("resize", handler);
     return () => window.removeEventListener("resize", handler);
@@ -54,7 +56,7 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
 
   const handleLoginClick = () => {
     setMenuOpen(false);
-    loginWithKakao();
+    loginWithKakao("/mypage");
   };
 
   const handleLogout = () => {
@@ -153,8 +155,8 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
             </button>
           )}
 
-          {/* Desktop nav — hidden on mobile */}
-          <nav className="hidden md:flex" style={{ alignItems: "center", gap: "4px" }}>
+          {/* Desktop nav — hidden on narrow */}
+          <nav style={{ display: isNarrow ? "none" : "flex", alignItems: "center", gap: "4px" }}>
             {NAV_ITEMS.map((item) => {
               const isActive =
                 location.pathname === item.path ||
@@ -217,12 +219,12 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
           </button> */}
 
           {/* Translate — desktop */}
-          <div className="hidden md:flex" style={{ alignItems: "center" }}>
+          <div style={{ display: isNarrow ? "none" : "flex", alignItems: "center" }}>
             <TranslateWidget />
           </div>
 
-          {/* Desktop login/user — hidden on mobile */}
-          <div className="hidden md:flex" style={{ alignItems: "center" }}>
+          {/* Desktop login/user — hidden on narrow */}
+          <div style={{ display: isNarrow ? "none" : "flex", alignItems: "center" }}>
             {user ? (
               <button
                 onClick={() => navigate("/mypage")}
@@ -304,10 +306,13 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
 
           {/* Mobile hamburger — hidden on desktop */}
           <button
-            className="md:hidden flex flex-col items-center justify-center"
             onClick={() => setMenuOpen((o) => !o)}
             aria-label="메뉴"
             style={{
+              display: isNarrow ? "flex" : "none",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
               background: "none",
               border: "none",
               cursor: "pointer",
