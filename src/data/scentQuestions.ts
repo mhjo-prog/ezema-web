@@ -90,7 +90,7 @@ export const scentQuestions: ScentQuestion[] = [
     { id: "c", text: "3~4일", scores: s("이완", 2) },
     { id: "d", text: "거의 매일", scores: s("이완", 1) },
   ]},
-  { id: 7, category: "스트레스 · 긴장", text: "최근 일주일 동안 심장이 이유 없이\n두근거리거나 답답하게 느껴진 적이 있나요?", facet: "autonomic", options: [
+  { id: 7, category: "스트레스 · 긴장", text: "최근 일주일 동안 심장이 이유 없이\n두근거리거나 답답한 적이 있었나요?", facet: "autonomic", options: [
     { id: "a", text: "없다", scores: s("이완", 4) },
     { id: "b", text: "1~2회", scores: s("이완", 3) },
     { id: "c", text: "3~4회", scores: s("이완", 2) },
