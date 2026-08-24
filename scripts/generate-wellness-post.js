@@ -11,7 +11,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY
 );
 
-const WELLNESS_CATEGORIES = ["수면", "식단", "운동", "명상", "스트레스"];
+const WELLNESS_CATEGORIES = ["수면", "식단", "운동", "명상", "스트레스", "향"];
 
 // ── 달램 뉴스레터 설정 ───────────────────────────────────────────────
 const DALLEM_KNOWN_NO = 95;  // 알려진 번호 — 새 호가 확인되면 여기만 올림
@@ -426,6 +426,7 @@ async function generateWellnessPostContent(category, trends, feedbacks, existing
     운동: "일상 속 운동 루틴, 스트레칭, 유산소·근력 운동, 운동 동기 부여",
     명상: "마음 챙김, 호흡법, 명상 루틴, 감정 조절, 집중력 향상",
     스트레스: "스트레스 해소법, 번아웃 예방, 긴장 완화, 심리적 회복력",
+    향: "아로마테라피, 에센셜 오일 활용법, 향과 컨디션의 관계, 일상 속 향 사용법과 주의사항",
   };
 
   const existingPostsSection =

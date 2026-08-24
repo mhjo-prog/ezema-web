@@ -6,7 +6,7 @@ create table if not exists wellness_posts (
   title text not null,
   content text not null,
   card_image_url text not null default '',
-  wellness_category text not null check (wellness_category in ('수면', '식단', '운동', '명상', '스트레스')),
+  wellness_category text not null check (wellness_category in ('수면', '식단', '운동', '명상', '스트레스', '향')),
   status text not null default 'draft' check (status in ('draft', 'approved', 'published')),
   scheduled_at timestamptz,
   created_at timestamptz not null default now(),

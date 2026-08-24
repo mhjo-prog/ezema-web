@@ -12,9 +12,10 @@ const CATEGORY_COLORS: Record<WellnessCategory, string> = {
   운동: "#E8460A",
   명상: "#6B3FA0",
   스트레스: "#C4780A",
+  향: "#7A6952",
 };
 
-const FILTERS = ["전체", "수면", "식단", "운동", "명상", "스트레스"] as const;
+const FILTERS = ["전체", "수면", "식단", "운동", "명상", "스트레스", "향"] as const;
 type FilterType = (typeof FILTERS)[number];
 
 function formatDate(dateStr: string) {
@@ -240,7 +241,7 @@ export default function WellnessPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.35, duration: 0.6 }}
           >
-            수면, 식단, 운동, 명상, 스트레스<br />웰니스 카툰으로 만나보세요.
+            수면, 식단, 운동, 명상, 스트레스, 향<br />웰니스 카툰으로 만나보세요.
           </motion.p>
         </div>
 
