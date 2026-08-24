@@ -138,7 +138,7 @@ export const scentQuestions: ScentQuestion[] = [
     { id: "c", text: "자주", scores: s("몰입", 2) },
     { id: "d", text: "매우 자주", scores: s("몰입", 1) },
   ]},
-  { id: 15, category: "집중 · 업무환경", text: "최근 일주일 동안 여러 가지 일을 동시에\n처리해야 하는 상황이 얼마나 있었나요?", facet: "switch", options: [
+  { id: 15, category: "집중 · 업무환경", text: "여러 가지 일을 동시에 처리해야 하는\n상황이 얼마나 있나요?", facet: "switch", options: [
     { id: "a", text: "거의 없다", scores: s("몰입", 4) },
     { id: "b", text: "가끔", scores: s("몰입", 3) },
     { id: "c", text: "자주", scores: s("몰입", 2) },
