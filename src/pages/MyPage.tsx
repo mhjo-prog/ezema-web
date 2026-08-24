@@ -36,11 +36,11 @@ interface ScentResult {
 const SCENT_TYPES = ["이완", "숙면", "활력", "몰입", "청정"] as const;
 
 const SCENT_CHART_COLORS: Record<string, string> = {
-  이완: "#E87040",
-  숙면: "#4E7EC7",
-  활력: "#50B876",
-  몰입: "#9B6FC9",
-  청정: "#5BBCB4",
+  이완: "#B82838", // 원본 #4D0E12 (와인 버건디) → 밝게
+  숙면: "#4A4858", // 원본 #231815 (거의 검정) → 다크 슬레이트 (수면/밤 느낌)
+  활력: "#B89030", // 원본 #D2BF81 (크림 골드) → 앰버 골드로 진하게
+  몰입: "#8A5848", // 원본 #4A2E27 (초콜릿 브라운) → 테라코타 브라운으로 밝게
+  청정: "#4878B0", // 원본 #A5BCD6 (연한 스틸 블루) → 진하게
 };
 
 const SCENT_DASH: Record<string, string | undefined> = {
