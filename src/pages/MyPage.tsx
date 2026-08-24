@@ -291,7 +291,7 @@ function ScentHistoryCard({ item, isExpanded, onToggle, onDelete, onViewResult }
                     <span style={{ fontSize: "0.8rem", fontWeight: isTop ? 700 : 400, color: isTop ? "#000000" : "#999999" }}>{score}%</span>
                   </div>
                   <div style={{ height: "4px", background: "#f0f0f0", borderRadius: "2px", overflow: "hidden" }}>
-                    <div style={{ height: "100%", width: `${score}%`, background: isTop ? (SCENT_CHART_COLORS[type] ?? "#000000") : "#cccccc", borderRadius: "2px" }} />
+                    <div style={{ height: "100%", width: `${score}%`, background: isTop ? "#000000" : "#cccccc", borderRadius: "2px" }} />
                   </div>
                 </div>
               );
