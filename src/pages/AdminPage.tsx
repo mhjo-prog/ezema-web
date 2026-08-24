@@ -1810,8 +1810,8 @@ async function fetchAllAnalytics(since: Date): Promise<{ event_type: string; cre
                         <Tooltip contentStyle={{ fontSize: "0.8125rem", borderRadius: "8px", border: "1px solid #e8e8e8", boxShadow: "0 4px 16px rgba(0,0,0,0.08)" }} />
                         <Legend wrapperStyle={{ fontSize: "0.8125rem", color: "#666666" }} />
                         <Line type="monotone" dataKey="visits" name="방문자" stroke="#000000" strokeWidth={2} dot={{ r: 4, fill: "#ffffff", stroke: "#000000", strokeWidth: 2 }} />
-                        <Line type="monotone" dataKey="quizCompletes" name="진단완료(사상체질)" stroke="#999999" strokeWidth={2} dot={{ r: 4, fill: "#ffffff", stroke: "#999999", strokeWidth: 2 }} />
-                        <Line type="monotone" dataKey="scentCompletes" name="진단완료(향)" stroke="#cccccc" strokeWidth={2} dot={{ r: 4, fill: "#ffffff", stroke: "#aaaaaa", strokeWidth: 2 }} />
+                        <Line type="monotone" dataKey="quizCompletes" name="진단완료(사상체질)" stroke="#777777" strokeWidth={2} dot={{ r: 4, fill: "#ffffff", stroke: "#777777", strokeWidth: 2 }} />
+                        <Line type="monotone" dataKey="scentCompletes" name="진단완료(향)" stroke="#dddddd" strokeWidth={2} dot={{ r: 4, fill: "#ffffff", stroke: "#dddddd", strokeWidth: 2 }} />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
