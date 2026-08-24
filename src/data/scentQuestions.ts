@@ -96,11 +96,11 @@ export const scentQuestions: ScentQuestion[] = [
     { id: "c", text: "3~4회", scores: s("이완", 2) },
     { id: "d", text: "5회 이상", scores: s("이완", 1) },
   ]},
-  { id: 8, category: "스트레스 · 긴장", text: "최근 일주일 동안 하루를 마치고 나서\n완전히 긴장이 풀렸다는 느낌을 받았나요?", facet: "recovery", options: [
-    { id: "a", text: "5회 이상", scores: s("이완", 4) },
-    { id: "b", text: "3~4회", scores: s("이완", 3) },
-    { id: "c", text: "1~2회", scores: s("이완", 2) },
-    { id: "d", text: "0회", scores: s("이완", 1) },
+  { id: 8, category: "스트레스 · 긴장", text: "어제 저녁, 하루를 마치고 완전히\n긴장이 풀렸다는 느낌을 받았나요?", facet: "recovery", options: [
+    { id: "a", text: "그렇다", scores: s("이완", 4) },
+    { id: "b", text: "대체로 그렇다", scores: s("이완", 3) },
+    { id: "c", text: "별로 그렇지 않았다", scores: s("이완", 2) },
+    { id: "d", text: "전혀 그렇지 않았다", scores: s("이완", 1) },
   ]},
   { id: 9, category: "활동량 · 피로도", text: "최근 일주일 동안 오후 2~4시 사이\n집중력이나 에너지가 급격히 떨어졌나요?", facet: "afternoon", options: [
     { id: "a", text: "전혀 아니다", scores: s("활력", 4) },
