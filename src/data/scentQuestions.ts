@@ -162,13 +162,13 @@ export const scentQuestions: ScentQuestion[] = [
     { id: "c", text: "꽤 그렇다", scores: s("청정", 2) },
     { id: "d", text: "매우 그렇다", scores: s("청정", 1) },
   ]},
-  { id: 19, category: "실내환경 · 호흡기", text: "최근 일주일 동안 코막힘, 목 간지러움 등\n가벼운 호흡기 불편을 느낀 빈도는?", facet: "airway", options: [
+  { id: 19, category: "실내환경 · 호흡기", text: "최근 일주일, 코막힘/목 간지러움 등\n가벼운 호흡기 불편을 느낀 빈도는?", facet: "airway", options: [
     { id: "a", text: "거의 없다", scores: s("청정", 4) },
     { id: "b", text: "가끔", scores: s("청정", 3) },
     { id: "c", text: "자주", scores: s("청정", 2) },
     { id: "d", text: "거의 매일", scores: s("청정", 1) },
   ]},
-  { id: 20, category: "실내환경 · 호흡기", text: "최근 일주일 동안 실내(사무실·집)에서\n공기가 답답하거나 탁하다고 느낀 빈도는?", facet: "stuffy", options: [
+  { id: 20, category: "실내환경 · 호흡기", text: "지난 일주일간 실내(사무실·집)에서\n공기가 답답/탁하다고 느낀 빈도는?", facet: "stuffy", options: [
     { id: "a", text: "거의 없다", scores: s("청정", 4) },
     { id: "b", text: "가끔", scores: s("청정", 3) },
     { id: "c", text: "자주", scores: s("청정", 2) },
