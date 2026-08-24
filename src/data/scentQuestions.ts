@@ -94,7 +94,7 @@ export const scentQuestions: ScentQuestion[] = [
     { id: "a", text: "없다", scores: s("이완", 4) },
     { id: "b", text: "1~2회", scores: s("이완", 3) },
     { id: "c", text: "3~4회", scores: s("이완", 2) },
-    { id: "d", text: "거의 매일", scores: s("이완", 1) },
+    { id: "d", text: "5회 이상", scores: s("이완", 1) },
   ]},
   { id: 8, category: "스트레스 · 긴장", text: "최근 일주일 동안 하루를 마치고 나서\n완전히 긴장이 풀렸다는 느낌을 받았나요?", facet: "recovery", options: [
     { id: "a", text: "5회 이상", scores: s("이완", 4) },
