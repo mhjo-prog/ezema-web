@@ -120,7 +120,7 @@ export const scentQuestions: ScentQuestion[] = [
     { id: "c", text: "3~4일", scores: s("활력", 2) },
     { id: "d", text: "거의 매일", scores: s("활력", 1) },
   ]},
-  { id: 12, category: "활동량 · 피로도", text: "최근 일주일 동안 카페인(커피 등)에 의존해\n하루를 버틴 날이 얼마나 되나요?", facet: "caffeine", options: [
+  { id: 12, category: "활동량 · 피로도", text: "최근 일주일 동안 카페인에 의존해\n하루를 버틴 날이 얼마나 되나요?", facet: "caffeine", options: [
     { id: "a", text: "거의 없다", scores: s("활력", 4) },
     { id: "b", text: "1~2일", scores: s("활력", 3) },
     { id: "c", text: "3~4일", scores: s("활력", 2) },
