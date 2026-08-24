@@ -126,7 +126,7 @@ export const scentQuestions: ScentQuestion[] = [
     { id: "c", text: "3~4일", scores: s("활력", 2) },
     { id: "d", text: "거의 매일", scores: s("활력", 1) },
   ]},
-  { id: 13, category: "집중 · 업무환경", text: "어제, 한 가지 일에 방해 없이\n집중한 시간은 얼마나 되나요?", facet: "duration", options: [
+  { id: 13, category: "집중 · 업무환경", text: "어제, 끊기지 않고\n집중한 시간은 얼마나 되나요?", facet: "duration", options: [
     { id: "a", text: "1시간 이상", scores: s("몰입", 4) },
     { id: "b", text: "30분~1시간", scores: s("몰입", 3) },
     { id: "c", text: "15~30분", scores: s("몰입", 2) },
