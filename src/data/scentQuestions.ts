@@ -96,7 +96,7 @@ export const scentQuestions: ScentQuestion[] = [
     { id: "c", text: "3~4회", scores: s("이완", 2) },
     { id: "d", text: "5회 이상", scores: s("이완", 1) },
   ]},
-  { id: 8, category: "스트레스 · 긴장", text: "어제 저녁, 하루를 마치고 완전히\n긴장이 풀렸다는 느낌을 받았나요?", facet: "recovery", options: [
+  { id: 8, category: "스트레스 · 긴장", text: "어제 저녁 하루를 마치고 완전히\n긴장이 풀렸다는 느낌을 받았나요?", facet: "recovery", options: [
     { id: "a", text: "그렇다", scores: s("이완", 4) },
     { id: "b", text: "대체로 그렇다", scores: s("이완", 3) },
     { id: "c", text: "별로 그렇지 않았다", scores: s("이완", 2) },
@@ -126,13 +126,13 @@ export const scentQuestions: ScentQuestion[] = [
     { id: "c", text: "3~4일", scores: s("활력", 2) },
     { id: "d", text: "거의 매일", scores: s("활력", 1) },
   ]},
-  { id: 13, category: "집중 · 업무환경", text: "어제, 딴짓 없이 한 번에 쭉 집중한\n최대 시간은 얼마나 되나요?", facet: "duration", options: [
+  { id: 13, category: "집중 · 업무환경", text: "어제 딴짓 없이 한 번에 쭉 집중한\n최대 시간은 얼마나 되나요?", facet: "duration", options: [
     { id: "a", text: "1시간 이상", scores: s("몰입", 4) },
     { id: "b", text: "30분~1시간", scores: s("몰입", 3) },
     { id: "c", text: "15~30분", scores: s("몰입", 2) },
     { id: "d", text: "15분 미만", scores: s("몰입", 1) },
   ]},
-  { id: 14, category: "집중 · 업무환경", text: "어제, 업무중 스마트폰이나 딴생각으로\n집중이 끊긴 적이 얼마나 있었나요?", facet: "distract", options: [
+  { id: 14, category: "집중 · 업무환경", text: "어제 업무중 스마트폰이나 딴생각으로\n집중이 끊긴 적이 얼마나 있었나요?", facet: "distract", options: [
     { id: "a", text: "거의 없었다", scores: s("몰입", 4) },
     { id: "b", text: "가끔", scores: s("몰입", 3) },
     { id: "c", text: "자주", scores: s("몰입", 2) },
@@ -156,7 +156,7 @@ export const scentQuestions: ScentQuestion[] = [
     { id: "c", text: "1~2회", scores: s("청정", 2) },
     { id: "d", text: "0회", scores: s("청정", 1) },
   ]},
-  { id: 18, category: "실내환경 · 호흡기", text: "미세먼지가 심한 날, 컨디션이나\n목 상태가 나빠지나요?", facet: "sensitive", options: [
+  { id: 18, category: "실내환경 · 호흡기", text: "미세먼지가 심한 날 컨디션이나\n목 상태가 나빠지나요?", facet: "sensitive", options: [
     { id: "a", text: "전혀 아니다", scores: s("청정", 4) },
     { id: "b", text: "약간 그렇다", scores: s("청정", 3) },
     { id: "c", text: "꽤 그렇다", scores: s("청정", 2) },
