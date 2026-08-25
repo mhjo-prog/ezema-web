@@ -167,22 +167,25 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
                   onClick={() => handleNavClick(item.path)}
                   style={{
                     fontSize: "0.8125rem",
-                    fontWeight: isActive || item.isPrimary ? 700 : 500,
-                    color: isActive ? "#000000" : "#444444",
-                    padding: "7px 12px",
+                    fontWeight: isActive ? 700 : 500,
+                    color: item.isPrimary ? "#ffffff" : isActive ? "#000000" : "#444444",
+                    padding: item.isPrimary ? "7px 16px" : "7px 12px",
+                    background: item.isPrimary ? "#111111" : "none",
                     border: "none",
                     borderBottom: "none",
-                    borderRadius: 0,
-                    transition: "color 0.18s, font-weight 0.18s",
+                    borderRadius: item.isPrimary ? "20px" : 0,
+                    transition: "color 0.18s, font-weight 0.18s, opacity 0.18s",
                     whiteSpace: "nowrap",
                   }}
                   onMouseEnter={(e) => {
+                    if (item.isPrimary) { e.currentTarget.style.opacity = "0.8"; return; }
                     e.currentTarget.style.color = "#000000";
                     e.currentTarget.style.fontWeight = "700";
                   }}
                   onMouseLeave={(e) => {
+                    if (item.isPrimary) { e.currentTarget.style.opacity = "1"; return; }
                     e.currentTarget.style.color = isActive ? "#000000" : "#444444";
-                    e.currentTarget.style.fontWeight = isActive || item.isPrimary ? "700" : "500";
+                    e.currentTarget.style.fontWeight = isActive ? "700" : "500";
                   }}
                 >
                   {item.label}
