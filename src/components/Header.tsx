@@ -167,9 +167,9 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
                   onClick={() => handleNavClick(item.path)}
                   style={{
                     fontSize: "0.8125rem",
-                    fontWeight: isActive ? 700 : 500,
+                    fontWeight: item.isPrimary ? 700 : isActive ? 700 : 500,
                     color: item.isPrimary ? "#ffffff" : isActive ? "#000000" : "#444444",
-                    padding: item.isPrimary ? "7px 16px" : "7px 12px",
+                    padding: item.isPrimary ? "5px 16px" : "7px 12px",
                     background: item.isPrimary ? "#111111" : "none",
                     border: "none",
                     borderBottom: "none",
