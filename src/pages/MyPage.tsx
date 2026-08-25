@@ -312,7 +312,7 @@ function ScentHistoryCard({ item, isExpanded, onToggle, onDelete, onViewResult }
               onMouseEnter={(e) => { e.currentTarget.style.background = "#111111"; e.currentTarget.style.color = "#ffffff"; e.currentTarget.style.borderColor = "#111111"; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = "#ffffff"; e.currentTarget.style.color = "#111111"; e.currentTarget.style.borderColor = "#e8e8e8"; }}
             >
-              상세 결과 보기
+              지난 결과 다시보기
             </button>
           </div>
         </div>
