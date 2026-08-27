@@ -26,11 +26,6 @@ function makeItemScores(axisScores: Record<string, number>): Record<string, numb
   return result;
 }
 
-// 기본 입력 (Part B 미제공, 1회차)
-const BASE_INPUT: RecommendInput = {
-  itemScores: makeItemScores({ 숙면: 9, 이완: 6, 활력: 6, 몰입: 6, 청정: 6 }),
-  surveyCount: 0,
-};
 
 // ------------------------------------------------------------------
 // 케이스 1: 단일 최고점 (정상 경로)
