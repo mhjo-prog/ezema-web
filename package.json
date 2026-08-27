@@ -8,12 +8,16 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "collect-trends": "node --env-file=.env scripts/collect-trends.js",
     "generate-post": "node --env-file=.env scripts/generate-post.js",
     "publish-approved": "node --env-file=.env scripts/publish-approved.js",
     "cleanup-drafts": "node --env-file=.env scripts/cleanup-drafts.js",
     "generate-rss": "node --env-file=.env scripts/generate-rss.js",
-    "generate-wellness-post": "node --env-file=.env scripts/generate-wellness-post.js"
+    "generate-wellness-post": "node --env-file=.env scripts/generate-wellness-post.js",
+    "compress-images": "node scripts/compress-storage-images.mjs",
+    "compress-images:live": "node scripts/compress-storage-images.mjs --live"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.101.1",
@@ -45,9 +49,11 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
+    "sharp": "^0.35.3",
     "tailwindcss": "^4.2.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.48.0",
-    "vite": "^7.3.1"
+    "vite": "^7.3.1",
+    "vitest": "^4.1.11"
   }
 }
