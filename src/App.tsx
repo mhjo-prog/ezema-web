@@ -61,14 +61,31 @@ export default function App() {
   const navigate = useNavigate();
   const quizStarted = useRef(false);
 
-  // 비한국어→비한국어 전환 2단계: 한국어로 리셋된 뒤 대기 중인 언어를 적용
+  // 언어 초기화 — 앱 마운트 시 1회만 실행
   useEffect(() => {
+    // 1) 비한국어 2단계 전환: PENDING_LANG_KEY가 있으면 googtrans 쿠키 적용 후 리로드
     const pending = sessionStorage.getItem(PENDING_LANG_KEY);
-    if (!pending) return;
-    sessionStorage.removeItem(PENDING_LANG_KEY);
-    document.cookie = `googtrans=/ko/${pending}; path=/`;
-    document.cookie = `googtrans=/ko/${pending}; path=/; domain=.${window.location.hostname}`;
-    window.location.reload();
+    if (pending) {
+      sessionStorage.removeItem(PENDING_LANG_KEY);
+      sessionStorage.setItem("keepslow_lang", pending); // 세션 언어 확정
+      document.cookie = `googtrans=/ko/${pending}; path=/`;
+      document.cookie = `googtrans=/ko/${pending}; path=/; domain=.${window.location.hostname}`;
+      window.location.reload();
+      return;
+    }
+
+    // 2) 새 세션(keepslow_lang 없음) → 기본값 한국어, 잔류 쿠키 제거
+    if (!sessionStorage.getItem("keepslow_lang")) {
+      if (document.cookie.includes("googtrans")) {
+        const expired = "expires=Thu, 01 Jan 1970 00:00:00 UTC";
+        document.cookie = `googtrans=; ${expired}; path=/`;
+        document.cookie = `googtrans=; ${expired}; path=/; domain=.${window.location.hostname}`;
+        document.cookie = `googtrans=; ${expired}; path=/; domain=${window.location.hostname}`;
+        window.location.reload();
+        return;
+      }
+      sessionStorage.setItem("keepslow_lang", "ko");
+    }
   }, []);
 
   useEffect(() => {

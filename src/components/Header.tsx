@@ -470,6 +470,7 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
                                   document.cookie = `googtrans=; ${expired}; path=/; domain=.${window.location.hostname}`;
                                   document.cookie = `googtrans=; ${expired}; path=/; domain=${window.location.hostname}`;
                                   if (lang.code === "ko") {
+                                    sessionStorage.setItem("keepslow_lang", "ko");
                                     window.location.reload();
                                   } else {
                                     sessionStorage.setItem(PENDING_LANG_KEY, lang.code);
@@ -620,6 +621,7 @@ function TranslateWidget() {
     document.cookie = `googtrans=; ${expired}; path=/; domain=${window.location.hostname}`;
     if (code === "ko") {
       // 한국어는 쿠키 삭제 후 바로 리로드
+      sessionStorage.setItem("keepslow_lang", "ko");
       setCurrentLang(code);
       window.location.reload();
     } else {
