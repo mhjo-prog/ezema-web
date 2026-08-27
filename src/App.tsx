@@ -57,6 +57,20 @@ function AppRoutes({ onQuizStart }: { onQuizStart: () => void }) {
 
 export const PENDING_LANG_KEY = "keepslow_pending_lang";
 
+// googtrans 언어 코드 → HTML lang 속성 매핑
+const LANG_TO_HTML: Record<string, string> = {
+  ko: "ko",
+  en: "en",
+  ja: "ja",
+  "zh-CN": "zh-Hans",
+  th: "th",
+  vi: "vi",
+};
+
+export function applyHtmlLang(code: string) {
+  document.documentElement.lang = LANG_TO_HTML[code] ?? code;
+}
+
 export default function App() {
   const navigate = useNavigate();
   const quizStarted = useRef(false);
@@ -77,6 +91,8 @@ export default function App() {
     // 2) 새 세션(keepslow_lang 없음) → 기본값 한국어, 잔류 쿠키 제거
     if (!sessionStorage.getItem("keepslow_lang")) {
       if (document.cookie.includes("googtrans")) {
+        // 키를 먼저 기록 → 쿠키 삭제 실패해도 리로드 후 이 분기에 재진입하지 않음
+        sessionStorage.setItem("keepslow_lang", "ko");
         const expired = "expires=Thu, 01 Jan 1970 00:00:00 UTC";
         document.cookie = `googtrans=; ${expired}; path=/`;
         document.cookie = `googtrans=; ${expired}; path=/; domain=.${window.location.hostname}`;
@@ -86,6 +102,9 @@ export default function App() {
       }
       sessionStorage.setItem("keepslow_lang", "ko");
     }
+
+    // 리로드 없이 정착: 현재 언어로 <html lang> 설정
+    applyHtmlLang(sessionStorage.getItem("keepslow_lang") ?? "ko");
   }, []);
 
   useEffect(() => {

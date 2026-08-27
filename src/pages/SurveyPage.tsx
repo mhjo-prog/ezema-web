@@ -179,7 +179,8 @@ export default function SurveyPage({ onComplete, onBack }: Props) {
                       >
                         {/* Index badge */}
                         <span
-                          className="flex-shrink-0 flex items-center justify-center font-semibold"
+                          translate="no"
+                          className="notranslate flex-shrink-0 flex items-center justify-center font-semibold"
                           style={{
                             width: "32px",
                             height: "32px",
