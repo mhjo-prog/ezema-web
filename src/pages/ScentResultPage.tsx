@@ -636,10 +636,144 @@ function ScentCard({ result, color, index, showReason = true, isPrimary = false 
   );
 }
 
+function LoginPromptCard({ loginWithKakao, themeColor }: { loginWithKakao: () => void; themeColor: string }) {
+  const svgW = 280, svgH = 80;
+  const padL = 6, padR = 6, padT = 8, padB = 8;
+  const innerW = svgW - padL - padR;
+  const innerH = svgH - padT - padB;
+
+  // 5축 더미 곡선 데이터 (이완/숙면/몰입/청정/활력)
+  const AXIS_LINES = [
+    { color: "#3F1521", vals: [45, 60, 72, 55, 68, 62, 74] },
+    { color: "#002B45", vals: [62, 50, 75, 82, 70, 58, 80] },
+    { color: "#6C5042", vals: [35, 55, 48, 65, 58, 70, 52] },
+    { color: "#94B2C4", vals: [75, 68, 82, 60, 78, 65, 85] },
+    { color: "#4B5335", vals: [50, 70, 45, 72, 55, 68, 60] },
+  ];
+
+  const makePts = (vals: number[]) =>
+    vals
+      .map((v, i) => {
+        const x = padL + (i / (vals.length - 1)) * innerW;
+        const y = padT + (1 - v / 100) * innerH;
+        return `${x.toFixed(1)},${y.toFixed(1)}`;
+      })
+      .join(" ");
+
+  return (
+    <motion.div
+      style={{
+        background: "#ffffff",
+        border: "1px solid #eeeeee",
+        borderRadius: "16px",
+        padding: "1.5rem",
+        marginBottom: "0.75rem",
+        boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
+        overflow: "hidden",
+      }}
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.6, duration: 0.5 }}
+    >
+      <SectionLabel color={themeColor}>Scent History</SectionLabel>
+
+      {/* Mock chart with blur overlay */}
+      <div style={{ position: "relative", margin: "16px 0 4px", borderRadius: "10px", overflow: "hidden", background: "#fafafa", border: "1px solid #f0f0f0" }}>
+        <svg
+          width="100%"
+          viewBox={`0 0 ${svgW} ${svgH}`}
+          style={{ display: "block", filter: "blur(2.5px)", opacity: 0.45 }}
+        >
+          {/* Grid lines */}
+          {[25, 50, 75].map((pct) => {
+            const y = padT + (1 - pct / 100) * innerH;
+            return <line key={pct} x1={padL} x2={svgW - padR} y1={y} y2={y} stroke="#e0e0e0" strokeWidth="0.8" />;
+          })}
+          {/* 5 axis lines */}
+          {AXIS_LINES.map(({ color, vals }) => (
+            <polyline
+              key={color}
+              points={makePts(vals)}
+              fill="none"
+              stroke={color}
+              strokeWidth="2"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+            />
+          ))}
+          {/* Dots */}
+          {AXIS_LINES.map(({ color, vals }) =>
+            vals.map((v, i) => {
+              const x = padL + (i / (vals.length - 1)) * innerW;
+              const y = padT + (1 - v / 100) * innerH;
+              return <circle key={`${color}-${i}`} cx={x} cy={y} r="2.5" fill={color} />;
+            })
+          )}
+        </svg>
+
+        {/* Gradient + lock overlay */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "linear-gradient(to bottom, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.85) 70%)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            paddingBottom: "10px",
+          }}
+        >
+          <span style={{ fontSize: "18px", marginBottom: "2px" }}>🔒</span>
+        </div>
+      </div>
+
+      {/* Text */}
+      <p className="font-bold" style={{ fontSize: "0.95rem", color: "#111111", marginBottom: "6px", marginTop: "12px" }}>
+        한 번의 검사로 끝내지 마세요
+      </p>
+      <p style={{ fontSize: "0.85rem", color: "#555555", lineHeight: 1.7, marginBottom: "6px" }}>
+        검사를 반복할수록 내 몸의 패턴이 보입니다.
+        로그인하면 매 검사 결과가 자동으로 저장되고,
+        시간에 따른 변화를 한눈에 확인할 수 있어요.
+      </p>
+      <p style={{ fontSize: "0.78rem", color: "#aaaaaa", marginBottom: "16px" }}>
+        ※ 2회 이상 검사 시 마이페이지에 그래프가 활성화됩니다
+      </p>
+
+      {/* CTA */}
+      <motion.button
+        onClick={loginWithKakao}
+        whileTap={{ scale: 0.98 }}
+        className="font-semibold"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "8px",
+          width: "100%",
+          padding: "14px",
+          borderRadius: "50px",
+          background: "#FEE500",
+          border: "none",
+          color: "#3C1E1E",
+          fontSize: "0.9rem",
+          cursor: "pointer",
+        }}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M12 3C6.477 3 2 6.477 2 10.909c0 2.756 1.528 5.19 3.878 6.702l-.99 3.697 4.27-2.817A11.64 11.64 0 0012 18.818c5.523 0 10-3.476 10-7.909C22 6.477 17.523 3 12 3z" fill="#3C1E1E"/>
+        </svg>
+        카카오로 로그인하고 기록 시작하기
+      </motion.button>
+    </motion.div>
+  );
+}
+
 function ScentResultPageInner({ scentType, scores, facetScores, onRetry }: Props) {
   const result = scentResults[scentType];
   const themeColor = SCENT_COLORS[scentType];
-  const { user } = useAuth();
+  const { user, loginWithKakao } = useAuth();
   const [showShareModal, setShowShareModal] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [autoSaveStatus, setAutoSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
@@ -908,24 +1042,10 @@ function ScentResultPageInner({ scentType, scores, facetScores, onRetry }: Props
           </div>
         </motion.div>
 
-        {/* 주의 문구 */}
-        <motion.div
-          style={{
-            background: "#ffffff",
-            border: "1px solid #eeeeee",
-            borderRadius: "16px",
-            padding: "1.25rem 1.5rem",
-            marginBottom: "1.25rem",
-            boxShadow: "0 2px 12px rgba(0,0,0,0.04)",
-          }}
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9, duration: 0.5 }}
-        >
-          <p style={{ fontSize: "0.78rem", color: "#999999", lineHeight: 1.75, textAlign: "center", whiteSpace: "pre-line" }}>
-            ⚠ {SCENT_DISCLAIMER}
-          </p>
-        </motion.div>
+        {/* 로그인 유도 카드 (비로그인 사용자에게만 표시) */}
+        {!user && (
+          <LoginPromptCard loginWithKakao={loginWithKakao} themeColor={themeColor} />
+        )}
 
         {/* 결과 저장 / 공유 버튼 */}
         <motion.div
@@ -1017,7 +1137,10 @@ function ScentResultPageInner({ scentType, scores, facetScores, onRetry }: Props
           </motion.button>
         </motion.div>
 
-        <p style={{ fontSize: "11px", color: "#aaaaaa", lineHeight: 1.8, textAlign: "center", marginTop: "20px", paddingBottom: "24px" }}>
+        <p style={{ fontSize: "11px", color: "#bbbbbb", lineHeight: 1.75, textAlign: "center", marginTop: "20px", whiteSpace: "pre-line" }}>
+          {SCENT_DISCLAIMER}
+        </p>
+        <p style={{ fontSize: "11px", color: "#aaaaaa", lineHeight: 1.8, textAlign: "center", marginTop: "8px", paddingBottom: "24px" }}>
           © 2026 KeepSlow. All rights reserved.
         </p>
       </div>
