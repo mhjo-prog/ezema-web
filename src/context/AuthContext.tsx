@@ -125,8 +125,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       `https://kauth.kakao.com/oauth/authorize` +
       `?client_id=${KAKAO_REST_KEY}` +
       `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
-      `&response_type=code` +
-      `&scope=account_email`; // 선택 동의 — 미동의 시에도 로그인은 정상 처리됨
+      `&response_type=code`;
 
     if (redirectTo) {
       sessionStorage.setItem(POST_LOGIN_REDIRECT_KEY, redirectTo);
