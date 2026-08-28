@@ -1005,7 +1005,6 @@ function SaveResultModal({ constitutionType, scores, onClose }: { constitutionTy
 
 function ConstitutionHistoryCard() {
   const { loginWithKakao } = useAuth();
-  const themeColor = useContext(ThemeContext);
 
   const svgW = 280, svgH = 80;
   const padL = 6, padR = 6, padT = 8, padB = 8;
@@ -1106,7 +1105,7 @@ function ConstitutionHistoryCard() {
       </p>
 
       <motion.button
-        onClick={loginWithKakao}
+        onClick={() => loginWithKakao()}
         whileTap={{ scale: 0.98 }}
         className="font-semibold"
         style={{
