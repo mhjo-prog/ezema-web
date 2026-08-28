@@ -1,11 +1,11 @@
 import type { ScentType } from "./scentQuestions";
 
 export const SCENT_COLORS: Record<ScentType, string> = {
-  이완: "#4D0E12",
-  숙면: "#231815",
-  활력: "#D2BF81",
-  몰입: "#4A2E27",
-  청정: "#A5BCD6",
+  이완: "#3F1521",
+  숙면: "#002B45",
+  활력: "#4B5335",
+  몰입: "#6C5042",
+  청정: "#94B2C4",
 };
 
 export interface ScentReference {
@@ -103,7 +103,7 @@ export const scentResults: Record<ScentType, ScentResult> = {
       { title: "Neroli oil inhalation on cortisol & blood pressure in menopausal women (RCT)", url: "https://pubmed.ncbi.nlm.nih.gov/24858276/" },
       { title: "Essential oil inhalation on blood pressure and cortisol (RCT)", url: "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3521421/" },
     ],
-    color: "#4D0E12",
+    color: SCENT_COLORS["이완"],
   },
 
   숙면: {
@@ -175,7 +175,7 @@ export const scentResults: Record<ScentType, ScentResult> = {
       { title: "Valerian for sleep: a systematic review and meta-analysis", url: "https://pubmed.ncbi.nlm.nih.gov/16335660/" },
       { title: "Lavender essential oil inhalation on sleep quality in chronic heart failure patients (RCT)", url: "https://doi.org/10.1093/eurjcn/zvag006" },
     ],
-    color: "#231815",
+    color: SCENT_COLORS["숙면"],
   },
 
   활력: {
@@ -249,7 +249,7 @@ export const scentResults: Record<ScentType, ScentResult> = {
       { title: "Modulation of cognitive performance and mood by aromas of peppermint and ylang-ylang", url: "https://pubmed.ncbi.nlm.nih.gov/18041606/" },
       { title: "Plasma 1,8-cineole correlates with cognitive performance following exposure to rosemary aroma", url: "https://pubmed.ncbi.nlm.nih.gov/23983963/" },
     ],
-    color: "#D2BF81",
+    color: SCENT_COLORS["활력"],
   },
 
   몰입: {
@@ -321,7 +321,7 @@ export const scentResults: Record<ScentType, ScentResult> = {
       { title: "Modulation of cognitive performance and mood by aromas of peppermint and ylang-ylang", url: "https://pubmed.ncbi.nlm.nih.gov/18041606/" },
       { title: "Plasma 1,8-cineole correlates with cognitive performance following exposure to rosemary aroma", url: "https://pubmed.ncbi.nlm.nih.gov/23983963/" },
     ],
-    color: "#4A2E27",
+    color: SCENT_COLORS["몰입"],
   },
 
   청정: {
@@ -393,7 +393,7 @@ export const scentResults: Record<ScentType, ScentResult> = {
       { title: "Treatment of upper respiratory tract infections using aromatic herb spray (RCT)", url: "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2967840/" },
       { title: "Inactivation of airborne influenza virus by tea tree and eucalyptus oils", url: "https://www.tandfonline.com/doi/full/10.1080/02786826.2012.708948" },
     ],
-    color: "#A5BCD6",
+    color: SCENT_COLORS["청정"],
   },
 };
 

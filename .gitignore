@@ -31,3 +31,4 @@ dist-ssr
 
 # Image compression backup
 storage-backup/
+db-backup/
