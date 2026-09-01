@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import SurveyPage from "./SurveyPage";
@@ -7,6 +7,11 @@ import ResultPage from "./ResultPage";
 import { useAuth } from "../context/AuthContext";
 import { supabase, isSupabaseReady } from "../lib/supabase";
 import { isProductionEnv } from "../lib/env";
+import {
+  trackQuizComplete,
+  trackResultView,
+  trackQuizRetry,
+} from "../lib/analytics";
 
 type QuizScreen = "survey" | "loading" | "result";
 
@@ -33,6 +38,16 @@ export default function QuizPage() {
   const [isShared, setIsShared] = useState(false);
   const [isHistory, setIsHistory] = useState(false);
 
+  // 결과 화면 노출 이벤트: 유입 경로별로 1회만 전송
+  const resultSource = useRef<"own" | "shared" | "history">("own");
+  const resultTracked = useRef(false);
+
+  useEffect(() => {
+    if (screen !== "result" || !constitutionType || resultTracked.current) return;
+    resultTracked.current = true;
+    trackResultView("sasang", constitutionType, resultSource.current);
+  }, [screen, constitutionType]);
+
   useEffect(() => {
     // 1) URL 파라미터로 공유된 결과 (카카오 공유 등)
     const type = searchParams.get("type");
@@ -46,8 +61,10 @@ export default function QuizPage() {
       if (Object.keys(urlScores).length > 0) setScores(urlScores);
       if (searchParams.get("from") === "history") {
         setIsHistory(true);
+        resultSource.current = "history";
       } else {
         setIsShared(true);
+        resultSource.current = "shared";
       }
       setScreen("result");
       return;
@@ -71,6 +88,7 @@ export default function QuizPage() {
 
   const handleSurveyComplete = useCallback((s: Record<string, number>) => {
     const type = determineType(s);
+    trackQuizComplete("sasang", type);
     setScores(s);
     setConstitutionType(type);
     const result = JSON.stringify({ constitutionType: type, scores: s });
@@ -116,6 +134,9 @@ export default function QuizPage() {
           constitutionType={constitutionType}
           scores={scores}
           onRetry={() => {
+            trackQuizRetry("sasang");
+            resultSource.current = "own";
+            resultTracked.current = false;
             sessionStorage.removeItem(SESSION_KEY);
             setConstitutionType("");
             setScores({});

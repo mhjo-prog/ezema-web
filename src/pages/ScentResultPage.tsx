@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase, isSupabaseReady } from "../lib/supabase";
 import { PENDING_SCENT_KEY } from "../context/AuthContext";
+import { trackResultShare, trackResultSave } from "../lib/analytics";
 
 class ResultErrorBoundary extends Component<{ children: ReactNode }, { error: string | null }> {
   constructor(props: { children: ReactNode }) {
@@ -90,6 +91,7 @@ function ScentShareModal({ scentType, scores, facetScores, onClose }: { scentTyp
   const [showToast, setShowToast] = useState(false);
 
   const handleKakao = () => {
+    trackResultShare("scent", "kakao");
     if (!window.Kakao) return;
     if (!window.Kakao.isInitialized()) window.Kakao.init(KAKAO_APP_KEY);
     window.Kakao.Share.sendDefault({
@@ -104,6 +106,7 @@ function ScentShareModal({ scentType, scores, facetScores, onClose }: { scentTyp
   };
 
   const handleCopy = async () => {
+    trackResultShare("scent", "copy");
     await navigator.clipboard.writeText(shareUrl);
     setShowToast(true);
     setTimeout(() => {
@@ -189,6 +192,7 @@ function ScentSaveModal({ scentType, scores, facetScores, onClose }: { scentType
         }
       }
       setSaving(false);
+      trackResultSave("scent", "success");
       onClose();
       navigate("/mypage");
     } else {
@@ -1083,7 +1087,10 @@ function ScentResultPageInner({ scentType, scores, facetScores, onRetry }: Props
           ) : (
             /* 비로그인 / 공유 링크 / 로컬 환경: 저장하기 버튼 */
             <motion.button
-              onClick={() => setShowSaveModal(true)}
+              onClick={() => {
+                trackResultSave("scent", "open");
+                setShowSaveModal(true);
+              }}
               whileTap={{ scale: 0.99 }}
               className="font-semibold"
               style={{ flex: 1, padding: "17px", borderRadius: "50px", background: themeColor, border: `1.5px solid ${themeColor}`, color: "#ffffff", fontSize: "0.95rem", cursor: "pointer" }}
@@ -1092,7 +1099,10 @@ function ScentResultPageInner({ scentType, scores, facetScores, onRetry }: Props
             </motion.button>
           )}
           <motion.button
-            onClick={() => setShowShareModal(true)}
+            onClick={() => {
+              trackResultShare("scent", "open");
+              setShowShareModal(true);
+            }}
             whileTap={{ scale: 0.99 }}
             className="font-semibold"
             style={{

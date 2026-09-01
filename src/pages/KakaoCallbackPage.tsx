@@ -8,6 +8,7 @@ import {
   KAKAO_LOGIN_MODE_KEY,
   POST_LOGIN_REDIRECT_KEY,
 } from "../context/AuthContext";
+import { trackLogin } from "../lib/analytics";
 
 type Status = "processing" | "error";
 
@@ -129,6 +130,8 @@ export default function KakaoCallbackPage() {
 
       // 3. Supabase에 유저 저장 (upsert)
       await upsertKakaoUser(user);
+
+      trackLogin("kakao");
 
       // 4. 팝업으로 열린 경우(데스크톱): BroadcastChannel로 부모에 전송 후 팝업 닫기
       //    리다이렉트로 들어온 경우(주로 모바일): 상태 저장 후 직접 이동

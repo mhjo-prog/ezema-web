@@ -5,6 +5,7 @@ import { results, CONSTITUTION_COLORS } from "../data/results";
 import { supabase, isSupabaseReady } from "../lib/supabase";
 import { useAuth, PENDING_RESULT_KEY } from "../context/AuthContext";
 import { isProductionEnv } from "../lib/env";
+import { trackResultShare, trackResultSave } from "../lib/analytics";
 
 declare global {
   interface Window {
@@ -786,6 +787,7 @@ function ShareModal({ constitutionType, scores, onClose }: { constitutionType: s
   const [showToast, setShowToast] = useState(false);
 
   const handleKakao = () => {
+    trackResultShare("sasang", "kakao");
     if (!window.Kakao) return;
     if (!window.Kakao.isInitialized()) {
       window.Kakao.init(KAKAO_APP_KEY);
@@ -802,6 +804,7 @@ function ShareModal({ constitutionType, scores, onClose }: { constitutionType: s
   };
 
   const handleCopy = async () => {
+    trackResultShare("sasang", "copy");
     await navigator.clipboard.writeText(shareUrl);
     setShowToast(true);
     setTimeout(() => {
@@ -1237,7 +1240,10 @@ function Buttons({ onRetry, constitutionType, scores, isShared = false, isHistor
         transition={{ delay: 1.1, duration: 0.5 }}
       >
         <motion.button
-          onClick={() => setShowSaveModal(true)}
+          onClick={() => {
+            trackResultSave("sasang", "open");
+            setShowSaveModal(true);
+          }}
           className="font-semibold transition-all duration-200"
           style={{
             flex: 1,
@@ -1255,7 +1261,10 @@ function Buttons({ onRetry, constitutionType, scores, isShared = false, isHistor
         </motion.button>
 
         <motion.button
-          onClick={() => setShowModal(true)}
+          onClick={() => {
+            trackResultShare("sasang", "open");
+            setShowModal(true);
+          }}
           className="font-semibold transition-all duration-200"
           style={{
             flex: 1,

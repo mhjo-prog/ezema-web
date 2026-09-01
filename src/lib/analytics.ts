@@ -52,3 +52,70 @@ export function trackEvent(action: string, params?: Record<string, unknown>) {
   if (!GA_MEASUREMENT_ID || typeof window.gtag !== "function") return;
   window.gtag("event", action, params);
 }
+
+/* ---------------------------------------------------------------
+ * 서비스 전용 이벤트 헬퍼
+ * GA4에서 퍼널(시작 → 진행 → 완료 → 결과 → 저장/공유)을 보기 위한 래퍼.
+ * quiz_type 파라미터로 사상체질(sasang) / 향 체질(scent)을 구분한다.
+ * ------------------------------------------------------------- */
+
+export type QuizType = "sasang" | "scent";
+
+/** 진단 시작 (설문 첫 문항 진입 시 1회) */
+export function trackQuizStart(quizType: QuizType) {
+  trackEvent("quiz_start", { quiz_type: quizType });
+}
+
+const PROGRESS_MILESTONES = [25, 50, 75] as const;
+const firedProgress = new Set<string>();
+
+/**
+ * 진단 진행률. 25/50/75% 지점을 각각 한 번씩만 전송해 중도 이탈 구간을 파악한다.
+ * (문항마다 전송하면 이벤트가 과도하게 쌓이므로 마일스톤만 기록)
+ */
+export function trackQuizProgress(quizType: QuizType, answered: number, total: number) {
+  if (total <= 0) return;
+  const pct = (answered / total) * 100;
+  for (const milestone of PROGRESS_MILESTONES) {
+    const key = `${quizType}:${milestone}`;
+    if (pct >= milestone && !firedProgress.has(key)) {
+      firedProgress.add(key);
+      trackEvent("quiz_progress", { quiz_type: quizType, progress: milestone });
+    }
+  }
+}
+
+/** 진단 완료 (마지막 문항 응답 직후) */
+export function trackQuizComplete(quizType: QuizType, resultType: string) {
+  trackEvent("quiz_complete", { quiz_type: quizType, result_type: resultType });
+}
+
+/** 결과 화면 노출. source로 직접 진단 / 공유 링크 / 기록 보기를 구분한다. */
+export function trackResultView(
+  quizType: QuizType,
+  resultType: string,
+  source: "own" | "shared" | "history"
+) {
+  trackEvent("result_view", { quiz_type: quizType, result_type: resultType, source });
+}
+
+/** 결과 저장 — open: 저장 모달 열림, success: 실제 저장 완료 */
+export function trackResultSave(quizType: QuizType, stage: "open" | "success") {
+  trackEvent("result_save", { quiz_type: quizType, stage });
+}
+
+/** 결과 공유 — open: 공유 모달 열림, kakao/copy: 실제 공유 실행 */
+export function trackResultShare(quizType: QuizType, method: "open" | "kakao" | "copy") {
+  trackEvent("result_share", { quiz_type: quizType, method });
+}
+
+/** 다시 검사하기 (진행률 마일스톤도 함께 초기화) */
+export function trackQuizRetry(quizType: QuizType) {
+  firedProgress.clear();
+  trackEvent("quiz_retry", { quiz_type: quizType });
+}
+
+/** 카카오 로그인 완료 */
+export function trackLogin(method: "kakao" = "kakao") {
+  trackEvent("login", { method });
+}
