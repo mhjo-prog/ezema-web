@@ -1,10 +1,15 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import ScentSurveyPage from "./ScentSurveyPage";
 import ScentLoadingPage from "./ScentLoadingPage";
 import ScentResultPage from "./ScentResultPage";
 import type { ScentType } from "../data/scentQuestions";
+import {
+  trackQuizComplete,
+  trackResultView,
+  trackQuizRetry,
+} from "../lib/analytics";
 
 type QuizScreen = "survey" | "loading" | "result";
 
@@ -61,9 +66,14 @@ export default function ScentQuizPage() {
   const [scores, setScores] = useState<Record<string, number>>({});
   const [facetScores, setFacetScores] = useState<Record<string, number>>({});
 
+  // 결과 화면 노출 이벤트: 유입 경로별로 1회만 전송
+  const resultSource = useRef<"own" | "shared" | "history">("own");
+  const resultTracked = useRef(false);
+
   useEffect(() => {
     const shared = parseSharedParams();
     if (shared) {
+      resultSource.current = "shared";
       setScentType(shared.scentType);
       setScores(shared.scores);
       setFacetScores(shared.facetScores);
@@ -71,9 +81,16 @@ export default function ScentQuizPage() {
     }
   }, []);
 
+  useEffect(() => {
+    if (screen !== "result" || resultTracked.current) return;
+    resultTracked.current = true;
+    trackResultView("scent", scentType, resultSource.current);
+  }, [screen, scentType]);
+
   const handleSurveyComplete = useCallback((axisScores: Record<string, number>, rawFacetScores: Record<string, number>) => {
     const type = determineType(axisScores);
     if (!VALID_TYPES.includes(type)) return;
+    trackQuizComplete("scent", type);
     setScores(axisScores);
     setFacetScores(rawFacetScores);
     setScentType(type);
@@ -86,6 +103,9 @@ export default function ScentQuizPage() {
   }, []);
 
   const handleRetry = () => {
+    trackQuizRetry("scent");
+    resultSource.current = "own";
+    resultTracked.current = false;
     sessionStorage.removeItem(SESSION_KEY);
     setScentType("이완");
     setScores({});

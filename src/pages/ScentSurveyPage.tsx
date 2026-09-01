@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { scentQuestions } from "../data/scentQuestions";
 import type { ScentType, Facet } from "../data/scentQuestions";
+import { trackQuizStart, trackQuizProgress } from "../lib/analytics";
 
 const ACCENT = "#4A0E14";
 const ACCENT_LIGHT = "#7A2A32";
@@ -27,6 +28,11 @@ export default function ScentSurveyPage({ onComplete, onBack }: Props) {
   const [facetHistory, setFacetHistory] = useState<Record<string, number>[]>([]);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // 설문 진입 = 진단 시작
+  useEffect(() => {
+    trackQuizStart("scent");
+  }, []);
 
   useEffect(() => {
     scrollContainerRef.current?.scrollTo(0, 0);
@@ -59,6 +65,7 @@ export default function ScentSurveyPage({ onComplete, onBack }: Props) {
       setFacetRawScores(newFacetRawScores);
       setSelectedId(null);
       setDirection(1);
+      trackQuizProgress("scent", currentIndex + 1, scentQuestions.length);
       if (currentIndex < scentQuestions.length - 1) {
         setCurrentIndex((i) => i + 1);
       } else {

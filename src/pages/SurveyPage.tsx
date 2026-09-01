@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { questions } from "../data/questions";
+import { trackQuizStart, trackQuizProgress } from "../lib/analytics";
 
 interface Props {
   onComplete: (scores: Record<string, number>) => void;
@@ -20,6 +21,11 @@ export default function SurveyPage({ onComplete, onBack }: Props) {
   const [scoreHistory, setScoreHistory] = useState<Record<string, number>[]>([]);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // 설문 진입 = 진단 시작
+  useEffect(() => {
+    trackQuizStart("sasang");
+  }, []);
 
   useEffect(() => {
     if ([15, 16, 19].includes(questions[currentIndex].id)) {
@@ -48,6 +54,7 @@ export default function SurveyPage({ onComplete, onBack }: Props) {
       setTotalScores(newScores);
       setSelectedId(null);
       setDirection(1);
+      trackQuizProgress("sasang", currentIndex + 1, questions.length);
       if (currentIndex < questions.length - 1) {
         setCurrentIndex((i) => i + 1);
       } else {
