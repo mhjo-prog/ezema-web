@@ -103,6 +103,8 @@ function SavedCard({ post, navigate }: { post: SavedItem; navigate: (path: strin
         <img
           src={post.card_image_url}
           alt={post.title}
+          loading="lazy"
+          decoding="async"
           style={{ width: "64px", height: "64px", borderRadius: "8px", objectFit: "cover", flexShrink: 0 }}
         />
       ) : (
