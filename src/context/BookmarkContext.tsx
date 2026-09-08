@@ -6,19 +6,27 @@ import { isSupabaseReady, supabase } from "../lib/supabase";
 interface BookmarkContextType {
   isSavedGlobal: (id: string) => boolean;
   toggleBookmark: (id: string, postType: "posts" | "wellness_posts") => Promise<void>;
+  /** 저장한 콘텐츠가 하나라도 있는지 (저장 안내 노출 판단용) */
+  hasAnySaved: boolean;
+  /** 북마크 목록 로드가 끝났는지 — 로드 전 잘못된 안내 노출을 막는다 */
+  bookmarksLoaded: boolean;
 }
 
 const BookmarkContext = createContext<BookmarkContextType>({
   isSavedGlobal: () => false,
   toggleBookmark: async () => {},
+  hasAnySaved: false,
+  bookmarksLoaded: false,
 });
 
 export function BookmarkProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+  const [bookmarksLoaded, setBookmarksLoaded] = useState(false);
 
   useEffect(() => {
     async function load() {
+      setBookmarksLoaded(false);
       if (user) {
         if (!isSupabaseReady) return;
         const { data } = await supabase
@@ -29,6 +37,7 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
       } else {
         setSavedIds(new Set(getSavedPostIds()));
       }
+      setBookmarksLoaded(true);
     }
     load();
   }, [user]);
@@ -59,7 +68,7 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <BookmarkContext.Provider value={{ isSavedGlobal, toggleBookmark }}>
+    <BookmarkContext.Provider value={{ isSavedGlobal, toggleBookmark, hasAnySaved: savedIds.size > 0, bookmarksLoaded }}>
       {children}
     </BookmarkContext.Provider>
   );
