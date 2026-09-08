@@ -5,7 +5,7 @@ import { results, CONSTITUTION_COLORS } from "../data/results";
 import { supabase, isSupabaseReady } from "../lib/supabase";
 import { useAuth, PENDING_RESULT_KEY } from "../context/AuthContext";
 import { isProductionEnv } from "../lib/env";
-import { trackResultShare, trackResultSave } from "../lib/analytics";
+import { trackResultShare, trackResultSave, trackLogin } from "../lib/analytics";
 
 declare global {
   interface Window {
@@ -1006,8 +1006,18 @@ function SaveResultModal({ constitutionType, scores, onClose }: { constitutionTy
   );
 }
 
-function ConstitutionHistoryCard() {
-  const { loginWithKakao } = useAuth();
+function ConstitutionHistoryCard({ constitutionType, scores }: { constitutionType: string; scores: Record<string, number> }) {
+  const { user, loginWithKakao } = useAuth();
+  const navigate = useNavigate();
+  const isLoggedIn = !!user;
+
+  // 카드에서 바로 로그인할 때도 '결과 저장하기'와 동일하게
+  // 방금 본 결과를 pending 으로 넣어둬야 로그인 직후 DB에 저장된다
+  const handleKakaoLogin = () => {
+    localStorage.setItem(PENDING_RESULT_KEY, JSON.stringify({ constitutionType, scores }));
+    trackLogin("kakao");
+    loginWithKakao();
+  };
 
   const svgW = 280, svgH = 80;
   const padL = 6, padR = 6, padT = 8, padB = 8;
@@ -1091,46 +1101,73 @@ function ConstitutionHistoryCard() {
             paddingBottom: "10px",
           }}
         >
-          <span style={{ fontSize: "18px", marginBottom: "2px" }}>🔒</span>
+          {!isLoggedIn && <span style={{ fontSize: "18px", marginBottom: "2px" }}>🔒</span>}
         </div>
       </div>
 
       <p className="font-bold" style={{ fontSize: "0.95rem", color: "#111111", marginBottom: "6px", marginTop: "12px" }}>
-        한 번의 검사로 끝내지 마세요
+        {isLoggedIn ? "이번 결과가 저장되었어요" : "한 번의 검사로 끝내지 마세요"}
       </p>
       <p style={{ fontSize: "0.85rem", color: "#555555", lineHeight: 1.7, marginBottom: "6px" }}>
-        검사를 반복할수록 내 체질의 변화가 보입니다.
-        로그인하면 매 검사 결과가 자동으로 저장되고,
-        시간에 따른 변화를 한눈에 확인할 수 있어요.
+        {isLoggedIn
+          ? "검사를 반복할수록 내 체질의 변화가 보입니다. 지금까지의 기록은 마이페이지에서 한눈에 확인할 수 있어요."
+          : "검사를 반복할수록 내 체질의 변화가 보입니다. 로그인하면 매 검사 결과가 자동으로 저장되고, 시간에 따른 변화를 한눈에 확인할 수 있어요."}
       </p>
       <p style={{ fontSize: "0.78rem", color: "#aaaaaa", marginBottom: "16px" }}>
         ※ 2회 이상 검사 시 마이페이지에 그래프가 활성화됩니다
       </p>
 
-      <motion.button
-        onClick={() => loginWithKakao()}
-        whileTap={{ scale: 0.98 }}
-        className="font-semibold"
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "8px",
-          width: "100%",
-          padding: "14px",
-          borderRadius: "50px",
-          background: "#FEE500",
-          border: "none",
-          color: "#3C1E1E",
-          fontSize: "0.9rem",
-          cursor: "pointer",
-        }}
-      >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <path d="M12 3C6.477 3 2 6.477 2 10.909c0 2.756 1.528 5.19 3.878 6.702l-.99 3.697 4.27-2.817A11.64 11.64 0 0012 18.818c5.523 0 10-3.476 10-7.909C22 6.477 17.523 3 12 3z" fill="#3C1E1E"/>
-        </svg>
-        카카오로 로그인하고 기록 시작하기
-      </motion.button>
+      {isLoggedIn ? (
+        <motion.button
+          onClick={() => navigate("/mypage")}
+          whileTap={{ scale: 0.98 }}
+          className="font-semibold"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "8px",
+            width: "100%",
+            padding: "14px",
+            borderRadius: "50px",
+            background: "#FEE500",
+            border: "none",
+            color: "#3C1E1E",
+            fontSize: "0.9rem",
+            cursor: "pointer",
+          }}
+        >
+          마이페이지에서 내 기록 보기
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 18l6-6-6-6" />
+          </svg>
+        </motion.button>
+      ) : (
+        <motion.button
+          onClick={handleKakaoLogin}
+          whileTap={{ scale: 0.98 }}
+          className="font-semibold"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "8px",
+            width: "100%",
+            padding: "14px",
+            borderRadius: "50px",
+            background: "#FEE500",
+            border: "none",
+            color: "#3C1E1E",
+            fontSize: "0.9rem",
+            cursor: "pointer",
+          }}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M12 3C6.477 3 2 6.477 2 10.909c0 2.756 1.528 5.19 3.878 6.702l-.99 3.697 4.27-2.817A11.64 11.64 0 0012 18.818c5.523 0 10-3.476 10-7.909C22 6.477 17.523 3 12 3z" fill="#3C1E1E"/>
+          </svg>
+          카카오로 로그인하고 기록 시작하기
+        </motion.button>
+      )}
     </motion.div>
   );
 }
@@ -1140,6 +1177,9 @@ function Buttons({ onRetry, constitutionType, scores, isShared = false, isHistor
   const [showSaveModal, setShowSaveModal] = useState(false);
   const navigate = useNavigate();
   const color = useContext(ThemeContext);
+  const { user } = useAuth();
+  // 로그인 유저는 퀴즈 완료 시점에 이미 DB에 저장되므로 '결과 저장하기'가 불필요
+  const isLoggedIn = !!user;
 
   if (isHistory) {
     return (
@@ -1239,10 +1279,16 @@ function Buttons({ onRetry, constitutionType, scores, isShared = false, isHistor
         animate={{ opacity: 1 }}
         transition={{ delay: 1.1, duration: 0.5 }}
       >
+        {/* 주 버튼: 비로그인은 결과 저장, 로그인 유저는 이미 저장되어 있으므로 공유가 주 액션 */}
         <motion.button
           onClick={() => {
-            trackResultSave("sasang", "open");
-            setShowSaveModal(true);
+            if (isLoggedIn) {
+              trackResultShare("sasang", "open");
+              setShowModal(true);
+            } else {
+              trackResultSave("sasang", "open");
+              setShowSaveModal(true);
+            }
           }}
           className="font-semibold transition-all duration-200"
           style={{
@@ -1257,13 +1303,18 @@ function Buttons({ onRetry, constitutionType, scores, isShared = false, isHistor
           }}
           whileTap={{ scale: 0.99 }}
         >
-          결과 저장하기
+          {isLoggedIn ? "친구에게 공유하기" : "결과 저장하기"}
         </motion.button>
 
+        {/* 보조 버튼: 비로그인은 공유, 로그인 유저는 내 체질 콘텐츠로 유도 */}
         <motion.button
           onClick={() => {
-            trackResultShare("sasang", "open");
-            setShowModal(true);
+            if (isLoggedIn) {
+              navigate(`/sasang?type=${constitutionType}`);
+            } else {
+              trackResultShare("sasang", "open");
+              setShowModal(true);
+            }
           }}
           className="font-semibold transition-all duration-200"
           style={{
@@ -1279,7 +1330,7 @@ function Buttons({ onRetry, constitutionType, scores, isShared = false, isHistor
           whileHover={{ borderColor: color, color }}
           whileTap={{ scale: 0.99 }}
         >
-          친구에게 공유하기
+          {isLoggedIn ? "내 체질 콘텐츠 보기" : "친구에게 공유하기"}
         </motion.button>
       </motion.div>
 
@@ -1652,7 +1703,7 @@ export default function ResultPage({ constitutionType, scores, onRetry, isShared
         </motion.div>
 
         {/* CONSTITUTION HISTORY 미리보기 (일반 결과 뷰에서만) */}
-        {!isShared && !isHistory && <ConstitutionHistoryCard />}
+        {!isShared && !isHistory && <ConstitutionHistoryCard constitutionType={constitutionType} scores={scores} />}
 
         {/* Buttons */}
         <Buttons onRetry={onRetry} constitutionType={constitutionType} scores={scores} isShared={isShared} isHistory={isHistory} />
