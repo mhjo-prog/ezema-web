@@ -316,7 +316,7 @@ export default function WellnessDetailPage() {
             {saved ? "저장됨" : "저장"}
           </button>
           {/* 저장한 콘텐츠가 하나도 없는 사용자에게만 안내 말풍선 */}
-          <SaveHintBubble enabled={bookmarksLoaded && !hasAnySaved} />
+          <SaveHintBubble key={id} enabled={bookmarksLoaded && !hasAnySaved} />
           </div>
         </div>
 

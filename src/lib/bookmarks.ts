@@ -1,6 +1,39 @@
 import { supabase, isSupabaseReady } from "./supabase";
 
 const SAVED_POSTS_KEY = "ezema_saved_posts";
+const PENDING_BOOKMARK_KEY = "pending_bookmark";
+
+// ── 비로그인 상태에서 저장을 누른 글 (로그인 직후 저장) ─────────
+
+export type PostType = "posts" | "wellness_posts";
+
+export function setPendingBookmark(postId: string, postType: PostType): void {
+  try { localStorage.setItem(PENDING_BOOKMARK_KEY, JSON.stringify({ postId, postType })); }
+  catch { /* 무시 */ }
+}
+
+export function clearPendingBookmark(): void {
+  try { localStorage.removeItem(PENDING_BOOKMARK_KEY); }
+  catch { /* 무시 */ }
+}
+
+/** 로그인 직후 호출 — 대기 중인 북마크를 DB에 저장하고 큐를 비운다 */
+export async function flushPendingBookmark(kakaoId: string): Promise<void> {
+  if (!isSupabaseReady) return;
+  let pending: { postId: string; postType: PostType } | null = null;
+  try {
+    const raw = localStorage.getItem(PENDING_BOOKMARK_KEY);
+    pending = raw ? JSON.parse(raw) : null;
+  } catch { pending = null; }
+  clearPendingBookmark();
+  if (!pending?.postId) return;
+  await supabase
+    .from("bookmarks")
+    .upsert(
+      { kakao_id: kakaoId, post_id: pending.postId, post_type: pending.postType },
+      { onConflict: "kakao_id,post_id" }
+    );
+}
 
 // ── localStorage (비로그인) ──────────────────────────────────────
 

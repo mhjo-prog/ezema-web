@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
-const DELAY_MS = 800;            // 진입 후 등장까지
-const DISMISS_KEY = "keepslow_save_hint_dismissed"; // 세션 단위 닫기 기억
-const SIDE_QUERY = "(min-width: 1200px)";           // 이 이상에서만 버튼 오른쪽에 배치
+const DELAY_MS = 800;                     // 진입 후 등장까지
+const SIDE_QUERY = "(min-width: 1200px)"; // 이 이상에서만 버튼 오른쪽에 배치
 
 const BORDER = "#e6e6e6";
 
 /**
  * 저장(북마크) 버튼 옆에 떠오르는 안내 말풍선.
  * - 저장한 콘텐츠가 하나도 없는 사용자에게만 노출
- * - 자동으로 사라지지 않고, X 버튼으로 닫는다 (닫으면 해당 세션 동안 다시 뜨지 않음)
+ * - 자동으로 사라지지 않고, X 버튼으로 닫는다 (닫기는 현재 글에서만 유효 —
+ *   다른 콘텐츠로 이동하면 다시 뜬다. 호출부에서 key={id}로 리마운트시킬 것)
  * - 넓은 화면에서는 버튼 오른쪽, 좁은 화면에서는 버튼 아래에 배치
  * 부모는 position: relative 컨테이너여야 한다.
  */
@@ -33,23 +33,12 @@ export default function SaveHintBubble({ enabled }: { enabled: boolean }) {
       setVisible(false);
       return;
     }
-    try {
-      if (sessionStorage.getItem(DISMISS_KEY)) return;
-    } catch {
-      /* 저장소 접근 불가 시 그냥 노출 */
-    }
     const timer = setTimeout(() => setVisible(true), DELAY_MS);
     return () => clearTimeout(timer);
   }, [enabled]);
 
-  const dismiss = () => {
-    setVisible(false);
-    try {
-      sessionStorage.setItem(DISMISS_KEY, "1");
-    } catch {
-      /* 무시 */
-    }
-  };
+  // 닫기는 현재 글에서만 유효 — 저장하지 않으므로 다른 글에서는 다시 뜬다
+  const dismiss = () => setVisible(false);
 
   const placement = side
     ? { left: "calc(100% + 12px)", top: "50%", y: "-50%" as const }
