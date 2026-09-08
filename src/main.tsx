@@ -7,8 +7,9 @@ import App from './App.tsx'
 import { AuthProvider } from './context/AuthContext.tsx'
 import { BookmarkProvider } from './context/BookmarkContext.tsx'
 import { initGA } from './lib/analytics'
+import { isProductionEnv } from './lib/env'
 
-initGA()
+if (isProductionEnv) initGA()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

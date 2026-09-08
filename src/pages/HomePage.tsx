@@ -3,6 +3,7 @@ import { motion, useInView } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { supabase, isSupabaseReady, type WellnessPost } from "../lib/supabase";
+import { toThumbUrl } from "../lib/imageUtils";
 import Footer from "../components/Footer";
 import { isProductionEnv } from "../lib/env";
 
@@ -651,8 +652,14 @@ export default function HomePage() {
                   }}
                 >
                   <img
-                    src={post.card_image_url}
+                    src={toThumbUrl(post.card_image_url)}
                     alt=""
+                    loading="lazy"
+                    decoding="async"
+                    onError={(e) => {
+                      const t = e.currentTarget;
+                      if (t.src !== post.card_image_url) t.src = post.card_image_url;
+                    }}
                     style={{
                       width: "100%",
                       height: "100%",

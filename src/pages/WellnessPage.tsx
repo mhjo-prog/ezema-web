@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase, isSupabaseReady, type WellnessPost, type WellnessCategory } from "../lib/supabase";
+import { toThumbUrl } from "../lib/imageUtils";
 import { wellnessSamplePosts } from "../data/wellnessSamplePosts";
 import Footer from "../components/Footer";
 import { useBookmarks } from "../context/BookmarkContext";
@@ -56,9 +57,15 @@ function WellnessCard({ post, onClick }: { post: WellnessPost; onClick: () => vo
       >
         {post.card_image_url && !imgError ? (
           <img
-            src={post.card_image_url}
+            src={toThumbUrl(post.card_image_url)}
             alt={post.title}
-            onError={() => setImgError(true)}
+            loading="lazy"
+            decoding="async"
+            onError={(e) => {
+              const t = e.currentTarget;
+              if (t.src !== post.card_image_url) { t.src = post.card_image_url; return; }
+              setImgError(true);
+            }}
             style={{ width: "100%", height: "auto", display: "block" }}
           />
         ) : (

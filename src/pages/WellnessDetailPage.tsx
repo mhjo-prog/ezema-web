@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { supabase, isSupabaseReady, type WellnessPost } from "../lib/supabase";
 import { useBookmarks } from "../context/BookmarkContext";
+import SaveHintBubble from "../components/SaveHintBubble";
 
 const WELLNESS_CATEGORY_COLORS: Record<string, string> = {
   수면: "#6B3FA0",
@@ -181,7 +182,7 @@ export default function WellnessDetailPage() {
   const [post, setPost] = useState<WellnessPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const { isSavedGlobal, toggleBookmark } = useBookmarks();
+  const { isSavedGlobal, toggleBookmark, hasAnySaved, bookmarksLoaded } = useBookmarks();
   const saved = isSavedGlobal(id ?? "");
 
   useEffect(() => {
@@ -296,6 +297,7 @@ export default function WellnessDetailPage() {
             </span>
             <span style={{ fontSize: "0.8125rem", color: "#aaaaaa" }}>{formatDate(post.created_at)}</span>
           </div>
+          <div style={{ position: "relative" }}>
           <button
             onClick={() => { if (id) toggleBookmark(id, "wellness_posts"); }}
             style={{
@@ -313,6 +315,9 @@ export default function WellnessDetailPage() {
             </svg>
             {saved ? "저장됨" : "저장"}
           </button>
+          {/* 저장한 콘텐츠가 하나도 없는 사용자에게만 안내 말풍선 */}
+          <SaveHintBubble key={id} enabled={bookmarksLoaded && !hasAnySaved} />
+          </div>
         </div>
 
         {/* 제목 */}

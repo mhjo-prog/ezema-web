@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { supabase, adminSupabase, isSupabaseReady, type Post, type WellnessPost } from "../lib/supabase";
+import { compressImage } from "../lib/imageUtils";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from "recharts";
 import ReactMarkdown from "react-markdown";
 import { useEditor, EditorContent } from "@tiptap/react";
@@ -189,14 +190,26 @@ function PostPreviewModal({
   async function handleModalImageUpload(file: File) {
     if (!isSupabaseReady) return;
     setUploadingModalImage(true);
-    const ext = file.name.split(".").pop();
-    const path = `posts/${post.id}_${Date.now()}.${ext}`;
-    const { error: uploadError } = await adminSupabase.storage.from("post-images").upload(path, file, { upsert: true });
-    if (uploadError) {
-      onError(`이미지 업로드 실패: ${uploadError.message}`);
-    } else {
-      const { data: urlData } = adminSupabase.storage.from("post-images").getPublicUrl(path);
-      setImageUrl(urlData.publicUrl);
+    try {
+      const [compressed, thumb] = await Promise.all([
+        compressImage(file, 1200),
+        compressImage(file, 400),
+      ]);
+      const ts = Date.now();
+      const mainPath = `posts/${post.id}_${ts}.${compressed.ext}`;
+      const thumbPath = `posts/thumb_${post.id}_${ts}.${thumb.ext}`;
+      const [{ error: uploadError }] = await Promise.all([
+        adminSupabase.storage.from("post-images").upload(mainPath, compressed.blob, { upsert: true, contentType: compressed.mimeType }),
+        adminSupabase.storage.from("post-images").upload(thumbPath, thumb.blob, { upsert: true, contentType: thumb.mimeType }),
+      ]);
+      if (uploadError) {
+        onError(`이미지 업로드 실패: ${uploadError.message}`);
+      } else {
+        const { data: urlData } = adminSupabase.storage.from("post-images").getPublicUrl(mainPath);
+        setImageUrl(urlData.publicUrl);
+      }
+    } catch (e) {
+      onError(`이미지 처리 실패: ${e instanceof Error ? e.message : String(e)}`);
     }
     setUploadingModalImage(false);
   }
@@ -410,14 +423,26 @@ function WellnessPostPreviewModal({
   async function handleModalImageUpload(file: File) {
     if (!isSupabaseReady) return;
     setUploadingModalImage(true);
-    const ext = file.name.split(".").pop();
-    const path = `wellness_posts/${post.id}_${Date.now()}.${ext}`;
-    const { error: uploadError } = await adminSupabase.storage.from("post-images").upload(path, file, { upsert: true });
-    if (uploadError) {
-      onError(`이미지 업로드 실패: ${uploadError.message}`);
-    } else {
-      const { data: urlData } = adminSupabase.storage.from("post-images").getPublicUrl(path);
-      setImageUrl(urlData.publicUrl);
+    try {
+      const [compressed, thumb] = await Promise.all([
+        compressImage(file, 1200),
+        compressImage(file, 400),
+      ]);
+      const ts = Date.now();
+      const mainPath = `wellness_posts/${post.id}_${ts}.${compressed.ext}`;
+      const thumbPath = `wellness_posts/thumb_${post.id}_${ts}.${thumb.ext}`;
+      const [{ error: uploadError }] = await Promise.all([
+        adminSupabase.storage.from("post-images").upload(mainPath, compressed.blob, { upsert: true, contentType: compressed.mimeType }),
+        adminSupabase.storage.from("post-images").upload(thumbPath, thumb.blob, { upsert: true, contentType: thumb.mimeType }),
+      ]);
+      if (uploadError) {
+        onError(`이미지 업로드 실패: ${uploadError.message}`);
+      } else {
+        const { data: urlData } = adminSupabase.storage.from("post-images").getPublicUrl(mainPath);
+        setImageUrl(urlData.publicUrl);
+      }
+    } catch (e) {
+      onError(`이미지 처리 실패: ${e instanceof Error ? e.message : String(e)}`);
     }
     setUploadingModalImage(false);
   }
@@ -425,14 +450,18 @@ function WellnessPostPreviewModal({
   async function handleContentImageUpload(file: File) {
     if (!isSupabaseReady) return;
     setUploadingContentImage(true);
-    const ext = file.name.split(".").pop();
-    const path = `wellness_posts/${post.id}_content_${Date.now()}.${ext}`;
-    const { error: uploadError } = await adminSupabase.storage.from("post-images").upload(path, file, { upsert: true });
-    if (uploadError) {
-      onError(`이미지 업로드 실패: ${uploadError.message}`);
-    } else {
-      const { data: urlData } = adminSupabase.storage.from("post-images").getPublicUrl(path);
-      setContentImageUrl(urlData.publicUrl);
+    try {
+      const compressed = await compressImage(file, 1200);
+      const path = `wellness_posts/${post.id}_content_${Date.now()}.${compressed.ext}`;
+      const { error: uploadError } = await adminSupabase.storage.from("post-images").upload(path, compressed.blob, { upsert: true, contentType: compressed.mimeType });
+      if (uploadError) {
+        onError(`이미지 업로드 실패: ${uploadError.message}`);
+      } else {
+        const { data: urlData } = adminSupabase.storage.from("post-images").getPublicUrl(path);
+        setContentImageUrl(urlData.publicUrl);
+      }
+    } catch (e) {
+      onError(`이미지 처리 실패: ${e instanceof Error ? e.message : String(e)}`);
     }
     setUploadingContentImage(false);
   }
@@ -674,30 +703,40 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
     if (!isSupabaseReady) return;
     const setter = table === "posts" ? setUploadingImage : setUploadingWellnessImage;
     setter(postId);
-    const ext = file.name.split(".").pop();
-    const path = `${table}/${postId}_${Date.now()}.${ext}`;
-    const { error: uploadError } = await adminSupabase.storage
-      .from("post-images")
-      .upload(path, file, { upsert: true });
-    if (uploadError) {
-      showToast(`이미지 업로드 실패: ${uploadError.message}`);
-      setter(null);
-      return;
-    }
-    const { data: urlData } = adminSupabase.storage.from("post-images").getPublicUrl(path);
-    const publicUrl = urlData.publicUrl;
-    const { error: dbError } = await supabase.from(table).update({ card_image_url: publicUrl }).eq("id", postId);
-    if (dbError) {
-      showToast("DB 업데이트 중 오류가 발생했습니다.");
-    } else {
-      if (table === "posts") {
-        setPosts((prev) => prev.map((p) => p.id === postId ? { ...p, card_image_url: publicUrl } : p));
-        setPreview((prev) => prev && prev.id === postId ? { ...prev, card_image_url: publicUrl } : prev);
-      } else {
-        setWellnessPosts((prev) => prev.map((p) => p.id === postId ? { ...p, card_image_url: publicUrl } : p));
-        setWellnessPreview((prev) => prev && prev.id === postId ? { ...prev, card_image_url: publicUrl } : prev);
+    try {
+      const [compressed, thumb] = await Promise.all([
+        compressImage(file, 1200),
+        compressImage(file, 400),
+      ]);
+      const ts = Date.now();
+      const mainPath = `${table}/${postId}_${ts}.${compressed.ext}`;
+      const thumbPath = `${table}/thumb_${postId}_${ts}.${thumb.ext}`;
+      const [{ error: uploadError }] = await Promise.all([
+        adminSupabase.storage.from("post-images").upload(mainPath, compressed.blob, { upsert: true, contentType: compressed.mimeType }),
+        adminSupabase.storage.from("post-images").upload(thumbPath, thumb.blob, { upsert: true, contentType: thumb.mimeType }),
+      ]);
+      if (uploadError) {
+        showToast(`이미지 업로드 실패: ${uploadError.message}`);
+        setter(null);
+        return;
       }
-      showToast("이미지가 교체되었습니다.");
+      const { data: urlData } = adminSupabase.storage.from("post-images").getPublicUrl(mainPath);
+      const publicUrl = urlData.publicUrl;
+      const { error: dbError } = await supabase.from(table).update({ card_image_url: publicUrl }).eq("id", postId);
+      if (dbError) {
+        showToast("DB 업데이트 중 오류가 발생했습니다.");
+      } else {
+        if (table === "posts") {
+          setPosts((prev) => prev.map((p) => p.id === postId ? { ...p, card_image_url: publicUrl } : p));
+          setPreview((prev) => prev && prev.id === postId ? { ...prev, card_image_url: publicUrl } : prev);
+        } else {
+          setWellnessPosts((prev) => prev.map((p) => p.id === postId ? { ...p, card_image_url: publicUrl } : p));
+          setWellnessPreview((prev) => prev && prev.id === postId ? { ...prev, card_image_url: publicUrl } : prev);
+        }
+        showToast("이미지가 교체되었습니다.");
+      }
+    } catch (e) {
+      showToast(`이미지 처리 실패: ${e instanceof Error ? e.message : String(e)}`);
     }
     setter(null);
   }
@@ -997,145 +1036,45 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
   }
 
   // ── Analytics ────────────────────────────────────────────────────
-async function fetchAllAnalytics(since: Date): Promise<{ event_type: string; created_at: string }[]> {
-    const PAGE = 1000;
-    const all: { event_type: string; created_at: string }[] = [];
-    let from = 0;
-    while (true) {
-      const { data } = await supabase
-        .from("analytics")
-        .select("event_type, created_at")
-        .gte("created_at", since.toISOString())
-        .order("created_at", { ascending: true })
-        .range(from, from + PAGE - 1);
-      if (!data || data.length === 0) break;
-      all.push(...data);
-      if (data.length < PAGE) break;
-      from += PAGE;
-    }
-    return all;
-  }
-
-  async function fetchAllScentDates(since?: Date): Promise<string[]> {
-    const PAGE = 1000;
-    const all: string[] = [];
-    let from = 0;
-    while (true) {
-      let query = supabase
-        .from("scent_results")
-        .select("created_at")
-        .order("created_at", { ascending: true })
-        .range(from, from + PAGE - 1);
-      if (since) query = query.gte("created_at", since.toISOString());
-      const { data } = await query;
-      if (!data || data.length === 0) break;
-      all.push(...(data as { created_at: string }[]).map((r) => r.created_at));
-      if (data.length < PAGE) break;
-      from += PAGE;
-    }
-    return all;
-  }
-
   async function fetchChartData(range: "7d" | "30d" | "monthly" | "all") {
     if (!isSupabaseReady) return;
-    if (range === "all") {
-      const PAGE = 1000;
-      const all: { event_type: string; created_at: string }[] = [];
-      let from = 0;
-      while (true) {
-        const { data } = await supabase
-          .from("analytics")
-          .select("event_type, created_at")
-          .order("created_at", { ascending: true })
-          .range(from, from + PAGE - 1);
-        if (!data || data.length === 0) break;
-        all.push(...data);
-        if (data.length < PAGE) break;
-        from += PAGE;
-      }
-      const buckets: Record<string, { visits: number; quizCompletes: number; scentCompletes: number }> = {};
-      all.forEach((row) => {
-        const d = new Date(row.created_at);
-        const key = `${String(d.getFullYear()).slice(2)}/${String(d.getMonth() + 1).padStart(2, "0")}`;
-        if (!buckets[key]) buckets[key] = { visits: 0, quizCompletes: 0, scentCompletes: 0 };
-        if (row.event_type === "page_visit") buckets[key].visits++;
-        else if (row.event_type === "quiz_complete") buckets[key].quizCompletes++;
-      });
-      const scentDates = await fetchAllScentDates();
-      scentDates.forEach((createdAt) => {
-        const d = new Date(createdAt);
-        const key = `${String(d.getFullYear()).slice(2)}/${String(d.getMonth() + 1).padStart(2, "0")}`;
-        if (!buckets[key]) buckets[key] = { visits: 0, quizCompletes: 0, scentCompletes: 0 };
-        buckets[key].scentCompletes++;
-      });
-      setChartData(
-        Object.entries(buckets)
-          .sort(([a], [b]) => a.localeCompare(b))
-          .map(([date, v]) => ({ date, ...v }))
-      );
-      return;
-    }
     if (range === "7d" || range === "30d") {
       const days = range === "7d" ? 7 : 30;
-      const buckets: Record<string, { visits: number; quizCompletes: number; scentCompletes: number }> = {};
-      for (let i = 0; i < days; i++) {
-        const d = new Date();
-        d.setDate(d.getDate() - (days - 1 - i));
-        const key = `${d.getMonth() + 1}/${d.getDate()}`;
-        buckets[key] = { visits: 0, quizCompletes: 0, scentCompletes: 0 };
+      const { data } = await supabase.rpc("get_analytics_daily", { days_count: days });
+      if (data) {
+        setChartData(
+          (data as { day: string; visits: number; quiz_completes: number; scent_completes: number }[]).map((r) => ({
+            date: r.day,
+            visits: r.visits,
+            quizCompletes: r.quiz_completes,
+            scentCompletes: r.scent_completes,
+          }))
+        );
       }
-      const since = new Date();
-      since.setDate(since.getDate() - (days - 1));
-      since.setHours(0, 0, 0, 0);
-      const [rows, scentDates] = await Promise.all([
-        fetchAllAnalytics(since),
-        fetchAllScentDates(since),
-      ]);
-      rows.forEach((row) => {
-        const d = new Date(row.created_at);
-        const key = `${d.getMonth() + 1}/${d.getDate()}`;
-        if (buckets[key]) {
-          if (row.event_type === "page_visit") buckets[key].visits++;
-          else if (row.event_type === "quiz_complete") buckets[key].quizCompletes++;
-        }
-      });
-      scentDates.forEach((createdAt) => {
-        const d = new Date(createdAt);
-        const key = `${d.getMonth() + 1}/${d.getDate()}`;
-        if (buckets[key]) buckets[key].scentCompletes++;
-      });
-      setChartData(Object.entries(buckets).map(([date, v]) => ({ date, ...v })));
+    } else if (range === "monthly") {
+      const { data } = await supabase.rpc("get_analytics_monthly", { months_count: 12 });
+      if (data) {
+        setChartData(
+          (data as { month: string; visits: number; quiz_completes: number; scent_completes: number }[]).map((r) => ({
+            date: r.month,
+            visits: r.visits,
+            quizCompletes: r.quiz_completes,
+            scentCompletes: r.scent_completes,
+          }))
+        );
+      }
     } else {
-      const buckets: Record<string, { visits: number; quizCompletes: number; scentCompletes: number }> = {};
-      for (let i = 0; i < 12; i++) {
-        const d = new Date();
-        d.setDate(1);
-        d.setMonth(d.getMonth() - (11 - i));
-        const key = `${String(d.getFullYear()).slice(2)}/${String(d.getMonth() + 1).padStart(2, "0")}`;
-        buckets[key] = { visits: 0, quizCompletes: 0, scentCompletes: 0 };
+      const { data } = await supabase.rpc("get_analytics_monthly", { months_count: null });
+      if (data) {
+        setChartData(
+          (data as { month: string; visits: number; quiz_completes: number; scent_completes: number }[]).map((r) => ({
+            date: r.month,
+            visits: r.visits,
+            quizCompletes: r.quiz_completes,
+            scentCompletes: r.scent_completes,
+          }))
+        );
       }
-      const since = new Date();
-      since.setDate(1);
-      since.setMonth(since.getMonth() - 11);
-      since.setHours(0, 0, 0, 0);
-      const [rows, scentDates] = await Promise.all([
-        fetchAllAnalytics(since),
-        fetchAllScentDates(since),
-      ]);
-      rows.forEach((row) => {
-        const d = new Date(row.created_at);
-        const key = `${String(d.getFullYear()).slice(2)}/${String(d.getMonth() + 1).padStart(2, "0")}`;
-        if (buckets[key]) {
-          if (row.event_type === "page_visit") buckets[key].visits++;
-          else if (row.event_type === "quiz_complete") buckets[key].quizCompletes++;
-        }
-      });
-      scentDates.forEach((createdAt) => {
-        const d = new Date(createdAt);
-        const key = `${String(d.getFullYear()).slice(2)}/${String(d.getMonth() + 1).padStart(2, "0")}`;
-        if (buckets[key]) buckets[key].scentCompletes++;
-      });
-      setChartData(Object.entries(buckets).map(([date, v]) => ({ date, ...v })));
     }
   }
 
