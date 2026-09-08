@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { supabase, adminSupabase, isSupabaseReady, type Post, type WellnessPost } from "../lib/supabase";
-import { compressImage, toThumbUrl } from "../lib/imageUtils";
+import { compressImage } from "../lib/imageUtils";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from "recharts";
 import ReactMarkdown from "react-markdown";
 import { useEditor, EditorContent } from "@tiptap/react";
