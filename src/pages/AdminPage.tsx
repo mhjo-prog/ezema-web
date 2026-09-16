@@ -4,6 +4,13 @@ import { supabase, adminSupabase, isSupabaseReady, type Post, type WellnessPost 
 import { compressImage } from "../lib/imageUtils";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from "recharts";
 import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
+import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
+
+const sanitizeSchema = {
+  ...defaultSchema,
+  tagNames: [...(defaultSchema.tagNames ?? []), "u"],
+};
 import { useEditor, EditorContent } from "@tiptap/react";
 import { Extension } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
@@ -323,6 +330,7 @@ function PostPreviewModal({
             )}
             <div className="md-preview">
               <ReactMarkdown
+                rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}
                 components={{
                   p: ({ children }) => (
                     <p style={{ marginBottom: '1em', lineHeight: '1.7', fontSize: '1rem', color: '#333333' }}>{children}</p>
@@ -589,6 +597,7 @@ function WellnessPostPreviewModal({
             )}
             <div className="md-preview">
               <ReactMarkdown
+                rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}
                 components={{
                   p: ({ children }) => (
                     <p style={{ marginBottom: '1em', lineHeight: '1.7', fontSize: '1rem', color: '#333333' }}>{children}</p>

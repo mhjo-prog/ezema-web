@@ -3,6 +3,13 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
+import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
+
+const sanitizeSchema = {
+  ...defaultSchema,
+  tagNames: [...(defaultSchema.tagNames ?? []), "u"],
+};
 import { supabase, isSupabaseReady, type Post, type ConstitutionType } from "../lib/supabase";
 import { results } from "../data/results";
 import { useBookmarks } from "../context/BookmarkContext";
@@ -378,6 +385,7 @@ export default function SasangDetailPage() {
         <div className="post-content">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema]]}
             components={{
               h2: ({ children }) => (
                 <h2 style={{ fontSize: "1.25rem", fontWeight: 700, color: "#111111", margin: "2em 0 0.6em", lineHeight: 1.4 }}>{children}</h2>
