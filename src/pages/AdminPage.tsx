@@ -360,7 +360,7 @@ function PostPreviewModal({
               >
                 삭제하기
               </button>
-              {post.status === "published" && (
+              {(post.status === "published" || post.status === "approved") && (
                 <button
                   onClick={onArchive}
                   style={{ flex: 1, padding: "11px", background: "#f5f5f5", color: "#000000", fontWeight: 600, fontSize: "0.875rem", borderRadius: "10px", border: "1px solid #e0e0e0", cursor: "pointer" }}
@@ -626,7 +626,7 @@ function WellnessPostPreviewModal({
               >
                 삭제하기
               </button>
-              {post.status === "published" && (
+              {(post.status === "published" || post.status === "approved") && (
                 <button
                   onClick={onArchive}
                   style={{ flex: 1, padding: "11px", background: "#f5f5f5", color: "#000000", fontWeight: 600, fontSize: "0.875rem", borderRadius: "10px", border: "1px solid #e0e0e0", cursor: "pointer" }}
