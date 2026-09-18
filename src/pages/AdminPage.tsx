@@ -1424,7 +1424,7 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
                               <p style={{ fontSize: "0.75rem", color: "#aaaaaa", marginTop: "2px" }}>
                                 {formatDate(post.created_at)}
                                 {post.view_count > 0 && <span style={{ marginLeft: "8px" }}>👀 {post.view_count}</span>}
-                                {(post.save_count ?? 0) > 0 && <span style={{ marginLeft: "8px" }}>🔖 {post.save_count}</span>}
+                                {(post.save_count ?? 0) > 0 && <span style={{ marginLeft: "8px" }}>🏷️ {post.save_count}</span>}
                               </p>
                             </div>
                             <div style={{ display: "flex", gap: "8px", flexShrink: 0, alignItems: "flex-start" }}>
@@ -1619,7 +1619,7 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
                               <p style={{ fontSize: "0.75rem", color: "#aaaaaa", marginTop: "2px" }}>
                                 {formatDate(post.created_at)}
                                 {(post.view_count ?? 0) > 0 && <span style={{ marginLeft: "8px" }}>👀 {post.view_count}</span>}
-                                {(post.save_count ?? 0) > 0 && <span style={{ marginLeft: "8px" }}>🔖 {post.save_count}</span>}
+                                {(post.save_count ?? 0) > 0 && <span style={{ marginLeft: "8px" }}>🏷️ {post.save_count}</span>}
                               </p>
                             </div>
                             <div style={{ display: "flex", gap: "8px", flexShrink: 0, alignItems: "flex-start" }}>
