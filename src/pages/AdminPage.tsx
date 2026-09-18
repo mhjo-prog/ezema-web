@@ -1842,7 +1842,7 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
                 </div>
 
                 {/* ── GA4 지표 섹션 ─────────────────────────────── */}
-                <div style={{ marginTop: "24px" }}>
+                <div style={{ marginTop: "24px", background: "#ffffff", borderRadius: "16px", border: "1px solid #e8e8e8", padding: "24px", boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}>
                   <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "8px", justifyContent: "space-between", marginBottom: "12px" }}>
                     <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "#999999" }}>GA4 지표</p>
                     <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
@@ -1868,7 +1868,7 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
                   ) : (
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px" }}>
                       {/* 완주율 */}
-                      <div style={{ background: "#ffffff", borderRadius: "14px", padding: "18px", border: "1px solid #e8e8e8", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+                      <div style={{ background: "#fafafa", borderRadius: "14px", padding: "18px" }}>
                         <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#999999", marginBottom: "8px" }}>완주율 (시작 대비)</p>
                         <p style={{ fontSize: "1.75rem", fontWeight: 800, color: "#111111", letterSpacing: "-0.03em", lineHeight: 1 }}>
                           {gaMetrics ? `${gaMetrics.completionRate}%` : "-"}
@@ -1879,7 +1879,7 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
                       </div>
 
                       {/* 이탈률 */}
-                      <div style={{ background: "#ffffff", borderRadius: "14px", padding: "18px", border: "1px solid #e8e8e8", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+                      <div style={{ background: "#fafafa", borderRadius: "14px", padding: "18px" }}>
                         <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#999999", marginBottom: "8px" }}>이탈률 (시작 대비)</p>
                         <p style={{ fontSize: "1.75rem", fontWeight: 800, color: "#111111", letterSpacing: "-0.03em", lineHeight: 1 }}>
                           {gaMetrics ? `${100 - gaMetrics.completionRate}%` : "-"}
@@ -1890,7 +1890,7 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
                       </div>
 
                       {/* 평균 체류시간 */}
-                      <div style={{ background: "#ffffff", borderRadius: "14px", padding: "18px", border: "1px solid #e8e8e8", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+                      <div style={{ background: "#fafafa", borderRadius: "14px", padding: "18px" }}>
                         <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#999999", marginBottom: "8px" }}>평균 체류시간</p>
                         <p style={{ fontSize: "1.5rem", fontWeight: 800, color: "#111111", letterSpacing: "-0.03em", lineHeight: 1 }}>
                           {gaMetrics ? formatDuration(gaMetrics.avgSessionSec) : "-"}
@@ -1899,7 +1899,7 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
                       </div>
 
                       {/* 카카오 공유 */}
-                      <div style={{ background: "#ffffff", borderRadius: "14px", padding: "18px", border: "1px solid #e8e8e8", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+                      <div style={{ background: "#fafafa", borderRadius: "14px", padding: "18px" }}>
                         <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#999999", marginBottom: "8px" }}>카카오 공유</p>
                         <p style={{ fontSize: "1.75rem", fontWeight: 800, color: "#111111", letterSpacing: "-0.03em", lineHeight: 1 }}>
                           {gaMetrics ? `${gaMetrics.shareKakao.toLocaleString()}건` : "-"}
@@ -1907,7 +1907,7 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
                       </div>
 
                       {/* 링크 복사 */}
-                      <div style={{ background: "#ffffff", borderRadius: "14px", padding: "18px", border: "1px solid #e8e8e8", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+                      <div style={{ background: "#fafafa", borderRadius: "14px", padding: "18px" }}>
                         <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#999999", marginBottom: "8px" }}>링크 복사</p>
                         <p style={{ fontSize: "1.75rem", fontWeight: 800, color: "#111111", letterSpacing: "-0.03em", lineHeight: 1 }}>
                           {gaMetrics ? `${gaMetrics.shareCopy.toLocaleString()}건` : "-"}
@@ -1915,7 +1915,7 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
                       </div>
 
                       {/* 콘텐츠 저장수 */}
-                      <div style={{ background: "#ffffff", borderRadius: "14px", padding: "18px", border: "1px solid #e8e8e8", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+                      <div style={{ background: "#fafafa", borderRadius: "14px", padding: "18px" }}>
                         <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#999999", marginBottom: "8px" }}>콘텐츠 저장수</p>
                         <p style={{ fontSize: "1.75rem", fontWeight: 800, color: "#111111", letterSpacing: "-0.03em", lineHeight: 1 }}>
                           {saveTotalCount !== null ? `${saveTotalCount.toLocaleString()}건` : "-"}
