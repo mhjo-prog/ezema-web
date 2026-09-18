@@ -1350,8 +1350,8 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
                     style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#444444", border: "1px solid #e8e8e8", padding: "7px 12px", borderRadius: "50px", cursor: "pointer", background: "#ffffff", outline: "none", fontFamily: "'Pretendard', sans-serif" }}
                   >
                     <option value="latest">최신순</option>
-                    <option value="views">조회수순</option>
-                    <option value="saves">저장수순</option>
+                    <option value="views">조회순</option>
+                    <option value="saves">저장순</option>
                   </select>
                 </div>
 
@@ -1543,8 +1543,8 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
                     style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#444444", border: "1px solid #e8e8e8", padding: "7px 12px", borderRadius: "50px", cursor: "pointer", background: "#ffffff", outline: "none", fontFamily: "'Pretendard', sans-serif" }}
                   >
                     <option value="latest">최신순</option>
-                    <option value="views">조회수순</option>
-                    <option value="saves">저장수순</option>
+                    <option value="views">조회순</option>
+                    <option value="saves">저장순</option>
                   </select>
                 </div>
 
