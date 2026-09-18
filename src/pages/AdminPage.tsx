@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { supabase, adminSupabase, isSupabaseReady, type Post, type WellnessPost } from "../lib/supabase";
+import { fetchGaMetrics, formatDuration, GA_DATA_START, type GaMetrics } from "../lib/gaMetrics";
 import { compressImage } from "../lib/imageUtils";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from "recharts";
 import ReactMarkdown from "react-markdown";
@@ -707,6 +708,11 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
   const [kakaoUsers, setKakaoUsers] = useState<Array<{ kakao_id: string; nickname: string | null; profile_image?: string | null; updated_at?: string; created_at?: string }>>([]);
   const [usersLoading, setUsersLoading] = useState(false);
 
+  // GA4 지표
+  const [gaMetrics, setGaMetrics] = useState<GaMetrics | null>(null);
+  const [gaMetricsLoading, setGaMetricsLoading] = useState(false);
+  const [saveTotalCount, setSaveTotalCount] = useState<number | null>(null);
+
   function showToast(msg: string) {
     setToast(msg);
     setTimeout(() => setToast(null), 3000);
@@ -1171,6 +1177,27 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
   useEffect(() => {
     if (authed) fetchWellnessPosts(wellnessSort);
   }, [wellnessSort]);
+
+  useEffect(() => {
+    if (!authed) return;
+    setGaMetricsLoading(true);
+    fetchGaMetrics(chartRange).then((data) => {
+      setGaMetrics(data);
+      setGaMetricsLoading(false);
+    });
+  }, [authed, chartRange]);
+
+  useEffect(() => {
+    if (!authed || !isSupabaseReady) return;
+    Promise.all([
+      supabase.from("wellness_posts").select("save_count").eq("status", "published"),
+      supabase.from("posts").select("save_count").eq("status", "published"),
+    ]).then(([w, p]) => {
+      const wSum = (w.data ?? []).reduce((acc: number, r: { save_count: number }) => acc + (r.save_count ?? 0), 0);
+      const pSum = (p.data ?? []).reduce((acc: number, r: { save_count: number }) => acc + (r.save_count ?? 0), 0);
+      setSaveTotalCount(wSum + pSum);
+    });
+  }, [authed, isSupabaseReady]);
 
   // ── 로그인 화면 ──────────────────────────────────────────────────
   if (!authed) {
@@ -1811,6 +1838,78 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
+                </div>
+
+                {/* ── GA4 지표 섹션 ─────────────────────────────── */}
+                <div style={{ marginTop: "24px" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+                    <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "#999999" }}>GA4 지표</p>
+                    {(chartRange === "monthly" || chartRange === "all") && (
+                      <p style={{ fontSize: "0.75rem", color: "#aaaaaa" }}>GA4 수집 시작: {GA_DATA_START.replace(/-/g, ".")}</p>
+                    )}
+                  </div>
+
+                  {gaMetricsLoading ? (
+                    <div style={{ display: "flex", justifyContent: "center", padding: "32px", color: "#aaaaaa", fontSize: "0.875rem" }}>불러오는 중...</div>
+                  ) : (
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px" }}>
+                      {/* 완주율 */}
+                      <div style={{ background: "#ffffff", borderRadius: "14px", padding: "18px", border: "1px solid #e8e8e8", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+                        <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#999999", marginBottom: "8px" }}>완주율 (시작 대비)</p>
+                        <p style={{ fontSize: "1.75rem", fontWeight: 800, color: "#111111", letterSpacing: "-0.03em", lineHeight: 1 }}>
+                          {gaMetrics ? `${gaMetrics.completionRate}%` : "-"}
+                        </p>
+                        {gaMetrics && (
+                          <p style={{ fontSize: "0.6875rem", color: "#aaaaaa", marginTop: "6px" }}>모수 {gaMetrics.quizStartUsers.toLocaleString()}명</p>
+                        )}
+                      </div>
+
+                      {/* 이탈률 */}
+                      <div style={{ background: "#ffffff", borderRadius: "14px", padding: "18px", border: "1px solid #e8e8e8", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+                        <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#999999", marginBottom: "8px" }}>이탈률 (시작 대비)</p>
+                        <p style={{ fontSize: "1.75rem", fontWeight: 800, color: "#111111", letterSpacing: "-0.03em", lineHeight: 1 }}>
+                          {gaMetrics ? `${100 - gaMetrics.completionRate}%` : "-"}
+                        </p>
+                        {gaMetrics && (
+                          <p style={{ fontSize: "0.6875rem", color: "#aaaaaa", marginTop: "6px" }}>모수 {gaMetrics.quizStartUsers.toLocaleString()}명</p>
+                        )}
+                      </div>
+
+                      {/* 평균 체류시간 */}
+                      <div style={{ background: "#ffffff", borderRadius: "14px", padding: "18px", border: "1px solid #e8e8e8", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+                        <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#999999", marginBottom: "8px" }}>평균 체류시간</p>
+                        <p style={{ fontSize: "1.5rem", fontWeight: 800, color: "#111111", letterSpacing: "-0.03em", lineHeight: 1 }}>
+                          {gaMetrics ? formatDuration(gaMetrics.avgSessionSec) : "-"}
+                        </p>
+                        <p style={{ fontSize: "0.6875rem", color: "#aaaaaa", marginTop: "6px" }}>/admin 세션 제외</p>
+                      </div>
+
+                      {/* 카카오 공유 */}
+                      <div style={{ background: "#ffffff", borderRadius: "14px", padding: "18px", border: "1px solid #e8e8e8", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+                        <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#999999", marginBottom: "8px" }}>카카오 공유</p>
+                        <p style={{ fontSize: "1.75rem", fontWeight: 800, color: "#111111", letterSpacing: "-0.03em", lineHeight: 1 }}>
+                          {gaMetrics ? `${gaMetrics.shareKakao.toLocaleString()}건` : "-"}
+                        </p>
+                      </div>
+
+                      {/* 링크 복사 */}
+                      <div style={{ background: "#ffffff", borderRadius: "14px", padding: "18px", border: "1px solid #e8e8e8", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+                        <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#999999", marginBottom: "8px" }}>링크 복사</p>
+                        <p style={{ fontSize: "1.75rem", fontWeight: 800, color: "#111111", letterSpacing: "-0.03em", lineHeight: 1 }}>
+                          {gaMetrics ? `${gaMetrics.shareCopy.toLocaleString()}건` : "-"}
+                        </p>
+                      </div>
+
+                      {/* 콘텐츠 저장수 */}
+                      <div style={{ background: "#ffffff", borderRadius: "14px", padding: "18px", border: "1px solid #e8e8e8", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+                        <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#999999", marginBottom: "8px" }}>콘텐츠 저장수</p>
+                        <p style={{ fontSize: "1.75rem", fontWeight: 800, color: "#111111", letterSpacing: "-0.03em", lineHeight: 1 }}>
+                          {saveTotalCount !== null ? `${saveTotalCount.toLocaleString()}건` : "-"}
+                        </p>
+                        <p style={{ fontSize: "0.6875rem", color: "#aaaaaa", marginTop: "6px" }}>웰니스+사상체질 북마크</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </>
             )}
