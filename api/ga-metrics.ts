@@ -8,7 +8,7 @@ const PROPERTY_ID = process.env.GA_PROPERTY_ID;
 const CLIENT_EMAIL = process.env.GA_CLIENT_EMAIL;
 const PRIVATE_KEY_RAW = process.env.GA_PRIVATE_KEY;
 
-type Range = "7d" | "30d" | "monthly" | "all";
+type Range = "1d" | "7d" | "30d" | "monthly" | "all";
 
 function normalizePrivateKey(raw: string): string {
   let key = raw.trim();
@@ -34,6 +34,7 @@ function keyDiagnostics(key: string) {
 }
 
 function getDateRange(range: Range): { startDate: string; endDate: string } {
+  if (range === "1d") return { startDate: "yesterday", endDate: "yesterday" };
   if (range === "7d") return { startDate: "7daysAgo", endDate: "today" };
   if (range === "30d") return { startDate: "30daysAgo", endDate: "today" };
   // monthly(12개월)와 all 모두 데이터 시작일부터 집계

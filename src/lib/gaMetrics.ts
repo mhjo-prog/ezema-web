@@ -11,7 +11,7 @@ export interface GaMetrics {
   dataStart: string;
 }
 
-export type GaRange = "7d" | "30d" | "monthly" | "all";
+export type GaRange = "1d" | "7d" | "30d" | "monthly" | "all";
 
 export async function fetchGaMetrics(range: GaRange): Promise<GaMetrics | null> {
   try {

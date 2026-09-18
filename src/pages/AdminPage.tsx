@@ -702,7 +702,7 @@ export default function AdminPage() {
   // 공통
   const [toast, setToast] = useState<string | null>(null);
 const [chartData, setChartData] = useState<{ date: string; visits: number; quizCompletes: number; scentCompletes: number }[]>([]);
-  const [chartRange, setChartRange] = useState<"7d" | "30d" | "monthly" | "all">("7d");
+  const [chartRange, setChartRange] = useState<"1d" | "7d" | "30d" | "monthly" | "all">("7d");
   const [statsRefreshing, setStatsRefreshing] = useState(false);
   const [customersTab, setCustomersTab] = useState<"visits" | "members">("visits");
   const [kakaoUsers, setKakaoUsers] = useState<Array<{ kakao_id: string; nickname: string | null; profile_image?: string | null; updated_at?: string; created_at?: string }>>([]);
@@ -1061,10 +1061,10 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
   }
 
   // ── Analytics ────────────────────────────────────────────────────
-  async function fetchChartData(range: "7d" | "30d" | "monthly" | "all") {
+  async function fetchChartData(range: "1d" | "7d" | "30d" | "monthly" | "all") {
     if (!isSupabaseReady) return;
-    if (range === "7d" || range === "30d") {
-      const days = range === "7d" ? 7 : 30;
+    if (range === "1d" || range === "7d" || range === "30d") {
+      const days = range === "1d" ? 1 : range === "7d" ? 7 : 30;
       const { data } = await supabase.rpc("get_analytics_daily", { days_count: days });
       if (data) {
         setChartData(
@@ -1810,14 +1810,14 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
                 <div style={{ background: "#ffffff", borderRadius: "16px", border: "1px solid #e8e8e8", padding: "24px", height: "350px", display: "flex", flexDirection: "column", boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
                     <p style={{ fontSize: "0.875rem", fontWeight: 700, color: "#111111", letterSpacing: "-0.01em" }}>
-                      {{ "7d": "최근 7일", "30d": "최근 1개월", monthly: "월별 추이", all: "전체" }[chartRange]}
+                      {{ "1d": "전일", "7d": "최근 7일", "30d": "최근 1개월", monthly: "월별 추이", all: "전체" }[chartRange]}
                     </p>
-                    <div style={{ display: "flex", gap: "6px" }}>
-                      {([["7d", "7일"], ["30d", "1개월"], ["monthly", "월별"], ["all", "전체"]] as const).map(([range, label]) => (
+                    <div style={{ display: "flex", gap: "4px" }}>
+                      {([["1d", "1일전"], ["7d", "7일"], ["30d", "1개월"], ["monthly", "월별"], ["all", "전체"]] as const).map(([range, label]) => (
                         <button
                           key={range}
                           onClick={() => setChartRange(range)}
-                          style={{ fontSize: "0.8125rem", fontWeight: 600, padding: "7px 14px", borderRadius: "50px", border: `1px solid ${chartRange === range ? "#111111" : "#e8e8e8"}`, background: chartRange === range ? "#111111" : "#ffffff", color: chartRange === range ? "#ffffff" : "#666666", cursor: "pointer", letterSpacing: "0.01em" }}
+                          style={{ fontSize: "0.75rem", fontWeight: 600, padding: "6px 10px", borderRadius: "50px", border: `1px solid ${chartRange === range ? "#111111" : "#e8e8e8"}`, background: chartRange === range ? "#111111" : "#ffffff", color: chartRange === range ? "#ffffff" : "#666666", cursor: "pointer", letterSpacing: "0.01em" }}
                         >
                           {label}
                         </button>
