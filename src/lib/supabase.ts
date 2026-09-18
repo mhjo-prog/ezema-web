@@ -46,6 +46,7 @@ export interface Post {
   scheduled_at: string | null;
   created_at: string;
   view_count: number;
+  save_count?: number;
   category?: string;
 }
 
@@ -60,4 +61,5 @@ export interface WellnessPost {
   scheduled_at: string | null;
   created_at: string;
   view_count?: number;
+  save_count?: number;
 }

@@ -680,6 +680,9 @@ export default function AdminPage() {
   const [savingFeedback, setSavingFeedback] = useState<string | null>(null);
   const [postsRefreshing, setPostsRefreshing] = useState(false);
 
+  // 사상체질 정렬
+  const [sasangSort, setSasangSort] = useState<"latest" | "views" | "saves">("latest");
+
   // 웰니스
   const [wellnessPosts, setWellnessPosts] = useState<WellnessPost[]>([]);
   const [wellnessLoading, setWellnessLoading] = useState(false);
@@ -688,6 +691,7 @@ export default function AdminPage() {
   const [, setWellnessDeleting] = useState<string | null>(null);
   const [wellnessFilter, setWellnessFilter] = useState<"draft" | "approved" | "published">("draft");
   const [wellnessPage, setWellnessPage] = useState(1);
+  const [wellnessSort, setWellnessSort] = useState<"latest" | "views" | "saves">("latest");
   const [wellnessFeedbacks, setWellnessFeedbacks] = useState<Record<string, FeedbackRow>>({});
   const [wellnessFeedbackDrafts, setWellnessFeedbackDrafts] = useState<Record<string, { score: number | null; note: string }>>({});
   const [savingWellnessFeedback, setSavingWellnessFeedback] = useState<string | null>(null);
@@ -795,14 +799,17 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
     setSavingFeedback(null);
   }
 
-  async function fetchPosts() {
+  async function fetchPosts(sort: "latest" | "views" | "saves" = "latest") {
     if (!isSupabaseReady) { setLoading(false); return; }
     setLoading(true);
-    const { data, error } = await supabase
+    const orderCol = sort === "views" ? "view_count" : sort === "saves" ? "save_count" : "created_at";
+    let query = supabase
       .from("posts")
       .select("*")
       .in("status", ["draft", "approved", "published"])
-      .order("created_at", { ascending: false });
+      .order(orderCol, { ascending: false });
+    if (sort !== "latest") query = query.order("created_at", { ascending: false });
+    const { data, error } = await query;
     if (!error && data) {
       setPosts(data as Post[]);
       fetchFeedbacks(data.map((p: Post) => p.id));
@@ -943,14 +950,17 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
     setSavingWellnessFeedback(null);
   }
 
-  async function fetchWellnessPosts() {
+  async function fetchWellnessPosts(sort: "latest" | "views" | "saves" = "latest") {
     if (!isSupabaseReady) { setWellnessLoading(false); return; }
     setWellnessLoading(true);
-    const { data, error } = await supabase
+    const orderCol = sort === "views" ? "view_count" : sort === "saves" ? "save_count" : "created_at";
+    let query = supabase
       .from("wellness_posts")
       .select("*")
       .in("status", ["draft", "approved", "published"])
-      .order("created_at", { ascending: false });
+      .order(orderCol, { ascending: false });
+    if (sort !== "latest") query = query.order("created_at", { ascending: false });
+    const { data, error } = await query;
     if (!error && data) {
       setWellnessPosts(data as WellnessPost[]);
       fetchWellnessFeedbacks(data.map((p: WellnessPost) => p.id));
@@ -1154,6 +1164,14 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
     if (authed) fetchChartData(chartRange);
   }, [chartRange]);
 
+  useEffect(() => {
+    if (authed) fetchPosts(sasangSort);
+  }, [sasangSort]);
+
+  useEffect(() => {
+    if (authed) fetchWellnessPosts(wellnessSort);
+  }, [wellnessSort]);
+
   // ── 로그인 화면 ──────────────────────────────────────────────────
   if (!authed) {
     return (
@@ -1255,7 +1273,7 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
               onClick={async () => {
                 setPostsRefreshing(true);
                 await new Promise((r) => setTimeout(r, 200));
-                await Promise.all([fetchPosts(), fetchWellnessPosts(), fetchChartData(chartRange)]);
+                await Promise.all([fetchPosts(sasangSort), fetchWellnessPosts(wellnessSort), fetchChartData(chartRange)]);
                 setPostsRefreshing(false);
               }}
               style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#111111", border: "1px solid #111111", padding: "9px 20px", borderRadius: "50px", cursor: "pointer", background: "transparent", flexShrink: 0, letterSpacing: "0.01em" }}
@@ -1325,6 +1343,18 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
                   })}
                 </div>
 
+                <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px" }}>
+                  <select
+                    value={sasangSort}
+                    onChange={(e) => { setSasangSort(e.target.value as "latest" | "views" | "saves"); setCurrentPage(1); }}
+                    style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#444444", border: "1px solid #e8e8e8", padding: "7px 12px", borderRadius: "50px", cursor: "pointer", background: "#ffffff", outline: "none", fontFamily: "'Pretendard', sans-serif" }}
+                  >
+                    <option value="latest">최신순</option>
+                    <option value="views">조회수순</option>
+                    <option value="saves">저장수순</option>
+                  </select>
+                </div>
+
                 {loading ? (
                   <div style={{ textAlign: "center", padding: "48px", color: "#999999", fontSize: "0.9rem" }}>불러오는 중...</div>
                 ) : filteredPosts.length === 0 ? (
@@ -1392,6 +1422,7 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
                               <p style={{ fontSize: "0.75rem", color: "#aaaaaa", marginTop: "2px" }}>
                                 {formatDate(post.created_at)}
                                 {post.view_count > 0 && <span style={{ marginLeft: "8px" }}>👀 {post.view_count}</span>}
+                                {(post.save_count ?? 0) > 0 && <span style={{ marginLeft: "8px" }}>🔖 {post.save_count}</span>}
                               </p>
                             </div>
                             <div style={{ display: "flex", gap: "8px", flexShrink: 0, alignItems: "flex-start" }}>
@@ -1505,6 +1536,18 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
                   })}
                 </div>
 
+                <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px" }}>
+                  <select
+                    value={wellnessSort}
+                    onChange={(e) => { setWellnessSort(e.target.value as "latest" | "views" | "saves"); setWellnessPage(1); }}
+                    style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#444444", border: "1px solid #e8e8e8", padding: "7px 12px", borderRadius: "50px", cursor: "pointer", background: "#ffffff", outline: "none", fontFamily: "'Pretendard', sans-serif" }}
+                  >
+                    <option value="latest">최신순</option>
+                    <option value="views">조회수순</option>
+                    <option value="saves">저장수순</option>
+                  </select>
+                </div>
+
                 {wellnessLoading ? (
                   <div style={{ textAlign: "center", padding: "48px", color: "#999999", fontSize: "0.9rem" }}>불러오는 중...</div>
                 ) : filteredWellness.length === 0 ? (
@@ -1572,6 +1615,7 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
                               <p style={{ fontSize: "0.75rem", color: "#aaaaaa", marginTop: "2px" }}>
                                 {formatDate(post.created_at)}
                                 {(post.view_count ?? 0) > 0 && <span style={{ marginLeft: "8px" }}>👀 {post.view_count}</span>}
+                                {(post.save_count ?? 0) > 0 && <span style={{ marginLeft: "8px" }}>🔖 {post.save_count}</span>}
                               </p>
                             </div>
                             <div style={{ display: "flex", gap: "8px", flexShrink: 0, alignItems: "flex-start" }}>
