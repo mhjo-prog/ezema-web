@@ -1343,17 +1343,19 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
                   })}
                 </div>
 
-                <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px" }}>
-                  <select
-                    value={sasangSort}
-                    onChange={(e) => { setSasangSort(e.target.value as "latest" | "views" | "saves"); setCurrentPage(1); }}
-                    style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#444444", border: "1px solid #e8e8e8", padding: "7px 12px", borderRadius: "50px", cursor: "pointer", background: "#ffffff", outline: "none", fontFamily: "'Pretendard', sans-serif" }}
-                  >
-                    <option value="latest">최신순</option>
-                    <option value="views">조회순</option>
-                    <option value="saves">저장순</option>
-                  </select>
-                </div>
+                {activeFilter === "published" && (
+                  <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px" }}>
+                    <select
+                      value={sasangSort}
+                      onChange={(e) => { setSasangSort(e.target.value as "latest" | "views" | "saves"); setCurrentPage(1); }}
+                      style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#999999", border: "1px solid #e8e8e8", padding: "7px 12px", borderRadius: "50px", cursor: "pointer", background: "#ffffff", outline: "none", fontFamily: "'Pretendard', sans-serif" }}
+                    >
+                      <option value="latest">최신순</option>
+                      <option value="views">조회순</option>
+                      <option value="saves">저장순</option>
+                    </select>
+                  </div>
+                )}
 
                 {loading ? (
                   <div style={{ textAlign: "center", padding: "48px", color: "#999999", fontSize: "0.9rem" }}>불러오는 중...</div>
@@ -1536,17 +1538,19 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
                   })}
                 </div>
 
-                <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px" }}>
-                  <select
-                    value={wellnessSort}
-                    onChange={(e) => { setWellnessSort(e.target.value as "latest" | "views" | "saves"); setWellnessPage(1); }}
-                    style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#444444", border: "1px solid #e8e8e8", padding: "7px 12px", borderRadius: "50px", cursor: "pointer", background: "#ffffff", outline: "none", fontFamily: "'Pretendard', sans-serif" }}
-                  >
-                    <option value="latest">최신순</option>
-                    <option value="views">조회순</option>
-                    <option value="saves">저장순</option>
-                  </select>
-                </div>
+                {wellnessFilter === "published" && (
+                  <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px" }}>
+                    <select
+                      value={wellnessSort}
+                      onChange={(e) => { setWellnessSort(e.target.value as "latest" | "views" | "saves"); setWellnessPage(1); }}
+                      style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#999999", border: "1px solid #e8e8e8", padding: "7px 12px", borderRadius: "50px", cursor: "pointer", background: "#ffffff", outline: "none", fontFamily: "'Pretendard', sans-serif" }}
+                    >
+                      <option value="latest">최신순</option>
+                      <option value="views">조회순</option>
+                      <option value="saves">저장순</option>
+                    </select>
+                  </div>
+                )}
 
                 {wellnessLoading ? (
                   <div style={{ textAlign: "center", padding: "48px", color: "#999999", fontSize: "0.9rem" }}>불러오는 중...</div>
