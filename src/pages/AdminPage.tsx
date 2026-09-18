@@ -712,6 +712,7 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
   const [gaMetrics, setGaMetrics] = useState<GaMetrics | null>(null);
   const [gaMetricsLoading, setGaMetricsLoading] = useState(false);
   const [saveTotalCount, setSaveTotalCount] = useState<number | null>(null);
+  const [gaRange, setGaRange] = useState<"1d" | "7d" | "30d" | "monthly" | "all">("7d");
 
   function showToast(msg: string) {
     setToast(msg);
@@ -1181,11 +1182,11 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
   useEffect(() => {
     if (!authed) return;
     setGaMetricsLoading(true);
-    fetchGaMetrics(chartRange).then((data) => {
+    fetchGaMetrics(gaRange).then((data) => {
       setGaMetrics(data);
       setGaMetricsLoading(false);
     });
-  }, [authed, chartRange]);
+  }, [authed, gaRange]);
 
   useEffect(() => {
     if (!authed || !isSupabaseReady) return;
@@ -1842,11 +1843,24 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
 
                 {/* ── GA4 지표 섹션 ─────────────────────────────── */}
                 <div style={{ marginTop: "24px" }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+                  <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "8px", justifyContent: "space-between", marginBottom: "12px" }}>
                     <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "#999999" }}>GA4 지표</p>
-                    {(chartRange === "monthly" || chartRange === "all") && (
-                      <p style={{ fontSize: "0.75rem", color: "#aaaaaa" }}>GA4 수집 시작: {GA_DATA_START.replace(/-/g, ".")}</p>
-                    )}
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+                      {(gaRange === "monthly" || gaRange === "all") && (
+                        <p style={{ fontSize: "0.75rem", color: "#aaaaaa" }}>GA4 수집 시작: {GA_DATA_START.replace(/-/g, ".")}</p>
+                      )}
+                      <div style={{ display: "flex", gap: "4px" }}>
+                        {([["1d", "1일전"], ["7d", "7일"], ["30d", "1개월"], ["monthly", "월별"], ["all", "전체"]] as const).map(([range, label]) => (
+                          <button
+                            key={range}
+                            onClick={() => setGaRange(range)}
+                            style={{ fontSize: "0.75rem", fontWeight: 600, padding: "6px 10px", borderRadius: "50px", border: `1px solid ${gaRange === range ? "#111111" : "#e8e8e8"}`, background: gaRange === range ? "#111111" : "#ffffff", color: gaRange === range ? "#ffffff" : "#666666", cursor: "pointer", letterSpacing: "0.01em" }}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
 
                   {gaMetricsLoading ? (
