@@ -10,6 +10,29 @@ const PRIVATE_KEY_RAW = process.env.GA_PRIVATE_KEY;
 
 type Range = "7d" | "30d" | "monthly" | "all";
 
+function normalizePrivateKey(raw: string): string {
+  let key = raw.trim();
+  // 따옴표로 감싸져 저장된 경우 제거
+  if ((key.startsWith('"') && key.endsWith('"')) || (key.startsWith("'") && key.endsWith("'"))) {
+    key = key.slice(1, -1);
+  }
+  // 이스케이프된 \n → 실제 줄바꿈 (이미 실제 줄바꿈이면 영향 없음)
+  key = key.replace(/\\n/g, "\n");
+  // CRLF 정리
+  key = key.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  return key;
+}
+
+function keyDiagnostics(key: string) {
+  return {
+    hasKey: key.length > 0,
+    keyLength: key.length,
+    startsWithBegin: key.startsWith("-----BEGIN"),
+    endsWithEnd: key.trimEnd().endsWith("PRIVATE KEY-----"),
+    newlineCount: (key.match(/\n/g) ?? []).length,
+  };
+}
+
 function getDateRange(range: Range): { startDate: string; endDate: string } {
   if (range === "7d") return { startDate: "7daysAgo", endDate: "today" };
   if (range === "30d") return { startDate: "30daysAgo", endDate: "today" };
@@ -31,8 +54,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const range = (req.query.range as Range) ?? "7d";
   const dateRange = getDateRange(range);
 
-  // Vercel 환경변수에서 \n이 문자열 리터럴로 저장되는 문제 처리
-  const privateKey = PRIVATE_KEY_RAW.replace(/\\n/g, "\n");
+  const privateKey = normalizePrivateKey(PRIVATE_KEY_RAW);
 
   const analyticsClient = new BetaAnalyticsDataClient({
     credentials: { client_email: CLIENT_EMAIL, private_key: privateKey },
@@ -138,6 +160,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json(payload);
   } catch (err) {
     console.error("[ga-metrics]", err);
-    return res.status(500).json({ error: "GA_API_ERROR", message: String(err) });
+    const diag = keyDiagnostics(privateKey);
+    return res.status(500).json({ error: "GA_API_ERROR", message: String(err), diag });
   }
 }
