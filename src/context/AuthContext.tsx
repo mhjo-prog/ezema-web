@@ -4,6 +4,7 @@ import { migrateLocalBookmarksToDb } from "../lib/bookmarks";
 import { supabase, isSupabaseReady } from "../lib/supabase";
 
 import { isProductionEnv } from "../lib/env";
+import { trackResultSave } from "../lib/analytics";
 
 export const PENDING_RESULT_KEY = "pending_result";
 export const PENDING_SCENT_KEY = "pending_scent_result";
@@ -45,6 +46,7 @@ async function savePendingResult(kakaoId: string) {
         .insert({ kakao_id: kakaoId, constitution_type: constitutionType, scores })
         .select();
       console.log("[savePendingResult] insert 결과 — data:", data, "error:", error);
+      if (!error) trackResultSave("sasang", "success");
     } else {
       console.warn("[savePendingResult] upsert 건너뜀 — isSupabaseReady:", isSupabaseReady, "constitutionType:", constitutionType);
     }
