@@ -660,6 +660,41 @@ function WellnessPostPreviewModal({
 
 type FeedbackRow = { feedback_score: number | null; feedback_note: string | null };
 
+type GaRange = "1d" | "7d" | "30d" | "monthly" | "all";
+
+/** gaRange 값을 Supabase bookmarks.created_at 필터용 ISO 문자열로 변환 (KST 기준) */
+function getBookmarkDateFilter(range: GaRange): { from: string | null; to: string | null } {
+  if (range === "all") return { from: null, to: null };
+
+  const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+  const nowKST = new Date(Date.now() + KST_OFFSET_MS);
+  // KST 기준 오늘 자정 (UTC 타임스탬프)
+  const todayMidnightUTC = Date.UTC(nowKST.getUTCFullYear(), nowKST.getUTCMonth(), nowKST.getUTCDate()) - KST_OFFSET_MS;
+
+  if (range === "1d") {
+    // 어제 하루 (KST)
+    return {
+      from: new Date(todayMidnightUTC - 86_400_000).toISOString(),
+      to: new Date(todayMidnightUTC).toISOString(),
+    };
+  }
+
+  if (range === "7d") {
+    return { from: new Date(todayMidnightUTC - 7 * 86_400_000).toISOString(), to: null };
+  }
+
+  if (range === "30d") {
+    return { from: new Date(todayMidnightUTC - 30 * 86_400_000).toISOString(), to: null };
+  }
+
+  // monthly: GA_DATA_START("2026-09-01") 자정 KST부터
+  const [y, m, d] = GA_DATA_START.split("-").map(Number);
+  return {
+    from: new Date(Date.UTC(y, m - 1, d) - KST_OFFSET_MS).toISOString(),
+    to: null,
+  };
+}
+
 export default function AdminPage() {
   const [authed, setAuthed] = useState(false);
   const [pw, setPw] = useState("");
@@ -1190,15 +1225,28 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
 
   useEffect(() => {
     if (!authed || !isSupabaseReady) return;
-    Promise.all([
-      supabase.from("wellness_posts").select("save_count").eq("status", "published"),
-      supabase.from("posts").select("save_count").eq("status", "published"),
-    ]).then(([w, p]) => {
-      const wSum = (w.data ?? []).reduce((acc: number, r: { save_count: number }) => acc + (r.save_count ?? 0), 0);
-      const pSum = (p.data ?? []).reduce((acc: number, r: { save_count: number }) => acc + (r.save_count ?? 0), 0);
-      setSaveTotalCount(wSum + pSum);
-    });
-  }, [authed, isSupabaseReady]);
+
+    if (gaRange === "all") {
+      // 전체: 삭제 반영된 누적 순저장수 (save_count 합산)
+      Promise.all([
+        supabase.from("wellness_posts").select("save_count").eq("status", "published"),
+        supabase.from("posts").select("save_count").eq("status", "published"),
+      ]).then(([w, p]) => {
+        const wSum = (w.data ?? []).reduce((acc: number, r: { save_count: number }) => acc + (r.save_count ?? 0), 0);
+        const pSum = (p.data ?? []).reduce((acc: number, r: { save_count: number }) => acc + (r.save_count ?? 0), 0);
+        setSaveTotalCount(wSum + pSum);
+      });
+    } else {
+      // 기간 탭: bookmarks 테이블의 created_at 기준으로 기간 내 생성된 저장 건수
+      const { from, to } = getBookmarkDateFilter(gaRange);
+      let query = supabase.from("bookmarks").select("id", { count: "exact", head: true });
+      if (from) query = query.gte("created_at", from);
+      if (to) query = query.lt("created_at", to);
+      query.then(({ count }) => {
+        setSaveTotalCount(count ?? 0);
+      });
+    }
+  }, [authed, isSupabaseReady, gaRange]);
 
   // ── 로그인 화면 ──────────────────────────────────────────────────
   if (!authed) {
