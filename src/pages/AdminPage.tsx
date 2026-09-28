@@ -1949,7 +1949,7 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
                   <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "8px", justifyContent: "space-between", marginBottom: "12px" }}>
                     <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "#999999" }}>GA4 지표</p>
                     <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
-                      {gaRange === "all" && (
+                      {(gaRange === "all" || gaRange === "monthly") && (
                         <p style={{ fontSize: "0.75rem", color: "#aaaaaa" }}>GA4 수집 시작: {GA_DATA_START.replace(/-/g, ".")}</p>
                       )}
                       <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
