@@ -663,7 +663,7 @@ type FeedbackRow = { feedback_score: number | null; feedback_note: string | null
 type GaRange = "1d" | "7d" | "30d" | "monthly" | "all";
 
 /** gaRange 값을 Supabase bookmarks.created_at 필터용 ISO 문자열로 변환 (KST 기준) */
-function getBookmarkDateFilter(range: GaRange): { from: string | null; to: string | null } {
+function getBookmarkDateFilter(range: GaRange, month?: string): { from: string | null; to: string | null } {
   if (range === "all") return { from: null, to: null };
 
   const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
@@ -672,7 +672,6 @@ function getBookmarkDateFilter(range: GaRange): { from: string | null; to: strin
   const todayMidnightUTC = Date.UTC(nowKST.getUTCFullYear(), nowKST.getUTCMonth(), nowKST.getUTCDate()) - KST_OFFSET_MS;
 
   if (range === "1d") {
-    // 어제 하루 (KST)
     return {
       from: new Date(todayMidnightUTC - 86_400_000).toISOString(),
       to: new Date(todayMidnightUTC).toISOString(),
@@ -687,12 +686,45 @@ function getBookmarkDateFilter(range: GaRange): { from: string | null; to: strin
     return { from: new Date(todayMidnightUTC - 30 * 86_400_000).toISOString(), to: null };
   }
 
-  // monthly: GA_DATA_START("2026-09-01") 자정 KST부터
+  if (range === "monthly" && month) {
+    const [y, m] = month.split("-").map(Number);
+    const from = new Date(Date.UTC(y, m - 1, 1) - KST_OFFSET_MS).toISOString();
+    // 현재 월이면 상한 없음
+    if (y === nowKST.getUTCFullYear() && m === nowKST.getUTCMonth() + 1) {
+      return { from, to: null };
+    }
+    // 다음 달 1일 자정 KST = 해당 월 종료 (exclusive)
+    return { from, to: new Date(Date.UTC(y, m, 1) - KST_OFFSET_MS).toISOString() };
+  }
+
+  // fallback: monthly with no month (기존 동작 유지)
   const [y, m, d] = GA_DATA_START.split("-").map(Number);
   return {
     from: new Date(Date.UTC(y, m - 1, d) - KST_OFFSET_MS).toISOString(),
     to: null,
   };
+}
+
+/** KST 현재 월 기준 최근 count개월 목록 (최신 먼저, "YYYY-MM" 형식) */
+function getRecentMonths(count: number): string[] {
+  const KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+  const nowKST = new Date(Date.now() + KST_OFFSET_MS);
+  return Array.from({ length: count }, (_, i) => {
+    const d = new Date(Date.UTC(nowKST.getUTCFullYear(), nowKST.getUTCMonth() - i, 1));
+    return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+  });
+}
+
+/** "YYYY-MM" → "YY/MM" 표기 */
+function formatMonthLabel(month: string): string {
+  const [y, m] = month.split("-");
+  return `${y.slice(2)}/${m}`;
+}
+
+/** KST 현재 월 ("YYYY-MM") */
+function currentKSTMonth(): string {
+  const nowKST = new Date(Date.now() + 9 * 60 * 60 * 1000);
+  return `${nowKST.getUTCFullYear()}-${String(nowKST.getUTCMonth() + 1).padStart(2, "0")}`;
 }
 
 export default function AdminPage() {
@@ -748,6 +780,9 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
   const [gaMetricsLoading, setGaMetricsLoading] = useState(false);
   const [saveTotalCount, setSaveTotalCount] = useState<number | null>(null);
   const [gaRange, setGaRange] = useState<"1d" | "7d" | "30d" | "monthly" | "all">("7d");
+  const [selectedMonth, setSelectedMonth] = useState<string>(currentKSTMonth);
+  const [monthDropdownOpen, setMonthDropdownOpen] = useState(false);
+  const monthBtnRef = useRef<HTMLDivElement>(null);
 
   function showToast(msg: string) {
     setToast(msg);
@@ -1214,14 +1249,34 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
     if (authed) fetchWellnessPosts(wellnessSort);
   }, [wellnessSort]);
 
+  // 월별 드롭다운 바깥 클릭 / ESC 닫기
+  useEffect(() => {
+    if (!monthDropdownOpen) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (monthBtnRef.current && !monthBtnRef.current.contains(e.target as Node)) {
+        setMonthDropdownOpen(false);
+      }
+    }
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") setMonthDropdownOpen(false);
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [monthDropdownOpen]);
+
   useEffect(() => {
     if (!authed) return;
     setGaMetricsLoading(true);
-    fetchGaMetrics(gaRange).then((data) => {
+    const month = gaRange === "monthly" ? selectedMonth : undefined;
+    fetchGaMetrics(gaRange, month).then((data) => {
       setGaMetrics(data);
       setGaMetricsLoading(false);
     });
-  }, [authed, gaRange]);
+  }, [authed, gaRange, selectedMonth]);
 
   useEffect(() => {
     if (!authed || !isSupabaseReady) return;
@@ -1238,7 +1293,7 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
       });
     } else {
       // 기간 탭: bookmarks 테이블의 created_at 기준으로 기간 내 생성된 저장 건수
-      const { from, to } = getBookmarkDateFilter(gaRange);
+      const { from, to } = getBookmarkDateFilter(gaRange, gaRange === "monthly" ? selectedMonth : undefined);
       let query = supabase.from("bookmarks").select("id", { count: "exact", head: true });
       if (from) query = query.gte("created_at", from);
       if (to) query = query.lt("created_at", to);
@@ -1246,7 +1301,7 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
         setSaveTotalCount(count ?? 0);
       });
     }
-  }, [authed, isSupabaseReady, gaRange]);
+  }, [authed, isSupabaseReady, gaRange, selectedMonth]);
 
   // ── 로그인 화면 ──────────────────────────────────────────────────
   if (!authed) {
@@ -1894,34 +1949,63 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
                   <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "8px", justifyContent: "space-between", marginBottom: "12px" }}>
                     <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.18em", textTransform: "uppercase", color: "#999999" }}>GA4 지표</p>
                     <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
-                      {(gaRange === "monthly" || gaRange === "all") && (
+                      {gaRange === "all" && (
                         <p style={{ fontSize: "0.75rem", color: "#aaaaaa" }}>GA4 수집 시작: {GA_DATA_START.replace(/-/g, ".")}</p>
                       )}
-                      <div style={{ display: "flex", gap: "4px" }}>
-                        {([["1d", "1일전"], ["7d", "7일"], ["30d", "1개월"], ["monthly", "월별"], ["all", "전체"]] as const).map(([range, label]) => (
+                      <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
+                        {/* 고정 탭 버튼 */}
+                        {([["1d", "1일전"], ["7d", "7일"], ["30d", "1개월"], ["all", "전체"]] as const).map(([range, label]) => (
                           <button
                             key={range}
-                            onClick={() => setGaRange(range)}
+                            onClick={() => { setGaRange(range); setMonthDropdownOpen(false); }}
                             style={{ fontSize: "0.75rem", fontWeight: 600, padding: "6px 10px", borderRadius: "50px", border: `1px solid ${gaRange === range ? "#111111" : "#e8e8e8"}`, background: gaRange === range ? "#111111" : "#ffffff", color: gaRange === range ? "#ffffff" : "#666666", cursor: "pointer", letterSpacing: "0.01em" }}
                           >
                             {label}
                           </button>
                         ))}
+                        {/* 월별 드롭다운 */}
+                        <div ref={monthBtnRef} style={{ position: "relative" }}>
+                          <button
+                            onClick={() => { setGaRange("monthly"); setMonthDropdownOpen(prev => !prev); }}
+                            style={{ fontSize: "0.75rem", fontWeight: 600, padding: "6px 10px", borderRadius: "50px", border: `1px solid ${gaRange === "monthly" ? "#111111" : "#e8e8e8"}`, background: gaRange === "monthly" ? "#111111" : "#ffffff", color: gaRange === "monthly" ? "#ffffff" : "#666666", cursor: "pointer", letterSpacing: "0.01em", display: "flex", alignItems: "center", gap: "4px" }}
+                          >
+                            {gaRange === "monthly" ? formatMonthLabel(selectedMonth) : "월별"}
+                            <span style={{ fontSize: "0.6rem", opacity: 0.7 }}>▾</span>
+                          </button>
+                          {monthDropdownOpen && (
+                            <div style={{ position: "absolute", top: "calc(100% + 4px)", right: 0, background: "#ffffff", border: "1px solid #e8e8e8", borderRadius: "12px", boxShadow: "0 4px 16px rgba(0,0,0,0.1)", zIndex: 200, overflow: "hidden", minWidth: "72px" }}>
+                              {getRecentMonths(12).map(month => (
+                                <button
+                                  key={month}
+                                  onClick={() => { setSelectedMonth(month); setGaRange("monthly"); setMonthDropdownOpen(false); }}
+                                  style={{ display: "block", width: "100%", padding: "8px 14px", background: gaRange === "monthly" && selectedMonth === month ? "#111111" : "#ffffff", color: gaRange === "monthly" && selectedMonth === month ? "#ffffff" : "#333333", border: "none", cursor: "pointer", fontSize: "0.75rem", fontWeight: 600, textAlign: "center", letterSpacing: "0.02em" }}
+                                >
+                                  {formatMonthLabel(month)}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
 
                   {gaMetricsLoading ? (
                     <div style={{ display: "flex", justifyContent: "center", padding: "32px", color: "#aaaaaa", fontSize: "0.875rem" }}>불러오는 중...</div>
-                  ) : (
+                  ) : (() => {
+                    // GA_DATA_START 이전 월 선택 시 GA4 기반 카드는 "–" 표시
+                    const isBeforeGaStart = gaRange === "monthly" && selectedMonth < GA_DATA_START.slice(0, 7);
+                    return (
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px" }}>
                       {/* 완주율 */}
                       <div style={{ background: "#fafafa", borderRadius: "14px", padding: "18px" }}>
                         <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#999999", marginBottom: "8px" }}>완주율 (시작 대비)</p>
                         <p style={{ fontSize: "1.75rem", fontWeight: 800, color: "#111111", letterSpacing: "-0.03em", lineHeight: 1 }}>
-                          {gaMetrics ? `${gaMetrics.completionRate}%` : "-"}
+                          {isBeforeGaStart ? "–" : gaMetrics ? `${gaMetrics.completionRate}%` : "-"}
                         </p>
-                        {gaMetrics && (
+                        {isBeforeGaStart ? (
+                          <p style={{ fontSize: "0.6875rem", color: "#aaaaaa", marginTop: "6px" }}>GA4 수집 전 기간</p>
+                        ) : gaMetrics && (
                           <p style={{ fontSize: "0.6875rem", color: "#aaaaaa", marginTop: "6px" }}>모수 {gaMetrics.quizStartUsers.toLocaleString()}명</p>
                         )}
                       </div>
@@ -1930,9 +2014,11 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
                       <div style={{ background: "#fafafa", borderRadius: "14px", padding: "18px" }}>
                         <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#999999", marginBottom: "8px" }}>이탈률 (시작 대비)</p>
                         <p style={{ fontSize: "1.75rem", fontWeight: 800, color: "#111111", letterSpacing: "-0.03em", lineHeight: 1 }}>
-                          {gaMetrics ? `${100 - gaMetrics.completionRate}%` : "-"}
+                          {isBeforeGaStart ? "–" : gaMetrics ? `${100 - gaMetrics.completionRate}%` : "-"}
                         </p>
-                        {gaMetrics && (
+                        {isBeforeGaStart ? (
+                          <p style={{ fontSize: "0.6875rem", color: "#aaaaaa", marginTop: "6px" }}>GA4 수집 전 기간</p>
+                        ) : gaMetrics && (
                           <p style={{ fontSize: "0.6875rem", color: "#aaaaaa", marginTop: "6px" }}>모수 {gaMetrics.quizStartUsers.toLocaleString()}명</p>
                         )}
                       </div>
@@ -1941,28 +2027,32 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
                       <div style={{ background: "#fafafa", borderRadius: "14px", padding: "18px" }}>
                         <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#999999", marginBottom: "8px" }}>평균 체류시간</p>
                         <p style={{ fontSize: "1.5rem", fontWeight: 800, color: "#111111", letterSpacing: "-0.03em", lineHeight: 1 }}>
-                          {gaMetrics ? formatDuration(gaMetrics.avgSessionSec) : "-"}
+                          {isBeforeGaStart ? "–" : gaMetrics ? formatDuration(gaMetrics.avgSessionSec) : "-"}
                         </p>
-                        <p style={{ fontSize: "0.6875rem", color: "#aaaaaa", marginTop: "6px" }}>/admin 세션 제외</p>
+                        <p style={{ fontSize: "0.6875rem", color: "#aaaaaa", marginTop: "6px" }}>
+                          {isBeforeGaStart ? "GA4 수집 전 기간" : "/admin 세션 제외"}
+                        </p>
                       </div>
 
                       {/* 카카오 공유 */}
                       <div style={{ background: "#fafafa", borderRadius: "14px", padding: "18px" }}>
                         <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#999999", marginBottom: "8px" }}>카카오 공유</p>
                         <p style={{ fontSize: "1.75rem", fontWeight: 800, color: "#111111", letterSpacing: "-0.03em", lineHeight: 1 }}>
-                          {gaMetrics ? `${gaMetrics.shareKakao.toLocaleString()}건` : "-"}
+                          {isBeforeGaStart ? "–" : gaMetrics ? `${gaMetrics.shareKakao.toLocaleString()}건` : "-"}
                         </p>
+                        {isBeforeGaStart && <p style={{ fontSize: "0.6875rem", color: "#aaaaaa", marginTop: "6px" }}>GA4 수집 전 기간</p>}
                       </div>
 
                       {/* 링크 복사 */}
                       <div style={{ background: "#fafafa", borderRadius: "14px", padding: "18px" }}>
                         <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#999999", marginBottom: "8px" }}>링크 복사</p>
                         <p style={{ fontSize: "1.75rem", fontWeight: 800, color: "#111111", letterSpacing: "-0.03em", lineHeight: 1 }}>
-                          {gaMetrics ? `${gaMetrics.shareCopy.toLocaleString()}건` : "-"}
+                          {isBeforeGaStart ? "–" : gaMetrics ? `${gaMetrics.shareCopy.toLocaleString()}건` : "-"}
                         </p>
+                        {isBeforeGaStart && <p style={{ fontSize: "0.6875rem", color: "#aaaaaa", marginTop: "6px" }}>GA4 수집 전 기간</p>}
                       </div>
 
-                      {/* 콘텐츠 저장수 */}
+                      {/* 콘텐츠 저장수 (Supabase 기반 — GA4 수집 전 기간도 표시) */}
                       <div style={{ background: "#fafafa", borderRadius: "14px", padding: "18px" }}>
                         <p style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#999999", marginBottom: "8px" }}>콘텐츠 저장수</p>
                         <p style={{ fontSize: "1.75rem", fontWeight: 800, color: "#111111", letterSpacing: "-0.03em", lineHeight: 1 }}>
@@ -1971,7 +2061,8 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
                         <p style={{ fontSize: "0.6875rem", color: "#aaaaaa", marginTop: "6px" }}>웰니스+사상체질 북마크</p>
                       </div>
                     </div>
-                  )}
+                    );
+                  })()}
                 </div>
               </>
             )}

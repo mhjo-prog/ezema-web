@@ -33,11 +33,25 @@ function keyDiagnostics(key: string) {
   };
 }
 
-function getDateRange(range: Range): { startDate: string; endDate: string } {
+function getMonthDateRange(month: string): { startDate: string; endDate: string } {
+  const [y, m] = month.split("-").map(Number);
+  const startDate = `${month}-01`;
+  // 현재 월이면 endDate = "today"
+  const now = new Date();
+  if (y === now.getUTCFullYear() && m === now.getUTCMonth() + 1) {
+    return { startDate, endDate: "today" };
+  }
+  // 해당 월 마지막 날 (UTC day 0 of next month)
+  const lastDay = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  return { startDate, endDate: `${y}-${String(m).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}` };
+}
+
+function getDateRange(range: Range, month?: string): { startDate: string; endDate: string } {
   if (range === "1d") return { startDate: "yesterday", endDate: "yesterday" };
   if (range === "7d") return { startDate: "7daysAgo", endDate: "today" };
   if (range === "30d") return { startDate: "30daysAgo", endDate: "today" };
-  // monthly(12개월)와 all 모두 데이터 시작일부터 집계
+  if (range === "monthly" && month) return getMonthDateRange(month);
+  // monthly(month 없음)와 all 모두 데이터 시작일부터 집계
   return { startDate: GA_DATA_START, endDate: "today" };
 }
 
@@ -53,7 +67,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const range = (req.query.range as Range) ?? "7d";
-  const dateRange = getDateRange(range);
+  const month = req.query.month as string | undefined;
+  const dateRange = getDateRange(range, month);
 
   const privateKey = normalizePrivateKey(PRIVATE_KEY_RAW);
 

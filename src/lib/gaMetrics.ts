@@ -13,9 +13,11 @@ export interface GaMetrics {
 
 export type GaRange = "1d" | "7d" | "30d" | "monthly" | "all";
 
-export async function fetchGaMetrics(range: GaRange): Promise<GaMetrics | null> {
+export async function fetchGaMetrics(range: GaRange, month?: string): Promise<GaMetrics | null> {
   try {
-    const res = await fetch(`/api/ga-metrics?range=${range}`);
+    const params = new URLSearchParams({ range });
+    if (month) params.set("month", month);
+    const res = await fetch(`/api/ga-metrics?${params}`);
     if (!res.ok) return null;
     const data = await res.json();
     if (data.error) return null;
