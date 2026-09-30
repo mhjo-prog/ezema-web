@@ -26,23 +26,6 @@ function toW3CDate(iso: string): string {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // 임시 진단 파라미터 — 배포 후 제거
-  if (req.query._debug === "1") {
-    const supabase2 = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const testPost = await supabase2.from("posts").select("id, updated_at, created_at").eq("status", "published").order("updated_at", { ascending: false }).limit(3);
-    const testWellness = await supabase2.from("wellness_posts").select("id, updated_at, created_at").eq("status", "published").order("updated_at", { ascending: false }).limit(3);
-    return res.status(200).json({
-      supabase_url_len: SUPABASE_URL.length,
-      supabase_anon_len: SUPABASE_ANON_KEY.length,
-      supabase_url_prefix: SUPABASE_URL.slice(0, 8),
-      env_keys: Object.keys(process.env).filter(k => k.includes("SUPABASE")).join(", "),
-      posts_sample: testPost.data,
-      posts_error: testPost.error?.message,
-      wellness_sample: testWellness.data,
-      wellness_error: testWellness.error?.message,
-    });
-  }
-
   res.setHeader("Content-Type", "application/xml; charset=utf-8");
   res.setHeader("Cache-Control", "public, max-age=3600, stale-while-revalidate=600");
 
@@ -63,14 +46,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const [postsResult, wellnessResult] = await Promise.all([
       supabase
         .from("posts")
-        .select("id, updated_at, created_at")
+        .select("id, created_at")
         .eq("status", "published")
-        .order("updated_at", { ascending: false }),
+        .order("created_at", { ascending: false }),
       supabase
         .from("wellness_posts")
-        .select("id, updated_at, created_at")
+        .select("id, created_at")
         .eq("status", "published")
-        .order("updated_at", { ascending: false }),
+        .order("created_at", { ascending: false }),
     ]);
 
     if (postsResult.error) console.error("[sitemap] posts query error:", postsResult.error.message);
@@ -81,7 +64,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.log(`[sitemap] posts: ${posts?.length ?? "null"}, wellness: ${wellnessPosts?.length ?? "null"}`);
 
     for (const post of posts ?? []) {
-      const lastmod = toW3CDate(post.updated_at ?? post.created_at);
+      const lastmod = toW3CDate(post.created_at);
       const loc = escapeXml(`${BASE_URL}/sasang/${post.id}`);
       urls.push(
         `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.7</priority>\n  </url>`
@@ -89,7 +72,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     for (const post of wellnessPosts ?? []) {
-      const lastmod = toW3CDate(post.updated_at ?? post.created_at);
+      const lastmod = toW3CDate(post.created_at);
       const loc = escapeXml(`${BASE_URL}/wellness/${post.id}`);
       urls.push(
         `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.7</priority>\n  </url>`
