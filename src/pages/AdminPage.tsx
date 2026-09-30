@@ -746,6 +746,7 @@ export default function AdminPage() {
   const [feedbacks, setFeedbacks] = useState<Record<string, FeedbackRow>>({});
   const [feedbackDrafts, setFeedbackDrafts] = useState<Record<string, { score: number | null; note: string }>>({});
   const [savingFeedback, setSavingFeedback] = useState<string | null>(null);
+  const [resettingFeedback, setResettingFeedback] = useState<string | null>(null);
   const [postsRefreshing, setPostsRefreshing] = useState(false);
 
   // 사상체질 정렬
@@ -858,7 +859,7 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
     const draft = feedbackDrafts[post.id];
     if (!draft?.score) { showToast("별점을 선택해주세요."); return; }
     setSavingFeedback(post.id);
-    const { error } = await supabase.from("post_feedback").insert({
+    const { data: savedRows, error } = await supabase.from("post_feedback").insert({
       post_id: post.id,
       constitution_type: post.constitution_type,
       title: post.title,
@@ -866,12 +867,15 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
       feedback_score: draft.score,
       feedback_note: draft.note || null,
       view_count: post.view_count ?? 0,
-    });
-    if (!error) {
+    }).select();
+    if (error) {
+      console.error("post feedback save error:", error);
+      showToast(`저장 중 오류: ${error.message}`);
+    } else if (!savedRows || savedRows.length === 0) {
+      showToast("피드백을 저장하지 못했습니다.");
+    } else {
       setFeedbacks((prev) => ({ ...prev, [post.id]: { feedback_score: draft.score, feedback_note: draft.note || null } }));
       showToast("피드백이 저장되었습니다.");
-    } else {
-      showToast("저장 중 오류가 발생했습니다.");
     }
     setSavingFeedback(null);
   }
@@ -1008,7 +1012,7 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
     const draft = wellnessFeedbackDrafts[post.id];
     if (!draft?.score) { showToast("별점을 선택해주세요."); return; }
     setSavingWellnessFeedback(post.id);
-    const { error } = await supabase.from("wellness_post_feedback").insert({
+    const { data: savedRows, error } = await supabase.from("wellness_post_feedback").insert({
       post_id: post.id,
       wellness_category: post.wellness_category,
       title: post.title,
@@ -1016,15 +1020,48 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
       feedback_score: draft.score,
       feedback_note: draft.note || null,
       view_count: post.view_count ?? 0,
-    });
-    if (!error) {
-      setWellnessFeedbacks((prev) => ({ ...prev, [post.id]: { feedback_score: draft.score, feedback_note: draft.note || null } }));
-      showToast("피드백이 저장되었습니다.");
-    } else {
+    }).select();
+    if (error) {
       console.error("wellness feedback save error:", error);
       showToast(`저장 중 오류: ${error.message}`);
+    } else if (!savedRows || savedRows.length === 0) {
+      showToast("피드백을 저장하지 못했습니다.");
+    } else {
+      setWellnessFeedbacks((prev) => ({ ...prev, [post.id]: { feedback_score: draft.score, feedback_note: draft.note || null } }));
+      showToast("피드백이 저장되었습니다.");
     }
     setSavingWellnessFeedback(null);
+  }
+
+  async function handleResetFeedback(
+    postId: string,
+    table: "post_feedback" | "wellness_post_feedback"
+  ) {
+    if (!window.confirm("이 게시물의 별점과 메모를 초기화할까요?")) return;
+    setResettingFeedback(postId);
+    const { data: updatedRows, error } = await supabase
+      .from(table)
+      .update({ feedback_score: null, feedback_note: null })
+      .eq("post_id", postId)
+      .select();
+    if (error) {
+      console.error("reset feedback error:", error);
+      showToast(`초기화 오류: ${error.message}`);
+    } else if (!updatedRows || updatedRows.length === 0) {
+      showToast("초기화할 피드백을 찾지 못했습니다.");
+    } else {
+      const cleared = { feedback_score: null, feedback_note: null };
+      const clearedDraft = { score: null, note: "" };
+      if (table === "post_feedback") {
+        setFeedbacks((prev) => ({ ...prev, [postId]: cleared }));
+        setFeedbackDrafts((prev) => ({ ...prev, [postId]: clearedDraft }));
+      } else {
+        setWellnessFeedbacks((prev) => ({ ...prev, [postId]: cleared }));
+        setWellnessFeedbackDrafts((prev) => ({ ...prev, [postId]: clearedDraft }));
+      }
+      showToast("피드백이 초기화되었습니다.");
+    }
+    setResettingFeedback(null);
   }
 
   async function fetchWellnessPosts(sort: "latest" | "views" | "saves" = "latest") {
@@ -1594,7 +1631,7 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
                                   return (
                                     <button
                                       key={star}
-                                      onClick={() => setFeedbackDrafts((prev) => ({ ...prev, [post.id]: { score: star, note: prev[post.id]?.note ?? "" } }))}
+                                      onClick={() => setFeedbackDrafts((prev) => ({ ...prev, [post.id]: { score: prev[post.id]?.score === star ? null : star, note: prev[post.id]?.note ?? "" } }))}
                                       style={{ fontSize: "1.125rem", color: selected ? "#000000" : "#d0d0d0", background: "transparent", border: "none", cursor: "pointer", padding: "0 1px", lineHeight: 1 }}
                                     >
                                       ★
@@ -1618,6 +1655,13 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
                               style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#444444", background: "#ffffff", border: "1px solid #e8e8e8", padding: "8px 16px", borderRadius: "50px", cursor: savingFeedback === post.id ? "not-allowed" : "pointer", whiteSpace: "nowrap" as const, flexShrink: 0 }}
                             >
                               {savingFeedback === post.id ? "저장 중..." : "피드백 저장"}
+                            </button>
+                            <button
+                              onClick={() => handleResetFeedback(post.id, "post_feedback")}
+                              disabled={resettingFeedback === post.id || (!feedbacks[post.id]?.feedback_score && !feedbacks[post.id]?.feedback_note)}
+                              style={{ fontSize: "0.8125rem", fontWeight: 600, color: resettingFeedback === post.id || (!feedbacks[post.id]?.feedback_score && !feedbacks[post.id]?.feedback_note) ? "#cccccc" : "#999999", background: "#ffffff", border: "1px solid #e8e8e8", padding: "8px 14px", borderRadius: "50px", cursor: resettingFeedback === post.id || (!feedbacks[post.id]?.feedback_score && !feedbacks[post.id]?.feedback_note) ? "not-allowed" : "pointer", whiteSpace: "nowrap" as const, flexShrink: 0 }}
+                            >
+                              {resettingFeedback === post.id ? "초기화 중..." : "초기화"}
                             </button>
                           </div>
                         </div>
@@ -1789,7 +1833,7 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
                                   return (
                                     <button
                                       key={star}
-                                      onClick={() => setWellnessFeedbackDrafts((prev) => ({ ...prev, [post.id]: { score: star, note: prev[post.id]?.note ?? "" } }))}
+                                      onClick={() => setWellnessFeedbackDrafts((prev) => ({ ...prev, [post.id]: { score: prev[post.id]?.score === star ? null : star, note: prev[post.id]?.note ?? "" } }))}
                                       style={{ fontSize: "1.125rem", color: selected ? "#000000" : "#d0d0d0", background: "transparent", border: "none", cursor: "pointer", padding: "0 1px", lineHeight: 1 }}
                                     >
                                       ★
@@ -1813,6 +1857,13 @@ const [chartData, setChartData] = useState<{ date: string; visits: number; quizC
                               style={{ fontSize: "0.8125rem", fontWeight: 600, color: "#444444", background: "#ffffff", border: "1px solid #e8e8e8", padding: "8px 16px", borderRadius: "50px", cursor: savingWellnessFeedback === post.id ? "not-allowed" : "pointer", whiteSpace: "nowrap" as const, flexShrink: 0 }}
                             >
                               {savingWellnessFeedback === post.id ? "저장 중..." : "피드백 저장"}
+                            </button>
+                            <button
+                              onClick={() => handleResetFeedback(post.id, "wellness_post_feedback")}
+                              disabled={resettingFeedback === post.id || (!wellnessFeedbacks[post.id]?.feedback_score && !wellnessFeedbacks[post.id]?.feedback_note)}
+                              style={{ fontSize: "0.8125rem", fontWeight: 600, color: resettingFeedback === post.id || (!wellnessFeedbacks[post.id]?.feedback_score && !wellnessFeedbacks[post.id]?.feedback_note) ? "#cccccc" : "#999999", background: "#ffffff", border: "1px solid #e8e8e8", padding: "8px 14px", borderRadius: "50px", cursor: resettingFeedback === post.id || (!wellnessFeedbacks[post.id]?.feedback_score && !wellnessFeedbacks[post.id]?.feedback_note) ? "not-allowed" : "pointer", whiteSpace: "nowrap" as const, flexShrink: 0 }}
+                            >
+                              {resettingFeedback === post.id ? "초기화 중..." : "초기화"}
                             </button>
                           </div>
                         </div>
