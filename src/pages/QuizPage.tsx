@@ -25,6 +25,21 @@ function determineType(scores: Record<string, number>): string {
 }
 
 const SESSION_KEY = "ezema_quiz_result";
+const VISITOR_ID_KEY = "ezema_visitor_id";
+
+function getOrCreateVisitorId(): string {
+  try {
+    const existing = localStorage.getItem(VISITOR_ID_KEY);
+    if (existing) return existing;
+    const newId = typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `v-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
+    localStorage.setItem(VISITOR_ID_KEY, newId);
+    return newId;
+  } catch {
+    return `v-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
+  }
+}
 
 export default function QuizPage() {
   const [searchParams] = useSearchParams();
@@ -103,6 +118,19 @@ export default function QuizPage() {
         scores: s,
       }).then(({ error }) => {
         if (error) console.error("[quiz_results] insert 실패:", error);
+      });
+    }
+
+    // analytics 완료 이벤트: 완료 시점에 1회만 기록 (ResultPage 복원 시 중복 방지)
+    // visitor_id는 localStorage에 영구 저장 — 집계 기준 변경(이전: ResultPage 마운트 기준)
+    if (isSupabaseReady && isProductionEnv) {
+      const visitorId = getOrCreateVisitorId();
+      supabase.from("analytics").insert({
+        event_type: "quiz_complete",
+        constitution_type: type,
+        session_id: visitorId,
+      }).then(({ error }) => {
+        if (error) console.error("[analytics] quiz_complete insert 실패:", error);
       });
     }
 

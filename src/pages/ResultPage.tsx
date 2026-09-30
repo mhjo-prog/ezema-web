@@ -2,9 +2,7 @@ import { useState, useEffect, createContext, useContext } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { results, CONSTITUTION_COLORS } from "../data/results";
-import { supabase, isSupabaseReady } from "../lib/supabase";
 import { useAuth, PENDING_RESULT_KEY } from "../context/AuthContext";
-import { isProductionEnv } from "../lib/env";
 import { trackResultShare, trackResultSave, trackLogin } from "../lib/analytics";
 
 declare global {
@@ -1402,14 +1400,6 @@ export default function ResultPage({ constitutionType, scores, onRetry, isShared
   const result = results[constitutionType];
   const constitution = constitutionInfo[constitutionType];
   const themeColor = CONSTITUTION_COLORS[constitutionType] ?? "#0774C4";
-
-  useEffect(() => {
-    if (isSupabaseReady && isProductionEnv && constitutionType && !isShared && !isHistory) {
-      supabase.from("analytics").insert({ event_type: "quiz_complete", constitution_type: constitutionType })
-        .then(({ error }) => { if (error) console.log("[analytics] insert error:", error); });
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   if (!result) return null;
 
