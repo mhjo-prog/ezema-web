@@ -25,7 +25,17 @@ function toW3CDate(iso: string): string {
   return iso.split("T")[0];
 }
 
-export default async function handler(_req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // 임시 진단 파라미터 — 배포 후 제거
+  if (req.query._debug === "1") {
+    return res.status(200).json({
+      supabase_url_len: SUPABASE_URL.length,
+      supabase_anon_len: SUPABASE_ANON_KEY.length,
+      supabase_url_prefix: SUPABASE_URL.slice(0, 8),
+      env_keys: Object.keys(process.env).filter(k => k.includes("SUPABASE")).join(", "),
+    });
+  }
+
   res.setHeader("Content-Type", "application/xml; charset=utf-8");
   res.setHeader("Cache-Control", "public, max-age=3600, stale-while-revalidate=600");
 
