@@ -1,4 +1,24 @@
 {
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "keepslow.co.kr" }],
+      "destination": "https://keepslow.kr/$1",
+      "permanent": true
+    },
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "www.keepslow.co.kr" }],
+      "destination": "https://keepslow.kr/$1",
+      "permanent": true
+    },
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "www.keepslow.kr" }],
+      "destination": "https://keepslow.kr/$1",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/",
