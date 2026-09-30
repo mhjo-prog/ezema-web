@@ -10,9 +10,21 @@ const sanitizeSchema = {
   ...defaultSchema,
   tagNames: [...(defaultSchema.tagNames ?? []), "u"],
 };
+import { Helmet } from "react-helmet-async";
 import { supabase, isSupabaseReady, type WellnessPost } from "../lib/supabase";
 import { useBookmarks } from "../context/BookmarkContext";
 import SaveHintBubble from "../components/SaveHintBubble";
+
+function stripMarkdown(md: string): string {
+  return md
+    .replace(/<[^>]+>/g, " ")
+    .replace(/!\[.*?\]\(.*?\)/g, "")
+    .replace(/\[([^\]]+)\]\(.*?\)/g, "$1")
+    .replace(/#{1,6}\s+/g, "")
+    .replace(/[*_`~>#]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
 const WELLNESS_CATEGORY_COLORS: Record<string, string> = {
   수면: "#6B3FA0",
@@ -259,8 +271,19 @@ export default function WellnessDetailPage() {
   }
 
   const color = WELLNESS_CATEGORY_COLORS[post.wellness_category] ?? "#1E8A4C";
+  const metaDesc = stripMarkdown(post.content).slice(0, 120);
+  const canonicalUrl = `https://keepslow.kr/wellness/${post.id}`;
 
   return (
+    <>
+    <Helmet>
+      <title>{post.title} | 웰니스 - 킵슬로우</title>
+      <meta name="description" content={metaDesc} />
+      <meta property="og:title" content={`${post.title} | 킵슬로우`} />
+      <meta property="og:description" content={metaDesc} />
+      <meta property="og:url" content={canonicalUrl} />
+      <link rel="canonical" href={canonicalUrl} />
+    </Helmet>
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -411,5 +434,6 @@ export default function WellnessDetailPage() {
         <BottomButtons backPath="/wellness" navigate={navigate} />
       </div>
     </motion.div>
+    </>
   );
 }

@@ -10,10 +10,24 @@ const sanitizeSchema = {
   ...defaultSchema,
   tagNames: [...(defaultSchema.tagNames ?? []), "u"],
 };
+import { Helmet } from "react-helmet-async";
 import { supabase, isSupabaseReady, type Post, type ConstitutionType } from "../lib/supabase";
 import { results } from "../data/results";
 import { useBookmarks } from "../context/BookmarkContext";
 import SaveHintBubble from "../components/SaveHintBubble";
+
+const CONSTITUTION_TYPES: ConstitutionType[] = ["태양인", "태음인", "소양인", "소음인"];
+
+function stripMarkdown(md: string): string {
+  return md
+    .replace(/<[^>]+>/g, " ")
+    .replace(/!\[.*?\]\(.*?\)/g, "")
+    .replace(/\[([^\]]+)\]\(.*?\)/g, "$1")
+    .replace(/#{1,6}\s+/g, "")
+    .replace(/[*_`~>#]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 
 const COUPANG_IDS: Record<string, number> = {
   태양인: 975890,
@@ -213,14 +227,24 @@ export default function SasangDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
+  const isConstitutionType = CONSTITUTION_TYPES.includes(id as ConstitutionType);
+
   const [post, setPost] = useState<Post | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!isConstitutionType);
   const [notFound, setNotFound] = useState(false);
   const { isSavedGlobal, toggleBookmark, hasAnySaved, bookmarksLoaded } = useBookmarks();
   const saved = isSavedGlobal(id ?? "");
 
+  // 체질명 URL(/sasang/태음인 등)은 /sasang?type={체질}로 리다이렉트
+  useEffect(() => {
+    if (isConstitutionType) {
+      navigate(`/sasang?type=${id}`, { replace: true });
+    }
+  }, [isConstitutionType, id, navigate]);
+
   useEffect(() => {
     async function fetchPost() {
+      if (isConstitutionType) return;
       if (!id || !isSupabaseReady) { setNotFound(true); setLoading(false); return; }
       const { data, error } = await supabase
         .from("posts")
@@ -286,8 +310,19 @@ export default function SasangDetailPage() {
   }
 
   const color = CONSTITUTION_COLORS[post.constitution_type];
+  const metaDesc = stripMarkdown(post.content).slice(0, 120);
+  const canonicalUrl = `https://keepslow.kr/sasang/${post.id}`;
 
   return (
+    <>
+    <Helmet>
+      <title>{post.title} | 사상체질 - 킵슬로우</title>
+      <meta name="description" content={metaDesc} />
+      <meta property="og:title" content={`${post.title} | 킵슬로우`} />
+      <meta property="og:description" content={metaDesc} />
+      <meta property="og:url" content={canonicalUrl} />
+      <link rel="canonical" href={canonicalUrl} />
+    </Helmet>
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -479,5 +514,6 @@ export default function SasangDetailPage() {
         <BottomButtons backPath="/sasang" navigate={navigate} />
       </div>
     </motion.div>
+    </>
   );
 }

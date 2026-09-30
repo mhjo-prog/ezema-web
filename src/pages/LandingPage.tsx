@@ -63,9 +63,42 @@ export default function LandingPage({ onStart }: Props) {
     <>
       <Helmet>
         <title>사상체질 자가진단 테스트 | 무료 체질검사 - 킵슬로우(Keepslow)</title>
-        <meta name="description" content="태양인·태음인·소양인·소음인 사상체질을 무료로 자가진단해보세요. 체질에 맞는 건강 정보를 제공합니다." />
+        <meta name="description" content="태양인·태음인·소양인·소음인 사상체질을 무료로 자가진단해보세요. 31문항, 약 3분. 체질에 맞는 건강 가이드를 확인할 수 있습니다." />
         <meta property="og:title" content="사상체질 자가진단 테스트 | 무료 체질검사 - 킵슬로우(Keepslow)" />
-        <meta property="og:description" content="태양인·태음인·소양인·소음인 사상체질을 무료로 자가진단해보세요. 체질에 맞는 건강 정보를 제공합니다." />
+        <meta property="og:description" content="태양인·태음인·소양인·소음인 사상체질을 무료로 자가진단해보세요. 31문항, 약 3분." />
+        <meta property="og:url" content="https://keepslow.kr/test" />
+        <link rel="canonical" href="https://keepslow.kr/test" />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "사상체질 테스트가 정확한가요?",
+              "acceptedAnswer": { "@type": "Answer", "text": "이제마의 『동의수세보원』에 기반한 자가진단 도구입니다. 한의원 전문 진단을 대체하지는 않지만, 체질 이해의 첫 걸음으로 활용할 수 있습니다." }
+            },
+            {
+              "@type": "Question",
+              "name": "무료인가요? 회원가입이 필요한가요?",
+              "acceptedAnswer": { "@type": "Answer", "text": "완전 무료이며, 회원가입 없이 테스트를 진행하고 결과를 확인할 수 있습니다. 결과를 마이페이지에 저장하려면 카카오 로그인이 필요합니다." }
+            },
+            {
+              "@type": "Question",
+              "name": "네 가지 체질은 어떻게 다른가요?",
+              "acceptedAnswer": { "@type": "Answer", "text": "태양인(폐 강·간 약), 태음인(간 강·폐 약), 소양인(비위 강·신장 약), 소음인(신장 강·비위 약)으로 구분됩니다. 각 체질은 고유한 성격, 체형 경향, 건강 취약점을 가집니다." }
+            },
+            {
+              "@type": "Question",
+              "name": "몇 문항이며 얼마나 걸리나요?",
+              "acceptedAnswer": { "@type": "Answer", "text": "31문항이며, 평균 3분 이내에 완료할 수 있습니다." }
+            },
+            {
+              "@type": "Question",
+              "name": "결과를 다시 볼 수 있나요?",
+              "acceptedAnswer": { "@type": "Answer", "text": "카카오 로그인 후 마이페이지에 저장하면 언제든 다시 확인할 수 있습니다." }
+            }
+          ]
+        })}</script>
       </Helmet>
       <motion.div
       style={{ paddingTop: "56px" }}
@@ -607,6 +640,39 @@ export default function LandingPage({ onStart }: Props) {
           .constitution-card-desc { font-size: 0.8rem !important; word-break: keep-all !important; }
         }
       `}</style>
+
+      {/* ── SEO: 사상체질 소개 + FAQ ── */}
+      <section style={{ background: "#f8f8f6", padding: "72px clamp(20px, 5vw, 80px)" }}>
+        <div style={{ maxWidth: "720px", margin: "0 auto" }}>
+          <h2 style={{ fontSize: "clamp(1.25rem, 2.5vw, 1.625rem)", fontWeight: 700, color: "#111111", marginBottom: "1rem", letterSpacing: "-0.03em" }}>
+            사상체질이란?
+          </h2>
+          <p style={{ fontSize: "1rem", color: "#444444", lineHeight: 1.8, marginBottom: "0.75rem" }}>
+            사상체질(四象體質)은 조선 후기 의학자 이제마가 창안한 체질 의학으로, 사람의 체질을 태양인·태음인·소양인·소음인 네 가지로 구분합니다. 체질마다 강한 장기와 약한 장기가 다르며, 건강을 지키는 방식과 잘 맞는 음식·생활 습관도 달라집니다.
+          </p>
+          <p style={{ fontSize: "1rem", color: "#444444", lineHeight: 1.8, marginBottom: "3rem" }}>
+            킵슬로우의 사상체질 테스트는 완전 무료이며, 31가지 질문에 답하면 약 3분 안에 나의 체질 유형과 맞춤 건강 가이드를 확인할 수 있습니다.
+          </p>
+
+          <h2 style={{ fontSize: "clamp(1.125rem, 2vw, 1.375rem)", fontWeight: 700, color: "#111111", marginBottom: "1.5rem", letterSpacing: "-0.02em" }}>
+            자주 묻는 질문
+          </h2>
+          <dl style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+            {([
+              ["사상체질 테스트가 정확한가요?", "이제마의 『동의수세보원』에 기반한 자가진단 도구입니다. 한의원 전문 진단을 대체하지는 않지만, 체질 이해의 첫 걸음으로 활용할 수 있습니다."],
+              ["무료인가요? 회원가입이 필요한가요?", "완전 무료이며, 회원가입 없이 테스트를 진행하고 결과를 확인할 수 있습니다. 결과를 마이페이지에 저장하려면 카카오 로그인이 필요합니다."],
+              ["네 가지 체질은 어떻게 다른가요?", "태양인(폐 강·간 약), 태음인(간 강·폐 약), 소양인(비위 강·신장 약), 소음인(신장 강·비위 약)으로 구분됩니다. 각 체질은 고유한 성격, 체형 경향, 건강 취약점을 가집니다."],
+              ["몇 문항이며 얼마나 걸리나요?", "31문항이며, 평균 3분 이내에 완료할 수 있습니다."],
+              ["결과를 다시 볼 수 있나요?", "카카오 로그인 후 마이페이지에 저장하면 언제든 다시 확인할 수 있습니다."],
+            ] as [string, string][]).map(([q, a]) => (
+              <div key={q} style={{ borderTop: "1px solid #e8e8e8", paddingTop: "1.25rem" }}>
+                <dt style={{ fontSize: "0.9375rem", fontWeight: 600, color: "#222222", marginBottom: "0.5rem" }}>Q. {q}</dt>
+                <dd style={{ fontSize: "0.9375rem", color: "#555555", lineHeight: 1.7, margin: 0 }}>A. {a}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </section>
 
       {/* ── Footer ── */}
       <footer style={{ background: "#ffffff", padding: "32px clamp(16px, 4vw, 40px)" }}>

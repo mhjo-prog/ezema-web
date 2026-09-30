@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
+import { Helmet } from "react-helmet-async";
 import SurveyPage from "./SurveyPage";
 import LoadingPage from "./LoadingPage";
 import ResultPage from "./ResultPage";
@@ -142,6 +143,10 @@ export default function QuizPage() {
   }, []);
 
   return (
+    <>
+    <Helmet>
+      <meta name="robots" content="noindex,follow" />
+    </Helmet>
     <AnimatePresence mode="wait">
       {screen === "survey" && (
         <SurveyPage
@@ -178,5 +183,6 @@ export default function QuizPage() {
         />
       )}
     </AnimatePresence>
+    </>
   );
 }

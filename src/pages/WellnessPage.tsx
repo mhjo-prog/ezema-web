@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
 import { supabase, isSupabaseReady, type WellnessPost, type WellnessCategory } from "../lib/supabase";
 import { toThumbUrl } from "../lib/imageUtils";
@@ -219,6 +220,15 @@ export default function WellnessPage() {
   }
 
   return (
+    <>
+    <Helmet>
+      <title>웰니스 카툰 | 수면·식단·운동·명상 건강 콘텐츠 - 킵슬로우</title>
+      <meta name="description" content="수면, 식단, 운동, 명상, 스트레스 관리까지. 킵슬로우의 웰니스 카툰으로 일상 속 건강 습관을 만들어보세요." />
+      <meta property="og:title" content="웰니스 카툰 | 수면·식단·운동·명상 건강 콘텐츠 - 킵슬로우" />
+      <meta property="og:description" content="수면, 식단, 운동, 명상, 스트레스 관리까지. 킵슬로우의 웰니스 카툰으로 일상 속 건강 습관을 만들어보세요." />
+      <meta property="og:url" content="https://keepslow.kr/wellness" />
+      <link rel="canonical" href="https://keepslow.kr/wellness" />
+    </Helmet>
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -433,5 +443,6 @@ export default function WellnessPage() {
       `}</style>
       <Footer />
     </motion.div>
+    </>
   );
 }

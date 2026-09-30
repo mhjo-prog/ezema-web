@@ -66,6 +66,8 @@ export default function AboutPage() {
         <meta name="description" content="킵슬로우(Keepslow)는 사상체질 기반 웰니스 브랜드입니다. 느리지만 꾸준한 건강함을 추구합니다." />
         <meta property="og:title" content="킵슬로우 소개 | 이기적이지 않은 건강함 - Keepslow" />
         <meta property="og:description" content="킵슬로우(Keepslow)는 사상체질 기반 웰니스 브랜드입니다. 느리지만 꾸준한 건강함을 추구합니다." />
+        <meta property="og:url" content="https://keepslow.kr/about" />
+        <link rel="canonical" href="https://keepslow.kr/about" />
       </Helmet>
       <div
       style={{

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
 import { supabase, isSupabaseReady, type Post, type ConstitutionType } from "../lib/supabase";
 import { toThumbUrl } from "../lib/imageUtils";
@@ -228,6 +229,15 @@ export default function SasangPage() {
   }
 
   return (
+    <>
+    <Helmet>
+      <title>사상체질 콘텐츠 | 태양인·태음인·소양인·소음인 건강 정보 - 킵슬로우</title>
+      <meta name="description" content="태양인·태음인·소양인·소음인 사상체질 유형별 건강 정보와 생활 가이드. 나의 체질에 맞는 콘텐츠를 확인하세요." />
+      <meta property="og:title" content="사상체질 콘텐츠 | 태양인·태음인·소양인·소음인 건강 정보 - 킵슬로우" />
+      <meta property="og:description" content="태양인·태음인·소양인·소음인 사상체질 유형별 건강 정보와 생활 가이드." />
+      <meta property="og:url" content="https://keepslow.kr/sasang" />
+      <link rel="canonical" href="https://keepslow.kr/sasang" />
+    </Helmet>
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -441,5 +451,6 @@ export default function SasangPage() {
       `}</style>
       <Footer />
     </motion.div>
+    </>
   );
 }
