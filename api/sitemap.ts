@@ -29,8 +29,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // 임시 진단 파라미터 — 배포 후 제거
   if (req.query._debug === "1") {
     const supabase2 = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const testPost = await supabase2.from("posts").select("id, status").limit(3);
-    const testWellness = await supabase2.from("wellness_posts").select("id, status").limit(3);
+    const testPost = await supabase2.from("posts").select("id, updated_at, created_at").eq("status", "published").order("updated_at", { ascending: false }).limit(3);
+    const testWellness = await supabase2.from("wellness_posts").select("id, updated_at, created_at").eq("status", "published").order("updated_at", { ascending: false }).limit(3);
     return res.status(200).json({
       supabase_url_len: SUPABASE_URL.length,
       supabase_anon_len: SUPABASE_ANON_KEY.length,
