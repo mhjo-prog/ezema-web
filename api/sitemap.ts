@@ -43,7 +43,7 @@ export default async function handler(_req: VercelRequest, res: VercelResponse) 
   if (SUPABASE_URL && SUPABASE_ANON_KEY) {
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const [{ data: posts }, { data: wellnessPosts }] = await Promise.all([
+    const [postsResult, wellnessResult] = await Promise.all([
       supabase
         .from("posts")
         .select("id, updated_at, created_at")
@@ -55,6 +55,13 @@ export default async function handler(_req: VercelRequest, res: VercelResponse) 
         .eq("status", "published")
         .order("updated_at", { ascending: false }),
     ]);
+
+    if (postsResult.error) console.error("[sitemap] posts query error:", postsResult.error.message);
+    if (wellnessResult.error) console.error("[sitemap] wellness_posts query error:", wellnessResult.error.message);
+
+    const posts = postsResult.data;
+    const wellnessPosts = wellnessResult.data;
+    console.log(`[sitemap] posts: ${posts?.length ?? "null"}, wellness: ${wellnessPosts?.length ?? "null"}`);
 
     for (const post of posts ?? []) {
       const lastmod = toW3CDate(post.updated_at ?? post.created_at);
