@@ -37,8 +37,8 @@ function getMonthDateRange(month: string): { startDate: string; endDate: string 
   const [y, m] = month.split("-").map(Number);
   const startDate = `${month}-01`;
   // 현재 월이면 endDate = "today"
-  const now = new Date();
-  if (y === now.getUTCFullYear() && m === now.getUTCMonth() + 1) {
+  const nowKST = new Date(Date.now() + 9 * 60 * 60 * 1000);
+  if (y === nowKST.getUTCFullYear() && m === nowKST.getUTCMonth() + 1) {
     return { startDate, endDate: "today" };
   }
   // 해당 월 마지막 날 (UTC day 0 of next month)
