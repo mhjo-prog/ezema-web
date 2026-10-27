@@ -25,6 +25,9 @@ function toW3CDate(iso: string): string {
   return iso.split("T")[0];
 }
 
+// Stable lastmod for static pages — update manually on major redesigns
+const STATIC_LASTMOD = "2025-12-01";
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Content-Type", "application/xml; charset=utf-8");
   res.setHeader("Cache-Control", "public, max-age=3600, stale-while-revalidate=600");
@@ -32,10 +35,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const urls: string[] = [];
 
   // 1. 정적 페이지
-  const now = new Date().toISOString().split("T")[0];
   for (const p of STATIC_PAGES) {
     urls.push(
-      `  <url>\n    <loc>${BASE_URL}${p.loc}</loc>\n    <lastmod>${now}</lastmod>\n    <changefreq>${p.changefreq}</changefreq>\n    <priority>${p.priority}</priority>\n  </url>`
+      `  <url>\n    <loc>${BASE_URL}${p.loc}</loc>\n    <lastmod>${STATIC_LASTMOD}</lastmod>\n    <changefreq>${p.changefreq}</changefreq>\n    <priority>${p.priority}</priority>\n  </url>`
     );
   }
 
@@ -46,12 +48,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const [postsResult, wellnessResult] = await Promise.all([
       supabase
         .from("posts")
-        .select("id, created_at")
+        .select("id, created_at, updated_at")
         .eq("status", "published")
         .order("created_at", { ascending: false }),
       supabase
         .from("wellness_posts")
-        .select("id, created_at")
+        .select("id, created_at, updated_at")
         .eq("status", "published")
         .order("created_at", { ascending: false }),
     ]);
@@ -64,7 +66,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.log(`[sitemap] posts: ${posts?.length ?? "null"}, wellness: ${wellnessPosts?.length ?? "null"}`);
 
     for (const post of posts ?? []) {
-      const lastmod = toW3CDate(post.created_at);
+      const lastmod = toW3CDate((post.updated_at ?? post.created_at) as string);
       const loc = escapeXml(`${BASE_URL}/sasang/${post.id}`);
       urls.push(
         `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.7</priority>\n  </url>`
@@ -72,7 +74,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     for (const post of wellnessPosts ?? []) {
-      const lastmod = toW3CDate(post.created_at);
+      const lastmod = toW3CDate((post.updated_at ?? post.created_at) as string);
       const loc = escapeXml(`${BASE_URL}/wellness/${post.id}`);
       urls.push(
         `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.7</priority>\n  </url>`
