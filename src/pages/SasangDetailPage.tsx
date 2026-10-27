@@ -299,26 +299,31 @@ export default function SasangDetailPage() {
 
   if (notFound || !post) {
     return (
-      <div
-        style={{
-          minHeight: "calc(100vh - 56px)",
-          paddingTop: "56px",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "16px",
-        }}
-      >
-        <span style={{ fontSize: "3rem" }}>🌿</span>
-        <p style={{ fontSize: "1.125rem", fontWeight: 600, color: "#333" }}>게시물을 찾을 수 없습니다.</p>
-        <button
-          onClick={() => navigate("/sasang")}
-          style={{ fontSize: "0.875rem", color: "#0774C4", fontWeight: 500, textDecoration: "underline", cursor: "pointer" }}
+      <>
+        <Helmet>
+          <meta name="robots" content="noindex, follow" />
+        </Helmet>
+        <div
+          style={{
+            minHeight: "calc(100vh - 56px)",
+            paddingTop: "56px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "16px",
+          }}
         >
-          목록으로 돌아가기
-        </button>
-      </div>
+          <span style={{ fontSize: "3rem" }}>🌿</span>
+          <p style={{ fontSize: "1.125rem", fontWeight: 600, color: "#333" }}>게시물을 찾을 수 없습니다.</p>
+          <button
+            onClick={() => navigate("/sasang")}
+            style={{ fontSize: "0.875rem", color: "#0774C4", fontWeight: 500, textDecoration: "underline", cursor: "pointer" }}
+          >
+            목록으로 돌아가기
+          </button>
+        </div>
+      </>
     );
   }
 
