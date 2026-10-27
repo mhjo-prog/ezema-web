@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -201,6 +201,7 @@ export default function WellnessDetailPage() {
   const [post, setPost] = useState<WellnessPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [relatedPosts, setRelatedPosts] = useState<Pick<WellnessPost, "id" | "title">[]>([]);
   const { isSavedGlobal, toggleBookmark, hasAnySaved, bookmarksLoaded } = useBookmarks();
   const saved = isSavedGlobal(id ?? "");
 
@@ -227,6 +228,18 @@ export default function WellnessDetailPage() {
     }
     fetchPost();
   }, [id]);
+
+  useEffect(() => {
+    if (!post || !isSupabaseReady) return;
+    supabase
+      .from("wellness_posts")
+      .select("id, title")
+      .eq("status", "published")
+      .eq("wellness_category", post.wellness_category)
+      .neq("id", post.id)
+      .limit(5)
+      .then(({ data }) => { if (data) setRelatedPosts(data as Pick<WellnessPost, "id" | "title">[]); });
+  }, [post]);
 
   if (loading) {
     return (
@@ -432,6 +445,29 @@ export default function WellnessDetailPage() {
 
         {/* 하단 버튼 */}
         <BottomButtons backPath="/wellness" navigate={navigate} />
+
+        {/* 같은 카테고리 관련 글 */}
+        {relatedPosts.length > 0 && (
+          <div style={{ marginTop: "40px", paddingTop: "24px", borderTop: "1px solid #eeeeee" }}>
+            <p style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#aaaaaa", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "16px" }}>
+              관련 웰니스
+            </p>
+            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "10px" }}>
+              {relatedPosts.map((r) => (
+                <li key={r.id}>
+                  <Link
+                    to={`/wellness/${r.id}`}
+                    style={{ fontSize: "0.9rem", color: "#333333", textDecoration: "none", fontWeight: 500 }}
+                    onMouseEnter={(e) => { e.currentTarget.style.textDecoration = "underline"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.textDecoration = "none"; }}
+                  >
+                    {r.title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </motion.div>
     </>

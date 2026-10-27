@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { supabase, isSupabaseReady, type WellnessPost } from "../lib/supabase";
 import { toThumbUrl } from "../lib/imageUtils";
@@ -17,6 +17,7 @@ const HERO_TITLES: Record<string, { line1: string; line2: string }> = {
 };
 
 function getCurrentLang(): string {
+  if (typeof document === "undefined") return "ko";
   const match = document.cookie.match(/googtrans=\/ko\/([^;]+)/);
   return match ? match[1] : "ko";
 }
@@ -177,6 +178,25 @@ export default function HomePage() {
         <meta property="og:description" content="체질별 건강 정보 및 웰니스 카툰. 태양인·태음인·소양인·소음인, 사상체질 테스트로 나를 알아보세요." />
         <meta property="og:url" content="https://keepslow.kr/" />
         <link rel="canonical" href="https://keepslow.kr/" />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          "name": "킵슬로우(Keepslow)",
+          "url": "https://keepslow.kr",
+          "description": "사상체질 기반 웰니스 브랜드. 이기적이지 않은 건강함 - Selfless Wellness.",
+          "sameAs": ["https://www.instagram.com/keepslow_family/"]
+        })}</script>
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          "name": "킵슬로우",
+          "url": "https://keepslow.kr",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": { "@type": "EntryPoint", "urlTemplate": "https://keepslow.kr/sasang?q={search_term_string}" },
+            "query-input": "required name=search_term_string"
+          }
+        })}</script>
       </Helmet>
       <div
       ref={pageRef}
@@ -639,18 +659,18 @@ export default function HomePage() {
               }}
             >
               {posts.map((post, i) => (
-                <div
+                <Link
                   key={post.id ?? i}
-                  onClick={() => navigate(`/wellness/${post.id}`)}
+                  to={`/wellness/${post.id}`}
                   style={{
                     width: "220px",
                     height: "220px",
                     flexShrink: 0,
                     borderRadius: "12px",
                     overflow: "hidden",
-                    background: "none",
-                    padding: 0,
+                    display: "block",
                     cursor: "pointer",
+                    textDecoration: "none",
                   }}
                 >
                   <img
@@ -669,7 +689,7 @@ export default function HomePage() {
                       display: "block",
                     }}
                   />
-                </div>
+                </Link>
               ))}
             </div>
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
 import { supabase, isSupabaseReady, type Post, type ConstitutionType } from "../lib/supabase";
@@ -31,15 +31,15 @@ function BookmarkIcon({ filled }: { filled: boolean }) {
   );
 }
 
-function PostCard({ post, onClick }: { post: Post; onClick: () => void }) {
+function PostCard({ post, to }: { post: Post; to: string }) {
   const color = CONSTITUTION_COLORS[post.constitution_type];
   const [imgError, setImgError] = useState(false);
   const { isSavedGlobal, toggleBookmark } = useBookmarks();
   const saved = isSavedGlobal(post.id);
 
   return (
+    <Link to={to} style={{ textDecoration: "none", color: "inherit", display: "block" }}>
     <motion.div
-      onClick={onClick}
       whileHover={{ opacity: 0.85 }}
       transition={{ duration: 0.18 }}
       style={{ cursor: "pointer", display: "flex", flexDirection: "column" }}
@@ -118,7 +118,7 @@ function PostCard({ post, onClick }: { post: Post; onClick: () => void }) {
           </span>
         </div>
         <button
-          onClick={(e) => { e.stopPropagation(); toggleBookmark(post.id, "posts"); }}
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleBookmark(post.id, "posts"); }}
           style={{
             background: "none", border: "none", cursor: "pointer", padding: "4px",
             color: saved ? "#111111" : "#cccccc", display: "flex", alignItems: "center",
@@ -130,6 +130,7 @@ function PostCard({ post, onClick }: { post: Post; onClick: () => void }) {
         </button>
       </div>
     </motion.div>
+    </Link>
   );
 }
 
@@ -237,6 +238,18 @@ export default function SasangPage() {
       <meta property="og:description" content="태양인·태음인·소양인·소음인 사상체질 유형별 건강 정보와 생활 가이드." />
       <meta property="og:url" content="https://keepslow.kr/sasang" />
       <link rel="canonical" href="https://keepslow.kr/sasang" />
+      <script type="application/ld+json">{JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "name": "사상체질 이야기 - 킵슬로우",
+        "url": "https://keepslow.kr/sasang",
+        "description": "태양인·태음인·소양인·소음인 사상체질 유형별 건강 정보와 생활 가이드.",
+        "about": {
+          "@type": "Thing",
+          "name": "사상체질",
+          "description": "이제마의 동의수세보원에 기반한 한국 전통 체질 의학"
+        }
+      })}</script>
     </Helmet>
     <motion.div
       initial={{ opacity: 0 }}
@@ -258,7 +271,7 @@ export default function SasangPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           >
-            TYPOLOGY STORIES
+            사상체질 이야기 <span style={{ fontSize: "0.55em", fontWeight: 500, color: "#888", letterSpacing: "0.1em" }}>TYPOLOGY STORIES</span>
           </motion.h1>
           <motion.p
             style={{ marginTop: "10px", fontSize: "0.9375rem", color: "#666666", lineHeight: 1.6 }}
@@ -422,7 +435,7 @@ export default function SasangPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.45, delay: Math.min(i % PAGE_SIZE, 5) * 0.07, ease: "easeOut" }}
                 >
-                  <PostCard post={post} onClick={() => navigate(`/sasang/${post.id}`)} />
+                  <PostCard post={post} to={`/sasang/${post.id}`} />
                 </motion.div>
               ))}
             </div>
