@@ -1134,7 +1134,7 @@ function ConstitutionHistoryCard({ constitutionType, scores }: { constitutionTyp
           borderRadius: "50px",
           background: "#3A2E26",
           border: "none",
-          color: "#FCE300",
+          color: "#FFFFFF",
           fontSize: "clamp(0.82rem, 2.3vw, 0.9rem)",
           cursor: "pointer",
           marginBottom: "10px",
