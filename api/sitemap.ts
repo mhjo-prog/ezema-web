@@ -10,8 +10,8 @@ const SUPABASE_ANON_KEY =
 const BASE_URL = "https://keepslow.kr";
 
 const STATIC_PAGES = [
-  { loc: "/",        changefreq: "weekly",  priority: "1.0" },
-  { loc: "/test",    changefreq: "monthly", priority: "0.9" },
+  { loc: "/",        changefreq: "weekly",  priority: "0.9" },
+  { loc: "/test",    changefreq: "monthly", priority: "1.0" },
   { loc: "/sasang",  changefreq: "weekly",  priority: "0.8" },
   { loc: "/wellness",changefreq: "weekly",  priority: "0.8" },
   { loc: "/about",   changefreq: "monthly", priority: "0.5" },

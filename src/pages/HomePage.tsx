@@ -172,10 +172,10 @@ export default function HomePage() {
   return (
     <>
       <Helmet>
-        <title>킵슬로우(Keepslow) | 사상체질 자가진단 무료 테스트</title>
-        <meta name="description" content="체질별 건강 정보 및 웰니스 카툰. 태양인·태음인·소양인·소음인, 사상체질 테스트로 나를 알아보세요." />
-        <meta property="og:title" content="킵슬로우(Keepslow) | 사상체질 자가진단 무료 테스트" />
-        <meta property="og:description" content="체질별 건강 정보 및 웰니스 카툰. 태양인·태음인·소양인·소음인, 사상체질 테스트로 나를 알아보세요." />
+        <title>킵슬로우(Keepslow) | 사상체질 웰니스 · 체질별 건강 콘텐츠</title>
+        <meta name="description" content="킵슬로우는 사상체질 기반 웰니스 브랜드입니다. 체질별 건강 콘텐츠, 웰니스 카툰, 무료 사상체질 테스트를 제공합니다." />
+        <meta property="og:title" content="킵슬로우(Keepslow) | 사상체질 웰니스 · 체질별 건강 콘텐츠" />
+        <meta property="og:description" content="킵슬로우는 사상체질 기반 웰니스 브랜드입니다. 체질별 건강 콘텐츠, 웰니스 카툰, 무료 사상체질 테스트를 제공합니다." />
         <meta property="og:url" content="https://keepslow.kr/" />
         <link rel="canonical" href="https://keepslow.kr/" />
         <script type="application/ld+json">{JSON.stringify({
@@ -183,8 +183,12 @@ export default function HomePage() {
           "@type": "Organization",
           "name": "킵슬로우(Keepslow)",
           "url": "https://keepslow.kr",
+          "logo": "https://keepslow.kr/keepslow-logo.png",
           "description": "사상체질 기반 웰니스 브랜드. 이기적이지 않은 건강함 - Selfless Wellness.",
-          "sameAs": ["https://www.instagram.com/keepslow_family/"]
+          "sameAs": [
+            "https://www.instagram.com/keepslow_family/",
+            "https://smartstore.naver.com/keepslow_selfless_wellbeing"
+          ]
         })}</script>
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",

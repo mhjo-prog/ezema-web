@@ -35,6 +35,10 @@
   ],
   "rewrites": [
     { "source": "/sitemap.xml", "destination": "/api/sitemap" },
+    { "source": "/test", "destination": "/test/index.html" },
+    { "source": "/sasang", "destination": "/sasang/index.html" },
+    { "source": "/wellness", "destination": "/wellness/index.html" },
+    { "source": "/about", "destination": "/about/index.html" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }

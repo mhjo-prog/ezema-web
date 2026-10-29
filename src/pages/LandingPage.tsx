@@ -62,40 +62,71 @@ export default function LandingPage({ onStart }: Props) {
   return (
     <>
       <Helmet>
-        <title>사상체질 자가진단 테스트 | 무료 체질검사 - 킵슬로우(Keepslow)</title>
-        <meta name="description" content="태양인·태음인·소양인·소음인 사상체질을 무료로 자가진단해보세요. 30문항, 3~5분. 체질에 맞는 건강 가이드를 확인할 수 있습니다." />
-        <meta property="og:title" content="사상체질 자가진단 테스트 | 무료 체질검사 - 킵슬로우(Keepslow)" />
-        <meta property="og:description" content="태양인·태음인·소양인·소음인 사상체질을 무료로 자가진단해보세요. 30문항, 3~5분." />
+        <title>사상체질 테스트 무료 자가진단 | 3분 체질검사 - 킵슬로우</title>
+        <meta name="description" content="사상체질 테스트로 태양인·태음인·소양인·소음인 중 내 체질을 무료로 알아보세요. 30문항 3~5분, 체질별 맞춤 건강 가이드 제공." />
+        <meta property="og:title" content="사상체질 테스트 무료 자가진단 | 3분 체질검사 - 킵슬로우" />
+        <meta property="og:description" content="사상체질 테스트로 태양인·태음인·소양인·소음인 중 내 체질을 무료로 알아보세요. 30문항 3~5분, 체질별 맞춤 건강 가이드 제공." />
         <meta property="og:url" content="https://keepslow.kr/test" />
         <link rel="canonical" href="https://keepslow.kr/test" />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "홈", "item": "https://keepslow.kr/" },
+            { "@type": "ListItem", "position": 2, "name": "사상체질 테스트", "item": "https://keepslow.kr/test" }
+          ]
+        })}</script>
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebApplication",
+          "name": "사상체질 테스트 - 킵슬로우",
+          "url": "https://keepslow.kr/test",
+          "description": "사상체질 테스트로 태양인·태음인·소양인·소음인 중 내 체질을 무료로 알아보세요. 30문항 3~5분, 이제마의 동의수세보원 기반.",
+          "applicationCategory": "HealthApplication",
+          "operatingSystem": "Web",
+          "isAccessibleForFree": true,
+          "inLanguage": "ko",
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "KRW" },
+          "author": { "@type": "Organization", "name": "킵슬로우(Keepslow)", "url": "https://keepslow.kr" }
+        })}</script>
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": "FAQPage",
           "mainEntity": [
             {
               "@type": "Question",
-              "name": "사상체질 테스트가 정확한가요?",
-              "acceptedAnswer": { "@type": "Answer", "text": "이제마의 『동의수세보원』에 기반한 자가진단 도구입니다." }
+              "name": "사상체질이란 무엇인가요?",
+              "acceptedAnswer": { "@type": "Answer", "text": "사상체질은 조선 후기 의학자 이제마가 창안한 체질 의학으로, 사람을 태양인·태음인·소양인·소음인 4가지로 분류합니다. 체질마다 강한 장기와 약한 장기가 다르며, 건강 관리 방식과 맞는 음식·생활 습관도 달라집니다." }
             },
             {
               "@type": "Question",
-              "name": "무료인가요? 회원가입이 필요한가요?",
+              "name": "사상체질 테스트가 정확한가요?",
+              "acceptedAnswer": { "@type": "Answer", "text": "이제마의 『동의수세보원』에 기반한 자가진단 도구입니다. 의학적 진단을 대체하지 않으며, 체질 경향을 파악하는 자가진단 도구로 활용하세요." }
+            },
+            {
+              "@type": "Question",
+              "name": "사상체질 테스트는 무료인가요? 회원가입이 필요한가요?",
               "acceptedAnswer": { "@type": "Answer", "text": "완전 무료이며, 회원가입 없이 테스트를 진행하고 결과를 확인할 수 있습니다. 결과를 마이페이지에 저장하려면 카카오 로그인이 필요합니다." }
             },
             {
               "@type": "Question",
-              "name": "네 가지 체질은 어떻게 다른가요?",
-              "acceptedAnswer": { "@type": "Answer", "text": "태양인(폐 강·간 약), 태음인(간 강·폐 약), 소양인(비위 강·신장 약), 소음인(신장 강·비위 약)으로 구분됩니다. 각 체질은 고유한 성격, 체형 경향, 건강 취약점을 가집니다." }
-            },
-            {
-              "@type": "Question",
-              "name": "몇 문항이며 얼마나 걸리나요?",
+              "name": "사상체질 테스트 문항 수와 소요 시간은?",
               "acceptedAnswer": { "@type": "Answer", "text": "30문항이며, 평균 3~5분 이내에 완료할 수 있습니다." }
             },
             {
               "@type": "Question",
-              "name": "결과를 다시 볼 수 있나요?",
-              "acceptedAnswer": { "@type": "Answer", "text": "카카오 로그인 후 마이페이지에 저장하면 언제든 다시 확인할 수 있습니다." }
+              "name": "사상체질 네 가지 유형은 어떻게 다른가요?",
+              "acceptedAnswer": { "@type": "Answer", "text": "태양인(폐 강·간 약, 창의적·진취적), 태음인(간 강·폐 약, 신중·끈기), 소양인(비위 강·신장 약, 활동적·외향적), 소음인(신장 강·비위 약, 섬세·배려)으로 구분됩니다. 각 체질은 고유한 성격, 체형 경향, 건강 취약점을 가집니다." }
+            },
+            {
+              "@type": "Question",
+              "name": "체질은 평생 바뀌지 않나요?",
+              "acceptedAnswer": { "@type": "Answer", "text": "사상체질은 선천적으로 타고나는 것으로, 기본 체질 자체는 바뀌지 않습니다. 다만 생활 습관·나이·건강 상태에 따라 특정 체질 경향이 강해지거나 약해질 수 있어, 테스트 결과가 시기에 따라 다르게 나올 수 있습니다." }
+            },
+            {
+              "@type": "Question",
+              "name": "한의원 사상체질 진단과 차이가 있나요?",
+              "acceptedAnswer": { "@type": "Answer", "text": "킵슬로우 사상체질 테스트는 한의사의 진단을 대체하지 않습니다. 체질 경향을 파악하는 자가진단 도구로, 정확한 진단은 한의원 전문의 상담을 권장합니다." }
             }
           ]
         })}</script>
@@ -183,9 +214,9 @@ export default function LandingPage({ onStart }: Props) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             >
-              당신의 체질을
+              사상체질 테스트
               <br />
-              <span style={{ color: "#0774C4" }}>알아보세요</span>
+              <span style={{ color: "#0774C4" }}>무료 자가진단</span>
             </motion.h1>
 
             {/* Subtitle */}
@@ -273,7 +304,7 @@ export default function LandingPage({ onStart }: Props) {
             </motion.div>
 
             {/* Headline */}
-            <motion.h1
+            <motion.h2
               style={{
                 fontWeight: 800,
                 fontSize: "clamp(1.75rem, 4vw, 2.75rem)",
@@ -289,7 +320,7 @@ export default function LandingPage({ onStart }: Props) {
               당신에게 필요한
               <br />
               <span style={{ color: "#4A0E14" }}>향을</span> 알아보세요
-            </motion.h1>
+            </motion.h2>
 
             {/* Subtitle */}
             <motion.p
@@ -641,29 +672,124 @@ export default function LandingPage({ onStart }: Props) {
         }
       `}</style>
 
-      {/* ── SEO: 사상체질 소개 + FAQ ── */}
+      {/* ── SEO 콘텐츠 섹션 ── */}
       <section style={{ background: "#f8f8f6", padding: "72px clamp(20px, 5vw, 80px)" }}>
         <div style={{ maxWidth: "720px", margin: "0 auto" }}>
+
+          {/* 사상체질이란? */}
           <h2 style={{ fontSize: "clamp(1.25rem, 2.5vw, 1.625rem)", fontWeight: 700, color: "#111111", marginBottom: "1rem", letterSpacing: "-0.03em" }}>
             사상체질이란?
           </h2>
           <p style={{ fontSize: "1rem", color: "#444444", lineHeight: 1.8, marginBottom: "0.75rem" }}>
-            사상체질(四象體質)은 조선 후기 의학자 이제마가 창안한 체질 의학으로, 사람의 체질을 태양인·태음인·소양인·소음인 네 가지로 구분합니다. 체질마다 강한 장기와 약한 장기가 다르며, 건강을 지키는 방식과 잘 맞는 음식·생활 습관도 달라집니다.
+            사상체질(四象體質)은 조선 후기 의학자 이제마(李濟馬, 1837~1900)가 창안한 체질 의학입니다. 이제마는 저서 『동의수세보원(東醫壽世保元)』에서 사람을 태양인(太陽人)·태음인(太陰人)·소양인(少陽人)·소음인(少陰人) 네 가지 체질로 구분하고, 체질마다 강한 장기와 약한 장기가 다름을 밝혔습니다.
           </p>
-          <p style={{ fontSize: "1rem", color: "#444444", lineHeight: 1.8, marginBottom: "3rem" }}>
-            킵슬로우의 사상체질 테스트는 완전 무료이며, 30가지 질문에 답하면 3~5분 안에 나의 체질 유형과 맞춤 건강 가이드를 확인할 수 있습니다.
+          <p style={{ fontSize: "1rem", color: "#444444", lineHeight: 1.8, marginBottom: "0.75rem" }}>
+            사상체질 이론에서는 체질별로 성격·체형·소화 기능·정서 반응이 다르기 때문에, 같은 증상이라도 체질에 따라 다른 방식으로 건강을 관리해야 한다고 봅니다. 예컨대 태음인에게 좋은 음식이 소음인에게는 맞지 않을 수 있습니다.
+          </p>
+          <p style={{ fontSize: "1rem", color: "#444444", lineHeight: 1.8, marginBottom: "2.5rem" }}>
+            한국인 중에는 태음인이 약 40~50%로 가장 많고, 소양인·소음인이 각각 20~30%, 태양인은 1% 미만으로 매우 드뭅니다. 킵슬로우 사상체질 테스트는 이제마의 이론을 바탕으로 제작된 무료 자가진단 도구로, 30문항에 답하면 3~5분 안에 내 체질 경향과 맞춤 건강 가이드를 확인할 수 있습니다.
           </p>
 
+          {/* CTA */}
+          <div style={{ textAlign: "center", marginBottom: "3.5rem" }}>
+            <motion.button
+              onClick={onStart}
+              whileHover={{ scale: 1.025 }}
+              whileTap={{ scale: 0.975 }}
+              style={{ padding: "14px 44px", borderRadius: "50px", background: "#0774C4", color: "#ffffff", fontSize: "1rem", fontWeight: 600, border: "none", cursor: "pointer", boxShadow: "0 4px 16px rgba(7,116,196,0.25)" }}
+            >
+              지금 사상체질 테스트 시작하기
+            </motion.button>
+          </div>
+
+          {/* 4가지 체질 특징 */}
+          <h2 style={{ fontSize: "clamp(1.25rem, 2.5vw, 1.625rem)", fontWeight: 700, color: "#111111", marginBottom: "1.5rem", letterSpacing: "-0.03em" }}>
+            4가지 체질 특징
+          </h2>
+          {([
+            {
+              name: "태양인 (太陽人)", color: CONSTITUTION_COLORS["태양인"],
+              strong: "폐(肺)", weak: "간(肝)",
+              character: "창의적이고 진취적인 리더형. 카리스마와 추진력이 강하며 사회적 영향력을 중시합니다.",
+              body: "목덜미가 발달하고 허리가 약한 편. 한국인 중 가장 드문 체질(1% 미만)입니다.",
+              tip: "생선·채소 위주의 가벼운 식사, 기름지고 뜨거운 음식 자제. 분노를 다스리는 습관이 건강에 도움이 됩니다.",
+            },
+            {
+              name: "소양인 (少陽人)", color: CONSTITUTION_COLORS["소양인"],
+              strong: "비위(脾胃)", weak: "신장(腎)",
+              character: "활발하고 외향적인 에너자이저형. 행동력과 판단력이 빠르며 사교성이 뛰어납니다.",
+              body: "가슴 부위가 발달하고 엉덩이가 약한 편. 체내 열이 많습니다.",
+              tip: "신선한 채소·해산물 위주의 시원한 식사. 맵고 뜨거운 음식은 체열을 높이므로 피하고, 충동적 결정을 한 번 더 생각하는 습관이 도움됩니다.",
+            },
+            {
+              name: "태음인 (太陰人)", color: CONSTITUTION_COLORS["태음인"],
+              strong: "간(肝)", weak: "폐(肺)",
+              character: "묵직하고 신중한 실행가형. 한번 마음먹으면 끝까지 해내는 끈기와 인내심을 가집니다.",
+              body: "허리가 발달하고 목덜미가 약한 편. 한국인 중 가장 많은 체질(약 40~50%)입니다.",
+              tip: "과식하는 경향이 있어 절제가 중요. 율무·맥문동·오미자차가 잘 맞습니다. 규칙적인 유산소 운동으로 폐 기능을 보완하세요.",
+            },
+            {
+              name: "소음인 (少陰人)", color: CONSTITUTION_COLORS["소음인"],
+              strong: "신장(腎)", weak: "비위(脾胃)",
+              character: "섬세하고 배려심 깊은 내면형. 치밀하고 분석적이며 감수성이 풍부합니다.",
+              body: "엉덩이가 발달하고 가슴이 약한 편. 소화 기능이 약하고 몸이 차가운 편입니다.",
+              tip: "따뜻한 음식과 소화가 잘 되는 식단이 중요. 인삼·계피 등 따뜻한 성질의 식품이 도움됩니다. 스트레스 관리와 규칙적인 수면이 필수입니다.",
+            },
+          ] as { name: string; color: string; strong: string; weak: string; character: string; body: string; tip: string }[]).map((c) => (
+            <div key={c.name} style={{ borderLeft: `3px solid ${c.color}`, paddingLeft: "16px", marginBottom: "2rem" }}>
+              <h3 style={{ fontSize: "1.0625rem", fontWeight: 700, color: "#111111", marginBottom: "0.5rem" }}>{c.name}</h3>
+              <p style={{ fontSize: "0.9rem", color: "#444444", lineHeight: 1.75, marginBottom: "0.3rem" }}>
+                <strong>강한 장부:</strong> {c.strong} &nbsp;·&nbsp; <strong>약한 장부:</strong> {c.weak}
+              </p>
+              <p style={{ fontSize: "0.9rem", color: "#444444", lineHeight: 1.75, marginBottom: "0.3rem" }}>{c.character}</p>
+              <p style={{ fontSize: "0.9rem", color: "#555555", lineHeight: 1.75, marginBottom: "0.3rem" }}><strong>체형:</strong> {c.body}</p>
+              <p style={{ fontSize: "0.9rem", color: "#555555", lineHeight: 1.75 }}><strong>건강 팁:</strong> {c.tip}</p>
+            </div>
+          ))}
+
+          {/* 테스트 방법 */}
+          <h2 style={{ fontSize: "clamp(1.25rem, 2.5vw, 1.625rem)", fontWeight: 700, color: "#111111", marginBottom: "1rem", letterSpacing: "-0.03em", marginTop: "0.5rem" }}>
+            사상체질 테스트 방법
+          </h2>
+          <p style={{ fontSize: "1rem", color: "#444444", lineHeight: 1.8, marginBottom: "0.75rem" }}>
+            킵슬로우 사상체질 테스트는 성격·행동 패턴·신체 특징·건강 취약점에 관한 <strong>30가지 질문</strong>으로 구성됩니다. 솔직하게 답변할수록 더 정확한 결과를 얻을 수 있습니다.
+          </p>
+          <ul style={{ fontSize: "1rem", color: "#444444", lineHeight: 1.9, paddingLeft: "1.25rem", marginBottom: "0.75rem" }}>
+            <li><strong>소요 시간:</strong> 평균 3~5분</li>
+            <li><strong>문항 수:</strong> 30문항 (5지선다)</li>
+            <li><strong>결과:</strong> 나의 체질 유형, 체질별 성격·체형 특징, 맞춤 건강 가이드, 추천 음료</li>
+            <li><strong>비용:</strong> 완전 무료, 회원가입 불필요</li>
+            <li><strong>기록 저장:</strong> 카카오 로그인 시 마이페이지에 결과 자동 저장 (반복 검사로 체질 변화 추이 확인 가능)</li>
+          </ul>
+          <p style={{ fontSize: "0.875rem", color: "#888888", lineHeight: 1.7, marginBottom: "2.5rem" }}>
+            ※ 본 테스트는 이제마의 동의수세보원(東醫壽世保元)을 기반으로 한 자가진단 도구로, 한의사의 의학적 진단을 대체하지 않습니다.
+          </p>
+
+          {/* CTA */}
+          <div style={{ textAlign: "center", marginBottom: "3.5rem" }}>
+            <motion.button
+              onClick={onStart}
+              whileHover={{ scale: 1.025 }}
+              whileTap={{ scale: 0.975 }}
+              style={{ padding: "14px 44px", borderRadius: "50px", background: "#111111", color: "#ffffff", fontSize: "1rem", fontWeight: 600, border: "none", cursor: "pointer", boxShadow: "0 4px 16px rgba(0,0,0,0.15)" }}
+            >
+              사상체질 테스트 시작하기 →
+            </motion.button>
+          </div>
+
+          {/* 자주 묻는 질문 */}
           <h2 style={{ fontSize: "clamp(1.125rem, 2vw, 1.375rem)", fontWeight: 700, color: "#111111", marginBottom: "1.5rem", letterSpacing: "-0.02em" }}>
             자주 묻는 질문
           </h2>
           <dl style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
             {([
-              ["사상체질 테스트가 정확한가요?", "이제마의 『동의수세보원』에 기반한 자가진단 도구입니다."],
-              ["무료인가요? 회원가입이 필요한가요?", "완전 무료이며, 회원가입 없이 테스트를 진행하고 결과를 확인할 수 있습니다. 결과를 마이페이지에 저장하려면 카카오 로그인이 필요합니다."],
-              ["네 가지 체질은 어떻게 다른가요?", "태양인(폐 강·간 약), 태음인(간 강·폐 약), 소양인(비위 강·신장 약), 소음인(신장 강·비위 약)으로 구분됩니다. 각 체질은 고유한 성격, 체형 경향, 건강 취약점을 가집니다."],
+              ["사상체질이란 무엇인가요?", "사상체질은 조선 후기 의학자 이제마가 창안한 체질 의학으로, 사람을 태양인·태음인·소양인·소음인 4가지로 분류합니다. 체질마다 강한 장기와 약한 장기가 다르며, 건강 관리 방식과 잘 맞는 음식·생활 습관도 달라집니다."],
+              ["사상체질 테스트가 정확한가요?", "이제마의 『동의수세보원』에 기반한 자가진단 도구입니다. 의학적 진단을 대체하지 않으며, 체질 경향을 파악하는 도구로 활용하세요. 정확한 진단은 한의사 상담을 권장합니다."],
+              ["사상체질 테스트는 무료인가요? 회원가입이 필요한가요?", "완전 무료이며, 회원가입 없이 테스트를 진행하고 결과를 확인할 수 있습니다. 결과를 마이페이지에 저장하려면 카카오 로그인이 필요합니다."],
               ["몇 문항이며 얼마나 걸리나요?", "30문항이며, 평균 3~5분 이내에 완료할 수 있습니다."],
-              ["결과를 다시 볼 수 있나요?", "카카오 로그인 후 마이페이지에 저장하면 언제든 다시 확인할 수 있습니다."],
+              ["체질은 평생 바뀌지 않나요?", "사상체질은 선천적으로 타고나는 것으로, 기본 체질 자체는 바뀌지 않습니다. 다만 생활 습관·나이·건강 상태에 따라 체질 경향이 강해지거나 약해질 수 있어, 시기에 따라 테스트 결과가 달라질 수 있습니다."],
+              ["한의원 사상체질 진단과 차이가 있나요?", "한의원의 사상체질 진단은 한의사가 체형·맥·음성·증상 등 다양한 요소를 종합적으로 평가합니다. 킵슬로우 테스트는 설문 기반 자가진단으로, 체질 경향을 빠르게 파악하는 데 도움이 됩니다."],
+              ["결과를 다시 볼 수 있나요?", "카카오 로그인 후 마이페이지에 저장하면 언제든 다시 확인할 수 있습니다. 반복 검사 결과를 기록하면 체질 변화 추이를 그래프로도 볼 수 있습니다."],
             ] as [string, string][]).map(([q, a]) => (
               <div key={q} style={{ borderTop: "1px solid #e8e8e8", paddingTop: "1.25rem" }}>
                 <dt style={{ fontSize: "0.9375rem", fontWeight: 600, color: "#222222", marginBottom: "0.5rem" }}>Q. {q}</dt>

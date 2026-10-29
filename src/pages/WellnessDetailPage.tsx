@@ -448,6 +448,19 @@ export default function WellnessDetailPage() {
           </ReactMarkdown>
         </div>
 
+        {/* 사상체질 테스트 내부 링크 */}
+        <div style={{ margin: "32px 0", padding: "20px 24px", background: "#f7f8fa", borderRadius: "12px", textAlign: "center" }}>
+          <p style={{ fontSize: "0.9rem", color: "#555555", marginBottom: "12px", lineHeight: 1.6 }}>
+            내 사상체질이 궁금하다면?
+          </p>
+          <Link
+            to="/test"
+            style={{ display: "inline-block", padding: "10px 28px", borderRadius: "50px", background: "#0774C4", color: "#ffffff", fontSize: "0.875rem", fontWeight: 600, textDecoration: "none" }}
+          >
+            무료 사상체질 테스트 하러가기
+          </Link>
+        </div>
+
         {/* 하단 버튼 */}
         <BottomButtons backPath="/wellness" navigate={navigate} />
 
