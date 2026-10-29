@@ -68,6 +68,21 @@ export default function AboutPage() {
         <meta property="og:description" content="킵슬로우(Keepslow)는 사상체질 기반 웰니스 브랜드입니다. 느리지만 꾸준한 건강함을 추구합니다." />
         <meta property="og:url" content="https://keepslow.kr/about" />
         <link rel="canonical" href="https://keepslow.kr/about" />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "AboutPage",
+          "name": "킵슬로우 소개",
+          "description": "킵슬로우(Keepslow)는 사상체질 기반 웰니스 브랜드입니다. 느리지만 꾸준한 건강함을 추구합니다.",
+          "url": "https://keepslow.kr/about",
+          "inLanguage": "ko",
+          "about": {
+            "@type": "Organization",
+            "name": "킵슬로우(Keepslow)",
+            "url": "https://keepslow.kr",
+            "description": "사상체질 기반 웰니스 브랜드. 이기적이지 않은 건강함(Selfless Wellness)을 추구합니다.",
+            "sameAs": ["https://www.instagram.com/keepslow_family/"]
+          }
+        })}</script>
       </Helmet>
       <div
       style={{

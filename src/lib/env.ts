@@ -1,10 +1,10 @@
 /**
  * 런타임 환경 판별 유틸
  *
- * import.meta.env.PROD는 Vite 빌드 타임에 치환되는 변수로,
- * 배포 캐시나 빌드 파이프라인에 따라 신뢰성이 낮을 수 있다.
- * 프로젝트 전반에서 이미 kakaoApi.ts가 hostname 기반 분기를 사용하는 패턴을 따른다.
+ * SSR(prerender) 환경에서는 window가 없으므로 typeof window 체크 후 접근.
+ * window가 없는 환경(Node.js SSR)은 프로덕션으로 간주.
  */
 export const isProductionEnv =
-  window.location.hostname !== "localhost" &&
-  window.location.hostname !== "127.0.0.1";
+  typeof window === "undefined" ||
+  (window.location.hostname !== "localhost" &&
+    window.location.hostname !== "127.0.0.1");

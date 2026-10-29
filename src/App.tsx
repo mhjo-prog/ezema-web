@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, lazy, Suspense } from "react";
 import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 
 function ScrollToTop() {
@@ -15,16 +15,18 @@ import LandingPage from "./pages/LandingPage";
 import HomePage from "./pages/HomePage";
 import QuizPage from "./pages/QuizPage";
 import SasangPage from "./pages/SasangPage";
-import SasangDetailPage from "./pages/SasangDetailPage";
-import AdminPage from "./pages/AdminPage";
 import WellnessPage from "./pages/WellnessPage";
-import WellnessDetailPage from "./pages/WellnessDetailPage";
-import KakaoCallbackPage from "./pages/KakaoCallbackPage";
 import AboutPage from "./pages/AboutPage";
-import MyPage from "./pages/MyPage";
+import KakaoCallbackPage from "./pages/KakaoCallbackPage";
 import ResultRoute from "./pages/ResultRoute";
-import ScentQuizPage from "./pages/ScentQuizPage";
 import { trackPageview } from "./lib/analytics";
+
+// Heavy pages — loaded only when navigated to
+const SasangDetailPage = lazy(() => import("./pages/SasangDetailPage"));
+const AdminPage = lazy(() => import("./pages/AdminPage"));
+const WellnessDetailPage = lazy(() => import("./pages/WellnessDetailPage"));
+const MyPage = lazy(() => import("./pages/MyPage"));
+const ScentQuizPage = lazy(() => import("./pages/ScentQuizPage"));
 
 function AppRoutes({ onQuizStart }: { onQuizStart: () => void }) {
   const location = useLocation();
@@ -36,21 +38,23 @@ function AppRoutes({ onQuizStart }: { onQuizStart: () => void }) {
   return (
     <AnimatePresence mode="wait">
       <ScrollToTop />
-      <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/test" element={<LandingPage onStart={onQuizStart} />} />
-        <Route path="/quiz" element={<QuizPage />} />
-        <Route path="/sasang" element={<SasangPage />} />
-        <Route path="/sasang/:id" element={<SasangDetailPage />} />
-        <Route path="/admin" element={<AdminPage />} />
-        <Route path="/wellness" element={<WellnessPage />} />
-        <Route path="/wellness/:id" element={<WellnessDetailPage />} />
-        <Route path="/auth/kakao/callback" element={<KakaoCallbackPage />} />
-        <Route path="/mypage" element={<MyPage />} />
-        <Route path="/result" element={<ResultRoute />} />
-        <Route path="/scent-quiz" element={<ScentQuizPage />} />
-      </Routes>
+      <Suspense fallback={null}>
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/test" element={<LandingPage onStart={onQuizStart} />} />
+          <Route path="/quiz" element={<QuizPage />} />
+          <Route path="/sasang" element={<SasangPage />} />
+          <Route path="/sasang/:id" element={<SasangDetailPage />} />
+          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/wellness" element={<WellnessPage />} />
+          <Route path="/wellness/:id" element={<WellnessDetailPage />} />
+          <Route path="/auth/kakao/callback" element={<KakaoCallbackPage />} />
+          <Route path="/mypage" element={<MyPage />} />
+          <Route path="/result" element={<ResultRoute />} />
+          <Route path="/scent-quiz" element={<ScentQuizPage />} />
+        </Routes>
+      </Suspense>
     </AnimatePresence>
   );
 }
