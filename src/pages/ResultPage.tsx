@@ -3,7 +3,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { results, CONSTITUTION_COLORS } from "../data/results";
 import { useAuth, PENDING_RESULT_KEY } from "../context/AuthContext";
-import { trackResultShare, trackResultSave, trackLogin } from "../lib/analytics";
+import { trackResultShare, trackResultSave, trackLogin, trackEvent } from "../lib/analytics";
+
+const OPEN_CHAT_URL = "https://open.kakao.com/o/g3RrHBUi";
 
 declare global {
   interface Window {
@@ -1114,6 +1116,36 @@ function ConstitutionHistoryCard({ constitutionType, scores }: { constitutionTyp
       <p style={{ fontSize: "0.78rem", color: "#aaaaaa", marginBottom: "16px" }}>
         ※ 2회 이상 검사 시 마이페이지에 그래프가 활성화됩니다
       </p>
+
+      <motion.button
+        onClick={() => {
+          trackEvent("openchat_click", { source: "result_page" });
+          window.open(OPEN_CHAT_URL, "_blank", "noopener,noreferrer");
+        }}
+        whileTap={{ scale: 0.98 }}
+        className="font-semibold"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "8px",
+          width: "100%",
+          padding: "14px",
+          borderRadius: "50px",
+          background: "#3A2E26",
+          border: "none",
+          color: "#FFFFFF",
+          fontSize: "clamp(0.82rem, 2.3vw, 0.9rem)",
+          cursor: "pointer",
+          marginBottom: "10px",
+          whiteSpace: "nowrap",
+        }}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+          <path d="M12 3C6.477 3 2 6.477 2 10.909c0 2.756 1.528 5.19 3.878 6.702l-.99 3.697 4.27-2.817A11.64 11.64 0 0012 18.818c5.523 0 10-3.476 10-7.909C22 6.477 17.523 3 12 3z" fill="#FFFFFF"/>
+        </svg>
+        사상체질 정보공유 오픈채팅방 입장하기
+      </motion.button>
 
       {isLoggedIn ? (
         <motion.button

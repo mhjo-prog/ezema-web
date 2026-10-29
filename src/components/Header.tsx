@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { PENDING_LANG_KEY } from "../App";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 interface HeaderProps {
@@ -22,9 +22,9 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
   const { user, isLoading, loginWithKakao, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileLangOpen, setMobileLangOpen] = useState(false);
-  const [_isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
-  const [isSmallMobile, setIsSmallMobile] = useState(() => window.innerWidth <= 480);
-  const [isNarrow, setIsNarrow] = useState(() => window.innerWidth < 1024);
+  const [_isMobile, setIsMobile] = useState(() => typeof window !== "undefined" && window.innerWidth < 768);
+  const [isSmallMobile, setIsSmallMobile] = useState(() => typeof window !== "undefined" && window.innerWidth <= 480);
+  const [isNarrow, setIsNarrow] = useState(() => typeof window !== "undefined" && window.innerWidth < 1024);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -86,8 +86,8 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
               zIndex: 51,
             }}
           >
-            <button
-              onClick={() => navigate("/")}
+            <Link
+              to="/"
               style={{
                 background: "none",
                 border: "none",
@@ -97,6 +97,7 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
                 alignItems: "center",
                 alignSelf: "center",
                 pointerEvents: "auto",
+                textDecoration: "none",
               }}
             >
               <img
@@ -110,7 +111,7 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
                   marginLeft: isLarge ? "24px" : "0px",
                 }}
               />
-            </button>
+            </Link>
           </motion.div>
         );
       })()}
@@ -147,12 +148,12 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "8px", alignSelf: "center", width: isSmallMobile ? "100%" : "auto", position: isSmallMobile ? "relative" : "static" as const }}>
           {/* Mobile center logo */}
           {isSmallMobile && (
-            <button
-              onClick={() => navigate("/")}
-              style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", background: "none", border: "none", padding: 0, cursor: "pointer" }}
+            <Link
+              to="/"
+              style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", background: "none", border: "none", padding: 0, cursor: "pointer", textDecoration: "none", display: "block" }}
             >
               <img src="/keepslow-logo.png" alt="KeepSlow" style={{ height: "40px", width: "auto", display: "block" }} />
-            </button>
+            </Link>
           )}
 
           {/* Desktop nav — hidden on narrow */}
@@ -162,9 +163,10 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
                 location.pathname === item.path ||
                 location.pathname.startsWith(item.path + "/");
               return (
-                <button
+                <Link
                   key={item.path}
-                  onClick={() => handleNavClick(item.path)}
+                  to={item.path}
+                  className={item.isPrimary ? "nav-primary-btn" : undefined}
                   style={{
                     fontSize: "0.8125rem",
                     fontWeight: item.isPrimary ? 700 : isActive ? 700 : 500,
@@ -176,6 +178,8 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
                     borderRadius: item.isPrimary ? "20px" : 0,
                     transition: "color 0.18s, font-weight 0.18s, opacity 0.18s",
                     whiteSpace: "nowrap",
+                    textDecoration: "none",
+                    display: "inline-block",
                   }}
                   onMouseEnter={(e) => {
                     if (item.isPrimary) { e.currentTarget.style.opacity = "0.8"; return; }
@@ -189,7 +193,7 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
                   }}
                 >
                   {item.label}
-                </button>
+                </Link>
               );
             })}
           </nav>
@@ -592,6 +596,7 @@ const LANGUAGES = [
 ];
 
 function getCurrentLang(): string {
+  if (typeof document === "undefined") return "ko";
   const match = document.cookie.match(/googtrans=\/ko\/([^;]+)/);
   return match ? match[1] : "ko";
 }

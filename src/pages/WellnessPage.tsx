@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
 import { supabase, isSupabaseReady, type WellnessPost, type WellnessCategory } from "../lib/supabase";
@@ -33,15 +33,15 @@ function BookmarkIcon({ filled }: { filled: boolean }) {
   );
 }
 
-function WellnessCard({ post, onClick }: { post: WellnessPost; onClick: () => void }) {
+function WellnessCard({ post, to }: { post: WellnessPost; to: string }) {
   const color = CATEGORY_COLORS[post.wellness_category];
   const [imgError, setImgError] = useState(false);
   const { isSavedGlobal, toggleBookmark } = useBookmarks();
   const saved = isSavedGlobal(post.id);
 
   return (
+    <Link to={to} style={{ textDecoration: "none", color: "inherit", display: "block" }}>
     <motion.div
-      onClick={onClick}
       whileHover={{ opacity: 0.85 }}
       transition={{ duration: 0.18 }}
       style={{ cursor: "pointer", display: "flex", flexDirection: "column" }}
@@ -115,7 +115,7 @@ function WellnessCard({ post, onClick }: { post: WellnessPost; onClick: () => vo
           </span>
         </div>
         <button
-          onClick={(e) => { e.stopPropagation(); toggleBookmark(post.id, "wellness_posts"); }}
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleBookmark(post.id, "wellness_posts"); }}
           style={{
             background: "none", border: "none", cursor: "pointer", padding: "4px",
             color: saved ? "#111111" : "#cccccc", display: "flex", alignItems: "center",
@@ -127,13 +127,13 @@ function WellnessCard({ post, onClick }: { post: WellnessPost; onClick: () => vo
         </button>
       </div>
     </motion.div>
+    </Link>
   );
 }
 
 const PAGE_SIZE = 9;
 
 export default function WellnessPage() {
-  const navigate = useNavigate();
   const [posts, setPosts] = useState<WellnessPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterType>("전체");
@@ -228,6 +228,24 @@ export default function WellnessPage() {
       <meta property="og:description" content="수면, 식단, 운동, 명상, 스트레스 관리까지. 킵슬로우의 웰니스 카툰으로 일상 속 건강 습관을 만들어보세요." />
       <meta property="og:url" content="https://keepslow.kr/wellness" />
       <link rel="canonical" href="https://keepslow.kr/wellness" />
+      <script type="application/ld+json">{JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "name": "웰니스 카툰 - 킵슬로우",
+        "description": "수면, 식단, 운동, 명상, 스트레스 관리까지. 킵슬로우의 웰니스 카툰으로 일상 속 건강 습관을 만들어보세요.",
+        "url": "https://keepslow.kr/wellness",
+        "inLanguage": "ko",
+        "about": {
+          "@type": "Thing",
+          "name": "웰니스",
+          "description": "수면, 식단, 운동, 명상을 통한 일상 건강 관리"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "킵슬로우",
+          "url": "https://keepslow.kr"
+        }
+      })}</script>
     </Helmet>
     <motion.div
       initial={{ opacity: 0 }}
@@ -250,7 +268,7 @@ export default function WellnessPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           >
-            Wellness Comics
+            웰니스 카툰 <span style={{ fontSize: "0.55em", fontWeight: 600, color: "#888", letterSpacing: "0.05em" }}>WELLNESS COMICS</span>
           </motion.h1>
           <motion.p
             style={{ marginTop: "10px", fontSize: "0.9375rem", color: "#666666", lineHeight: 1.6 }}
@@ -414,7 +432,7 @@ export default function WellnessPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.45, delay: Math.min(i % PAGE_SIZE, 5) * 0.07, ease: "easeOut" }}
                 >
-                  <WellnessCard post={post} onClick={() => navigate(`/wellness/${post.id}`)} />
+                  <WellnessCard post={post} to={`/wellness/${post.id}`} />
                 </motion.div>
               ))}
             </div>
