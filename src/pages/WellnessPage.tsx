@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
 import { supabase, isSupabaseReady, type WellnessPost, type WellnessCategory } from "../lib/supabase";
@@ -134,7 +134,6 @@ function WellnessCard({ post, to }: { post: WellnessPost; to: string }) {
 const PAGE_SIZE = 9;
 
 export default function WellnessPage() {
-  const navigate = useNavigate();
   const [posts, setPosts] = useState<WellnessPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterType>("전체");

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
 import { supabase, isSupabaseReady, type Post, type ConstitutionType } from "../lib/supabase";
@@ -137,7 +137,6 @@ function PostCard({ post, to }: { post: Post; to: string }) {
 const PAGE_SIZE = 9;
 
 export default function SasangPage() {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);

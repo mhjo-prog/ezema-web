@@ -166,6 +166,7 @@ export default function Header({ onQuizStart: _onQuizStart }: HeaderProps) {
                 <Link
                   key={item.path}
                   to={item.path}
+                  className={item.isPrimary ? "nav-primary-btn" : undefined}
                   style={{
                     fontSize: "0.8125rem",
                     fontWeight: item.isPrimary ? 700 : isActive ? 700 : 500,

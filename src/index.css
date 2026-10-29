@@ -49,6 +49,15 @@ a:active {
   text-decoration: none !important;
 }
 
+/* isPrimary 네비게이션 버튼 — 위 a 규칙의 !important를 덮어써야 하므로 더 구체적인 셀렉터 사용 */
+a.nav-primary-btn,
+a.nav-primary-btn:link,
+a.nav-primary-btn:visited,
+a.nav-primary-btn:hover,
+a.nav-primary-btn:active {
+  color: #ffffff !important;
+}
+
 /* Tiptap WYSIWYG 에디터 내부 스타일 */
 .ProseMirror h2 {
   font-size: 1.15rem;
