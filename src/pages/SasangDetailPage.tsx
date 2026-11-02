@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -232,7 +232,6 @@ export default function SasangDetailPage() {
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(!isConstitutionType);
   const [notFound, setNotFound] = useState(false);
-  const [relatedPosts, setRelatedPosts] = useState<Pick<Post, "id" | "title">[]>([]);
   const { isSavedGlobal, toggleBookmark, hasAnySaved, bookmarksLoaded } = useBookmarks();
   const saved = isSavedGlobal(id ?? "");
 
@@ -267,18 +266,6 @@ export default function SasangDetailPage() {
     }
     fetchPost();
   }, [id]);
-
-  useEffect(() => {
-    if (!post || !isSupabaseReady) return;
-    supabase
-      .from("posts")
-      .select("id, title")
-      .eq("status", "published")
-      .eq("constitution_type", post.constitution_type)
-      .neq("id", post.id)
-      .limit(5)
-      .then(({ data }) => { if (data) setRelatedPosts(data as Pick<Post, "id" | "title">[]); });
-  }, [post]);
 
   if (loading) {
     return (
@@ -528,44 +515,8 @@ export default function SasangDetailPage() {
           </div>
         </div>
 
-        {/* 사상체질 테스트 내부 링크 */}
-        <div style={{ margin: "32px 0", padding: "20px 24px", background: "#f7f8fa", borderRadius: "12px", textAlign: "center" }}>
-          <p style={{ fontSize: "0.9rem", color: "#555555", marginBottom: "12px", lineHeight: 1.6 }}>
-            내 사상체질이 궁금하다면?
-          </p>
-          <Link
-            to="/test"
-            style={{ display: "inline-block", padding: "10px 28px", borderRadius: "50px", background: "#0774C4", color: "#ffffff", fontSize: "0.875rem", fontWeight: 600, textDecoration: "none" }}
-          >
-            무료 사상체질 테스트 하러가기
-          </Link>
-        </div>
-
         {/* 하단 버튼 */}
         <BottomButtons backPath="/sasang" navigate={navigate} />
-
-        {/* 같은 체질 관련 글 */}
-        {relatedPosts.length > 0 && (
-          <div style={{ marginTop: "40px", paddingTop: "24px", borderTop: "1px solid #eeeeee" }}>
-            <p style={{ fontSize: "0.8125rem", fontWeight: 700, color: "#aaaaaa", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "16px" }}>
-              같은 체질 이야기
-            </p>
-            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "10px" }}>
-              {relatedPosts.map((r) => (
-                <li key={r.id}>
-                  <Link
-                    to={`/sasang/${r.id}`}
-                    style={{ fontSize: "0.9rem", color: "#333333", textDecoration: "none", fontWeight: 500 }}
-                    onMouseEnter={(e) => { e.currentTarget.style.textDecoration = "underline"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.textDecoration = "none"; }}
-                  >
-                    {r.title}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
       </div>
     </motion.div>
     </>
