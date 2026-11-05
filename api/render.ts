@@ -115,40 +115,63 @@ export function injectMeta(template: string, opts: MetaOptions): string {
   return html;
 }
 
-/** dist/index.html을 읽어 반환한다. Vercel 배포 환경에서 dist는 함수 번들 옆에 위치한다. */
-function loadTemplate(): string {
-  // Vercel: __dirname 기준으로 dist/index.html 탐색
+/**
+ * dist/index.html을 읽어 반환한다.
+ * 1) includeFiles로 번들된 로컬 파일 탐색
+ * 2) 로컬 파일 없으면 운영 도메인에서 fetch (Preview·로컬 fallback)
+ */
+async function loadTemplate(): Promise<string> {
   const candidates = [
     path.resolve(process.cwd(), "dist/index.html"),
+    path.resolve(__dirname, "dist/index.html"),
     path.resolve(__dirname, "../dist/index.html"),
-    path.resolve(__dirname, "../../dist/index.html"),
   ];
   for (const p of candidates) {
-    if (fs.existsSync(p)) return fs.readFileSync(p, "utf-8");
+    try {
+      if (fs.existsSync(p)) {
+        return fs.readFileSync(p, "utf-8");
+      }
+    } catch { /* 다음 후보로 */ }
   }
-  throw new Error("dist/index.html not found. 빌드 후 배포하세요.");
+  // 로컬에 없으면 운영 도메인 fetch (Preview 환경 등)
+  console.warn("[render] dist/index.html 로컬 없음 — 운영 도메인에서 fetch");
+  const resp = await fetch(`${BASE_URL}/`, { headers: { "User-Agent": "vercel-render-bot/1.0" } });
+  if (resp.ok) return resp.text();
+  throw new Error(`loadTemplate 실패: 로컬 없음 + fetch ${resp.status}`);
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  try {
+    return await handleRequest(req, res);
+  } catch (err) {
+    // 예상치 못한 오류 — 503으로 응답해 봇이 재시도하도록
+    console.error("[render] 처리 중 오류:", err);
+    res.setHeader("Retry-After", "30");
+    res.setHeader("Cache-Control", "no-store");
+    return res.status(503).send("Service temporarily unavailable");
+  }
+}
+
+async function handleRequest(req: VercelRequest, res: VercelResponse) {
   const { type, id } = req.query as { type?: string; id?: string };
 
   if (!type || !id || (type !== "sasang" && type !== "wellness")) {
     return res.status(400).send("type (sasang|wellness) 과 id 가 필요합니다.");
   }
 
-  // Supabase 미설정이면 fallback
+  const pathPrefix = type === "sasang" ? "sasang" : "wellness";
+
+  // Supabase 미설정이면 fallback (Preview 환경 등)
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-    console.error("[render] Supabase 환경 변수 미설정 — fallback index.html 반환");
-    const template = loadTemplate();
+    console.warn("[render] Supabase 환경 변수 미설정 — fallback index.html 반환");
+    const template = await loadTemplate();
     res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
+    res.setHeader("Cache-Control", "no-store");
     return res.status(200).send(template);
   }
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   const table = type === "sasang" ? "posts" : "wellness_posts";
-  const pathPrefix = type === "sasang" ? "sasang" : "wellness";
-  const categoryLabel = type === "sasang" ? "사상체질" : "웰니스";
 
   const { data, error } = await supabase
     .from(table)
@@ -157,19 +180,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     .eq("status", "published")
     .single();
 
-  const template = loadTemplate();
+  const template = await loadTemplate();
 
   if (error) {
-    // PGRST116 = no rows (글 없음 또는 미발행) → 404 noindex
-    // 그 외(네트워크 오류, 인증 오류 등) → fallback index.html 200으로 응답
     if (error.code !== "PGRST116") {
+      // 네트워크/인증 오류 → fallback index.html 200
       console.error("[render] Supabase 조회 오류:", error.code, error.message);
       res.setHeader("Content-Type", "text/html; charset=utf-8");
-      res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
+      res.setHeader("Cache-Control", "no-store");
       return res.status(200).send(template);
     }
+    // PGRST116 = row 없음(미발행·삭제) → 404 noindex
     const html = injectMeta(template, {
-      title: `게시물을 찾을 수 없습니다 - 킵슬로우`,
+      title: "게시물을 찾을 수 없습니다 - 킵슬로우",
       description: "요청한 게시물이 존재하지 않습니다.",
       canonical: `${BASE_URL}/${pathPrefix}/${id}`,
       robots: "noindex, follow",
@@ -181,7 +204,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (!data) {
     const html = injectMeta(template, {
-      title: `게시물을 찾을 수 없습니다 - 킵슬로우`,
+      title: "게시물을 찾을 수 없습니다 - 킵슬로우",
       description: "요청한 게시물이 존재하지 않습니다.",
       canonical: `${BASE_URL}/${pathPrefix}/${id}`,
       robots: "noindex, follow",
@@ -193,7 +216,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const description = stripMarkdown(data.content).slice(0, 110);
   const canonical = `${BASE_URL}/${pathPrefix}/${data.id}`;
-  const title = `${data.title} | ${categoryLabel} - 킵슬로우`;
+  // 형식: "{글 제목} - 킵슬로우"
+  const title = `${data.title} - 킵슬로우`;
 
   const articleJsonLd = JSON.stringify({
     "@context": "https://schema.org",
@@ -218,8 +242,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   });
 
   res.setHeader("Content-Type", "text/html; charset=utf-8");
-  // s-maxage=600: Vercel Edge 10분 캐시 (같은 URL 재요청 시 함수 미실행)
-  // stale-while-revalidate=86400: Edge가 백그라운드 갱신, 사용자는 즉시 캐시 응답
+  // s-maxage=600: Vercel Edge 10분 캐시
+  // stale-while-revalidate=86400: 백그라운드 갱신, 즉시 캐시 응답
   res.setHeader("Cache-Control", "public, s-maxage=600, stale-while-revalidate=86400");
   return res.status(200).send(html);
 }
