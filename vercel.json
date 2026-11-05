@@ -1,4 +1,7 @@
 {
+  "functions": {
+    "api/render.ts": { "includeFiles": "dist/index.html" }
+  },
   "redirects": [
     {
       "source": "/(.*)",

@@ -159,8 +159,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const template = loadTemplate();
 
-  if (error || !data) {
-    // 404 — noindex로 서빙
+  if (error) {
+    // PGRST116 = no rows (글 없음 또는 미발행) → 404 noindex
+    // 그 외(네트워크 오류, 인증 오류 등) → fallback index.html 200으로 응답
+    if (error.code !== "PGRST116") {
+      console.error("[render] Supabase 조회 오류:", error.code, error.message);
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
+      return res.status(200).send(template);
+    }
     const html = injectMeta(template, {
       title: `게시물을 찾을 수 없습니다 - 킵슬로우`,
       description: "요청한 게시물이 존재하지 않습니다.",
@@ -168,7 +175,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       robots: "noindex, follow",
     });
     res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
+    res.setHeader("Cache-Control", "public, max-age=0, s-maxage=60, must-revalidate");
+    return res.status(404).send(html);
+  }
+
+  if (!data) {
+    const html = injectMeta(template, {
+      title: `게시물을 찾을 수 없습니다 - 킵슬로우`,
+      description: "요청한 게시물이 존재하지 않습니다.",
+      canonical: `${BASE_URL}/${pathPrefix}/${id}`,
+      robots: "noindex, follow",
+    });
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.setHeader("Cache-Control", "public, max-age=0, s-maxage=60, must-revalidate");
     return res.status(404).send(html);
   }
 
@@ -199,7 +218,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   });
 
   res.setHeader("Content-Type", "text/html; charset=utf-8");
-  // 1시간 캐시, stale-while-revalidate 10분 — 글 수정 반영 지연 허용
-  res.setHeader("Cache-Control", "public, max-age=3600, stale-while-revalidate=600");
+  // s-maxage=600: Vercel Edge 10분 캐시 (같은 URL 재요청 시 함수 미실행)
+  // stale-while-revalidate=86400: Edge가 백그라운드 갱신, 사용자는 즉시 캐시 응답
+  res.setHeader("Cache-Control", "public, s-maxage=600, stale-while-revalidate=86400");
   return res.status(200).send(html);
 }
