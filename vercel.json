@@ -1,6 +1,6 @@
 {
   "functions": {
-    "api/render.ts": { "includeFiles": "dist/index.html" }
+    "api/render.ts": { "includeFiles": "dist/_template.html" }
   },
   "redirects": [
     {

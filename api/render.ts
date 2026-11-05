@@ -115,16 +115,17 @@ export function injectMeta(template: string, opts: MetaOptions): string {
   return html;
 }
 
+const TEMPLATE_FILENAME = "_template.html";
+
 /**
- * dist/index.html을 읽어 반환한다.
- * 1) includeFiles로 번들된 로컬 파일 탐색
- * 2) 로컬 파일 없으면 운영 도메인에서 fetch (Preview·로컬 fallback)
+ * dist/_template.html을 읽어 반환한다.
+ * includeFiles로 번들된 로컬 파일만 탐색하며, 없으면 에러를 던진다.
  */
-async function loadTemplate(): Promise<string> {
+function loadTemplate(): string {
   const candidates = [
-    path.resolve(process.cwd(), "dist/index.html"),
-    path.resolve(__dirname, "dist/index.html"),
-    path.resolve(__dirname, "../dist/index.html"),
+    path.resolve(process.cwd(), `dist/${TEMPLATE_FILENAME}`),
+    path.resolve(__dirname, `dist/${TEMPLATE_FILENAME}`),
+    path.resolve(__dirname, `../dist/${TEMPLATE_FILENAME}`),
   ];
   for (const p of candidates) {
     try {
@@ -133,11 +134,9 @@ async function loadTemplate(): Promise<string> {
       }
     } catch { /* 다음 후보로 */ }
   }
-  // 로컬에 없으면 운영 도메인 fetch (Preview 환경 등)
-  console.warn("[render] dist/index.html 로컬 없음 — 운영 도메인에서 fetch");
-  const resp = await fetch(`${BASE_URL}/`, { headers: { "User-Agent": "vercel-render-bot/1.0" } });
-  if (resp.ok) return resp.text();
-  throw new Error(`loadTemplate 실패: 로컬 없음 + fetch ${resp.status}`);
+  const err = new Error(`[render] 템플릿 파일을 찾을 수 없음: ${TEMPLATE_FILENAME}`);
+  console.error(err.message, { candidates });
+  throw err;
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -161,10 +160,18 @@ async function handleRequest(req: VercelRequest, res: VercelResponse) {
 
   const pathPrefix = type === "sasang" ? "sasang" : "wellness";
 
+  let template: string;
+  try {
+    template = loadTemplate();
+  } catch (err) {
+    res.setHeader("Cache-Control", "no-store");
+    return res.status(503).send("Service temporarily unavailable");
+  }
+  res.setHeader("X-Render-Template", TEMPLATE_FILENAME);
+
   // Supabase 미설정이면 fallback (Preview 환경 등)
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-    console.warn("[render] Supabase 환경 변수 미설정 — fallback index.html 반환");
-    const template = await loadTemplate();
+    console.warn("[render] Supabase 환경 변수 미설정 — fallback 템플릿 반환");
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.setHeader("Cache-Control", "no-store");
     return res.status(200).send(template);
@@ -179,8 +186,6 @@ async function handleRequest(req: VercelRequest, res: VercelResponse) {
     .eq("id", id)
     .eq("status", "published")
     .single();
-
-  const template = await loadTemplate();
 
   if (error) {
     if (error.code !== "PGRST116") {
