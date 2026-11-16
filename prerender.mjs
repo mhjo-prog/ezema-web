@@ -48,6 +48,20 @@ async function prerender() {
   }
   const template = fs.readFileSync(templateBackup, "utf-8");
 
+  // _spa.html 생성: canonical/og:url 없는 SPA 폴백 페이지
+  const spaPath = path.resolve(distDir, "_spa.html");
+  let spaHtml = template;
+  spaHtml = spaHtml.replace(/<title[^>]*>.*?<\/title>/gs, "");
+  spaHtml = spaHtml.replace(/<meta\s+name="description"[^>]*>/gi, "");
+  spaHtml = spaHtml.replace(/<meta\s+property="og:[^"]*"[^>]*>/gi, "");
+  spaHtml = spaHtml.replace(/<link\s+rel="canonical"[^>]*>/gi, "");
+  spaHtml = spaHtml.replace(
+    "</head>",
+    `  <title>킵슬로우(Keepslow)</title>\n  <meta name="description" content="사상체질 기반 웰니스 브랜드 킵슬로우. 사상체질 자가진단, 체질별 건강 정보, 웰니스 콘텐츠를 제공합니다." />\n</head>`
+  );
+  fs.writeFileSync(spaPath, spaHtml, "utf-8");
+  console.log("📄 SPA 폴백 _spa.html 생성됨");
+
   // 서버 번들 import
   const { render } = await import(serverBundle);
 
