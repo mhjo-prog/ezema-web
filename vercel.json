@@ -68,6 +68,6 @@
     { "source": "/sasang", "destination": "/sasang/index.html" },
     { "source": "/wellness", "destination": "/wellness/index.html" },
     { "source": "/about", "destination": "/about/index.html" },
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
+    { "source": "/((?!api/).*)", "destination": "/_spa.html" }
   ]
 }
