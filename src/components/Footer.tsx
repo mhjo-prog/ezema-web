@@ -14,16 +14,15 @@ export default function Footer() {
       <nav style={{ display: "flex", gap: "20px", marginBottom: "8px", flexWrap: "wrap", justifyContent: "center" }}>
         {([
           ["사상체질 테스트", "/test"],
-          ["체질 이야기", "/sasang"],
-          ["웰니스", "/wellness"],
-          ["킵슬로우 소개", "/about"],
+          ["사상체질 이야기", "/sasang"],
+          ["웰니스 매거진", "/wellness"],
+          ["킵슬로우", "/about"],
         ] as [string, string][]).map(([label, href]) => (
           <a
             key={href}
             href={href}
-            style={{ fontSize: "12px", color: "#aaa", textDecoration: "none", transition: "color 0.15s" }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = "#555"; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = "#aaa"; }}
+            className="footer-nav-link"
+            style={{ fontSize: "12px", textDecoration: "none", transition: "color 0.15s" }}
           >
             {label}
           </a>

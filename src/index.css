@@ -58,6 +58,17 @@ a.nav-primary-btn:active {
   color: #ffffff !important;
 }
 
+/* Footer 하단 nav 링크 — 위 a 규칙의 !important 덮어쓰기 */
+a.footer-nav-link,
+a.footer-nav-link:link,
+a.footer-nav-link:visited,
+a.footer-nav-link:active {
+  color: #ccc !important;
+}
+a.footer-nav-link:hover {
+  color: #555 !important;
+}
+
 /* Tiptap WYSIWYG 에디터 내부 스타일 */
 .ProseMirror h2 {
   font-size: 1.15rem;
