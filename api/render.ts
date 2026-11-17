@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createClient } from "@supabase/supabase-js";
 
@@ -122,11 +123,11 @@ const TEMPLATE_FILENAME = "_template.html";
  * includeFiles로 번들된 로컬 파일만 탐색하며, 없으면 에러를 던진다.
  */
 function loadTemplate(): string {
-  const candidates = [
-    path.resolve(process.cwd(), `dist/${TEMPLATE_FILENAME}`),
-    path.resolve(__dirname, `dist/${TEMPLATE_FILENAME}`),
-    path.resolve(__dirname, `../dist/${TEMPLATE_FILENAME}`),
-  ];
+  const candidates = [path.resolve(process.cwd(), `dist/${TEMPLATE_FILENAME}`)];
+  try {
+    const here = path.dirname(fileURLToPath(import.meta.url));
+    candidates.push(path.resolve(here, `dist/${TEMPLATE_FILENAME}`), path.resolve(here, `../dist/${TEMPLATE_FILENAME}`));
+  } catch { /* cwd 후보만 사용 */ }
   for (const p of candidates) {
     try {
       if (fs.existsSync(p)) {
