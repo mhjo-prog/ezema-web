@@ -32,6 +32,23 @@ function stripMarkdown(md: string): string {
     .trim();
 }
 
+// 마크다운 본문을 단락 단위 HTML로 변환.
+// "## " 이상 소제목 → <h2>, 나머지 → <p>
+function toParagraphs(md: string): string {
+  return md
+    .split(/\n{2,}/)
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((s) => {
+      const headingMatch = s.match(/^#{2,6}\s+(.+)/);
+      if (headingMatch) {
+        return `<h2>${escapeHtml(headingMatch[1].replace(/#+\s*$/, "").trim())}</h2>`;
+      }
+      return `<p>${escapeHtml(stripMarkdown(s))}</p>`;
+    })
+    .join("\n");
+}
+
 export interface MetaOptions {
   title: string;
   description: string;
@@ -180,10 +197,11 @@ async function handleRequest(req: VercelRequest, res: VercelResponse) {
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   const table = type === "sasang" ? "posts" : "wellness_posts";
+  const categoryCol = type === "sasang" ? "constitution_type" : "wellness_category";
 
   const { data, error } = await supabase
     .from(table)
-    .select("id, title, content, card_image_url")
+    .select(`id, title, content, card_image_url, created_at, ${categoryCol}`)
     .eq("id", id)
     .eq("status", "published")
     .single();
@@ -225,6 +243,52 @@ async function handleRequest(req: VercelRequest, res: VercelResponse) {
   // 형식: "{글 제목} - 킵슬로우"
   const title = `${data.title} - 킵슬로우`;
 
+  // 같은 체질(constitution_type) / 카테고리(wellness_category) 관련글 최신 3개
+  const categoryValue = (data as Record<string, unknown>)[categoryCol] as string | undefined;
+  const relatedQuery = categoryValue
+    ? supabase
+        .from(table)
+        .select("id, title")
+        .eq("status", "published")
+        .eq(categoryCol, categoryValue)
+        .neq("id", id as string)
+        .order("created_at", { ascending: false })
+        .limit(3)
+    : supabase
+        .from(table)
+        .select("id, title")
+        .eq("status", "published")
+        .neq("id", id as string)
+        .order("created_at", { ascending: false })
+        .limit(3);
+
+  const { data: relatedRaw } = await relatedQuery;
+  let relatedPosts = relatedRaw ?? [];
+
+  // fallback: 같은 카테고리 결과 0개이면 최신 3개로
+  if (relatedPosts.length === 0 && categoryValue) {
+    const { data: fallback } = await supabase
+      .from(table)
+      .select("id, title")
+      .eq("status", "published")
+      .neq("id", id as string)
+      .order("created_at", { ascending: false })
+      .limit(3);
+    relatedPosts = fallback ?? [];
+  }
+
+  const relatedLinks = relatedPosts
+    .map((p) => `<li><a href="/${pathPrefix}/${p.id}">${escapeHtml(p.title)}</a></li>`)
+    .join("\n");
+  const bodyContent = [
+    `<article style="max-width:720px;margin:0 auto;padding:24px 16px;line-height:1.7">`,
+    `<h1>${escapeHtml(data.title)}</h1>`,
+    toParagraphs(data.content),
+    `<p><a href="/test">사상체질 무료 테스트 바로가기</a></p>`,
+    relatedLinks ? `<ul>\n${relatedLinks}\n</ul>` : "",
+    `</article>`,
+  ].join("\n");
+
   const articleJsonLd = JSON.stringify({
     "@context": "https://schema.org",
     "@type": "Article",
@@ -245,6 +309,7 @@ async function handleRequest(req: VercelRequest, res: VercelResponse) {
     canonical,
     ogImage: data.card_image_url || `${BASE_URL}/og-image.png`,
     extraHead: `<script type="application/ld+json">${articleJsonLd}</script>`,
+    bodyContent,
   });
 
   res.setHeader("Content-Type", "text/html; charset=utf-8");
