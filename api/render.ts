@@ -222,7 +222,7 @@ async function handleRequest(req: VercelRequest, res: VercelResponse) {
       robots: "noindex, follow",
     });
     res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.setHeader("Cache-Control", "public, max-age=0, s-maxage=60, must-revalidate");
+    res.setHeader("Cache-Control", "no-store");
     return res.status(404).send(html);
   }
 
@@ -234,7 +234,7 @@ async function handleRequest(req: VercelRequest, res: VercelResponse) {
       robots: "noindex, follow",
     });
     res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.setHeader("Cache-Control", "public, max-age=0, s-maxage=60, must-revalidate");
+    res.setHeader("Cache-Control", "no-store");
     return res.status(404).send(html);
   }
 

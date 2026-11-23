@@ -1,6 +1,7 @@
 {
   "functions": {
-    "api/render.ts": { "includeFiles": "dist/_template.html" }
+    "api/render.ts": { "includeFiles": "dist/_template.html" },
+    "api/list.ts": { "includeFiles": "dist/sasang/index.html,dist/wellness/index.html" }
   },
   "redirects": [
     {
@@ -65,8 +66,8 @@
     { "source": "/sasang/:id", "destination": "/api/render?type=sasang&id=:id" },
     { "source": "/wellness/:id", "destination": "/api/render?type=wellness&id=:id" },
     { "source": "/test", "destination": "/test/index.html" },
-    { "source": "/sasang", "destination": "/sasang/index.html" },
-    { "source": "/wellness", "destination": "/wellness/index.html" },
+    { "source": "/sasang", "destination": "/api/list?type=sasang" },
+    { "source": "/wellness", "destination": "/api/list?type=wellness" },
     { "source": "/about", "destination": "/about/index.html" },
     { "source": "/((?!api/).*)", "destination": "/_spa.html" }
   ]
